@@ -1,72 +1,299 @@
 # Project Document
 
-We are building an AI-powered Flashcards App. The app will allow users to create, organize, and study flashcards. It will also include AI features to help users generate flashcards abd study with an AI Learning Companion.
+We are building an AI-powered Flashcards App designed to enhance the learning experience through intelligent flashcard management and AI-assisted studying. Our application will enable users to create, organize, and study flashcards efficiently, while leveraging AI capabilities to generate content and provide personalized learning assistance.
 
 ## Functional Requirements
 
-### General Features
+### Primary Features (Must Have)
 
-- Create an account and sign in (through GitHub)
-- Create and organize flashcards in decks (supporting markdown)
-- Sort, search (full-text), and filter through flashcards
+As a user, I want to:
 
-The following features could be implemented, if time permits:
+1. Create an account and sign in through GitHub so I can securely access my flashcards
+2. Create and organize flashcards in decks so I can structure my learning materials
+3. Edit existing flashcards and decks to keep my study materials up-to-date
+4. Sort, search (full-text), and filter through my flashcard collection to find specific information quickly
+5. Generate AI-improved versions of my flashcard content (e.g., make text more concise, turn statements into questions)
+6. Have the AI automatically generate complete flashcard decks from text inputs I provide, allowing me to quickly build comprehensive study materials without manually creating each card myself
+7. Perform semantic search across flashcard collections to find related content quickly
 
-- Study module
-- Track study progress and performance
-- Tag management
-- Organize cards within a deck and shuffle them during study
-- Duplicate decks or cards
-- Export and import flashcard decks
-- Marketplace to share or sell decks of cards
+### Secondary Features (Should Have)
 
-The following features would be nice to have but won't be implemented:
+As a user, I want to:
 
-- Add images and multimedia to flashcards
-- Mark difficult cards for review
-- Study flashcards with spaced repetition
-- Set study reminders and goals
-- Collaborate on decks with others
-- Share decks on social media
+1. Write and edit flashcards in markdown format for rich text formatting
+2. Track my study progress and performance to understand my learning trajectory
+3. Study with an AI Learning Companion that can explain concepts in detail to enhance my understanding
+4. Receive hints from the AI Learning Companion to guide me towards the correct answers
+5. Get evaluation and feedback from the AI Learning Companion on my answers
+6. Upload PDFs and other document formats (such as Word documents or PowerPoint presentations) to have the AI extract and transform their content into complete flashcard decks, extending beyond the basic text input capability
+7. Have the AI automatically generate quizzes from my flashcard content to test my knowledge and understanding
+8. Organize cards within a deck in a specific order and shuffle them during study sessions
 
-### AI Features
+### Tertiary Features (Nice to Have)
 
-- Edit deck title and description (e.g., make it shorter)
-- Edit card front and back (e.g., make it more concise, turn it into a question)
-- Generate deck title, description, or relevant tags based on the content of the cards in the deck.
-- Generate flashcard decks from various inputs like text, PDFs, and web content (e.g., Wikipedia articles)
-  - When asked to create flashcards from a source, provide a disclaimer that learners should be making cards themselves, and offer to engage in a Socratic approach to help them in that process but also be ready to just make the flashcards
-- Study with an AI Learning Companion through chat that can
-  - Perform semantic search among the flashcards
-  - Create quizzes from existing flashcard decks
-  - Summarize flashcards in a deck
-  - Explain concepts in flashcards
-  - Provide hints during study (when you can't recall the answer)
-  - Evaluate answers and provide feedback
+As a user, I want to:
 
-The following features could be implemented, if time permits:
+1. Have Latex support for mathematical equations and symbols in flashcards
+2. Edit my profile and user preferences to customize my experience working with the app
+3. Extract information directly from websites by providing URLs, allowing the AI to convert online articles, blog posts, and reference pages into structured flashcard decks without manual copying and pasting
+4. Tag and categorize flashcards for improved organization
+5. Duplicate decks or cards to create variations or extensions
+6. Listen to text-to-speech readings of my flashcards
+7. Engage in audio chat with the AI Learning Companion
+8. Mark difficult cards for review
+9. Have a dashboard to view study statistics and insights on my learning progress and performance over time so I can track my improvement
 
-- Enable text-to-speech for flashcards
-- Enable audio chat with the AI Learning Companion
-- Generate a podcast from a deck of flashcards
+### Won't Have Features
 
-The following features would be nice to have but won't be implemented:
+As a user, I want to:
 
-- Generate deck cover art
-- Generate flashcards from images and multimedia
+1. Have support for Mermaid, PlantUML, and other diagramming tools in flashcards
+2. Add images and multimedia to flashcards
+3. Experience adaptive difficulty in questions in quizzes generated by the AI Learning Companion based on my performance
+4. Study flashcards with spaced repetition
+5. Set study reminders and goals
+6. Collaborate on decks with others
+7. Access a marketplace to share or sell decks of cards
+8. Share decks on social media
+9. Process and transcribe audio-visual content from YouTube videos, podcasts, and other multimedia sources to automatically create flashcard decks from spoken and visual information
+10. Generate a podcast-style audio review from a deck of flashcards
+11. Have the AI analyze my study patterns and suggest optimal review schedules
+12. Export and import flashcard decks to share with others or use offline
+
+The above features are out of scope for the initial version of the application but could be considered for future iterations.
 
 ### Tech Stack
 
-To align with the technology stack used in the Practical Gen AI course, we'll use the following:
+To align with the technology stack used in the Practical Gen AI course:
 
-1. React for the frontend framework
-2. TailwindCSS and Shadcn UI for styling
-3. Nanostores and its router libraries for state management and routing
-4. Vite for development
-5. Convex BaaS for backend services, including authentication and database
-6. Use Vercel's AI SDK as a thin abstraction layer for AI features.
-   - Ideally, we will not use more complex abstraction (like LangChain or LlamaIndex) to orchestrate AI features, unless necessary.
+### Frontend
+
+- **Framework**: React
+- **Styling**: TailwindCSS and Shadcn UI
+- **State Management**: Nanostores
+- **Routing**: Nanostores router libraries
+- **Build Tool**: Vite
+- **Deployment**: Netlify
+
+### Backend
+
+- **Backend-as-a-Service**: Convex for authentication, storage, database, vector database, and serverless functions (provides development and deployment environment)
+- **AWS Lambda**: For serverless functions and backend logic that Convex doesn't support (e.g., if we must use a Python library that does not have a equivalent in TypeScript)
+- **AI Integration**: Vercel's AI SDK for AI feature abstraction and orchestration (we will deliberately avoid using more complex abstractions like LangChain or LlamaIndex unless necessary)
+
+### AI Services
+
+- **Large Language Models**: OpenAI's GPT-4o for AI-powered editing and content generation
+- **Embedding Models**: OpenAI's `text-embedding-3-small` for semantic search and similarity
+- **Audio Processing**: OpenAI's text-to-speech (TTS) and speech-to-text (STT) models for audio features
+- **Memory**: OpenAI's Assistant API provides memory capabilities for the AI Learning Companion
+- **Tool Calling**: OpenAI's Assistant API provides tool (function) calling capabilities to create agentic AI behavior
 
 ## Project Roadmap
 
-TBD
+This roadmap maps out the development of our AI-powered Flashcards App across two sprints, aligned with the course schedule:
+
+- **Sprint 1**: Weeks 8, 10, 11 (March 10 - April 4)
+  - *Note: Week 9 is Spring Break (no development scheduled)*
+- **Sprint 2**: Weeks 12, 13, 14 (April 7 - April 25)
+  - *Final deliverable due Monday, April 28*
+
+## Sprint 1: March 10 - April 4
+
+### Week 8 (March 10-14): Project Setup & Authentication
+
+**Tasks:**
+
+1. Set up project repository with React, Vite, TailwindCSS, and Shadcn UI
+   - Create project structure and configure build tools
+   - Set up code linting and formatting tools
+   - Configure deployment pipeline
+
+2. Implement user authentication system (Primary Feature #1)
+   - Integrate GitHub OAuth with Convex
+   - Create user profile data structure
+   - Implement sign-in/sign-out functionality
+   - Set up protected routes
+
+3. Design and implement database schema
+   - Design schema for users, flashcards, and decks
+   - Set up Convex database configuration
+   - Create data models and relationships
+
+4. Develop UI component library
+   - Build reusable UI components (buttons, cards, inputs, etc.)
+   - Create layout components and page templates
+   - Implement responsive design
+
+**Deliverables:**
+
+- Functioning GitHub authentication system
+- Project repository with CI/CD setup
+- Basic UI component library
+- Database schema documentation
+
+### Week 10 (March 24-28): Flashcard Management System
+
+**Tasks:**
+
+1. Implement flashcard creation and organization (Primary Features #2, #3)
+   - Build flashcard editor component
+   - Create deck management interface
+   - Implement CRUD operations for flashcards and decks
+   - Add validation and error handling
+
+2. Develop search and filter functionality (Primary Feature #4)
+   - Implement full-text search capabilities
+   - Create filtering mechanisms by deck, date, etc.
+   - Add sorting options (alphabetical, date created/modified)
+   - Build search results view
+
+3. Begin implementing basic AI integration
+   - Set up Vercel AI SDK
+   - Configure API connections to language models
+   - Create service layer for AI interactions
+   - Implement error handling for AI services
+
+**Deliverables:**
+
+- Complete flashcard management system
+- Functional search and filter capabilities
+- Initial AI service integration
+- Interactive user interfaces for core features
+
+### Week 11 (March 31-April 4): AI-Enhanced Content & Semantic Search
+
+**Tasks:**
+
+1. Implement AI-improved content generation (Primary Feature #5)
+   - Develop interface for AI editing suggestions
+   - Create prompting templates for different improvement types
+   - Implement content transformation logic
+   - Add user controls for accepting/rejecting AI suggestions
+
+2. Build automatic flashcard deck generation (Primary Feature #6)
+   - Create text input interface for source material
+   - Develop AI prompt engineering for flashcard extraction
+   - Implement batch processing for multiple cards
+   - Add post-generation editing capabilities
+
+3. Implement semantic search functionality (Primary Feature #7)
+   - Set up embedding model integration
+   - Create vector storage for flashcard content
+   - Implement similarity search algorithms
+   - Build UI for displaying semantically related content
+
+4. Sprint 1 wrap-up
+   - Conduct thorough testing of all implemented features
+   - Fix critical bugs and issues
+   - Deploy Sprint 1 milestone for demonstration
+
+**Deliverables:**
+
+- AI-powered content improvement features
+- Automatic flashcard generation from text
+- Semantic search functionality
+- Sprint 1 progress report and working demo
+- Presentation of Sprint 1 accomplishments
+
+## Sprint 2: April 7 - April 28
+
+### Week 12 (April 7-11): Markdown Support & Study Tracking
+
+**Tasks:**
+
+1. Implement markdown support for flashcards (Secondary Feature #1)
+   - Add markdown editor component
+   - Create markdown preview functionality
+   - Implement syntax highlighting
+   - Add support for common markdown formatting
+
+2. Develop study progress tracking (Secondary Feature #2)
+   - Create data structures for recording study sessions
+   - Implement study session logging
+   - Build basic analytics for tracking performance
+   - Design interface for viewing progress
+
+3. Begin AI Learning Companion development
+   - Design conversation flow for AI interactions
+   - Create base prompting system for the Learning Companion
+   - Implement chat interface components
+   - Set up context management for conversations
+
+**Deliverables:**
+
+- Markdown editing and rendering support
+- Study progress tracking system
+- Initial AI Learning Companion interface
+- Enhanced user experience for content creation
+
+### Week 13 (April 14-18): AI Learning Companion & Advanced Content Generation
+
+**Tasks:**
+
+1. Complete AI Learning Companion core features (Secondary Features #3, #4, #5)
+   - Implement concept explanation functionality
+   - Develop hint generation system
+   - Create answer evaluation and feedback mechanisms
+   - Add conversation history and context awareness
+
+2. Build document processing for flashcard generation (Secondary Feature #6)
+   - Implement file upload functionality
+   - Integrate PDF and document parsing
+   - Create content extraction algorithms
+   - Develop preprocessing for different document types
+
+3. Implement quiz generation capabilities (Secondary Feature #7)
+   - Create quiz generation algorithms from flashcard content
+   - Build quiz taking interface
+   - Implement scoring and results display
+   - Add quiz history tracking
+
+4. Add card organization features (Secondary Feature #8)
+   - Implement manual card ordering within decks
+   - Create card shuffle functionality for study sessions
+   - Develop drag-and-drop interface for organization
+   - Add batch operations for cards
+
+**Deliverables:**
+
+- Complete AI Learning Companion functionality
+- Document processing and flashcard generation
+- Quiz generation and taking system
+- Enhanced card organization features
+
+### Week 14 (April 21-25): Final Touches & Buffer Week
+
+**Tasks:**
+
+1. Implement highest-priority tertiary features (selectively based on progress)
+   - Add LaTeX support for mathematical equations (Tertiary Feature #1)
+   - Implement user profile and preferences (Tertiary Feature #2)
+   - Add web content extraction (Tertiary Feature #3) if time permits
+
+2. Conduct comprehensive testing and quality assurance
+   - Perform usability testing with representative users
+   - Identify and fix bugs and issues
+   - Optimize performance and responsiveness
+   - Ensure accessibility compliance
+
+3. Final deployment and project wrap-up
+   - Deploy final application version
+   - Verify all features are working in production
+   - Create presentation materials
+   - Prepare for project demonstration
+
+**Deliverables:**
+
+- Polished, production-ready application
+- Presentation materials for project demonstration
+
+## Key Milestones
+
+1. **March 14**: Project infrastructure complete with authentication system
+2. **March 28**: Core flashcard management system functional
+3. **April 4**: Sprint 1 completion with all primary features implemented
+4. **April 11**: Markdown support and study tracking system functional
+5. **April 18**: AI Learning Companion and advanced content generation complete
+6. **April 25**: Application finalized with tertiary features and comprehensive testing
+7. **April 28**: Final project submission and demonstration
