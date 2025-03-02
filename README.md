@@ -1,29 +1,12 @@
-# PGAi Team Project
+# Flashcards App
 
-Name of the application goes here -- followed by a brief description (elevator pitch) of the application.
+This is an AI-powered Flashcards App designed to enhance the learning experience through intelligent flashcard management and AI-assisted studying. Our application will enable users to create, organize, and study flashcards efficiently, while leveraging AI capabilities to generate content and provide personalized learning assistance.
 
-## Installing / Getting started
+To run the application:
 
-A quick introduction of the minimal setup you need to get the app up & running on a local computer. For example, your advisor might use the instruction here to run the application locally.
+1. Clone this repository.
+2. Open a terminal and navigate to the root directory of the repository.
+3. Install the dependencies `pnpm install`.
+4. Start the development server `pnpm run dev`.
 
-```shell
-commands here
-```
-
-## Developing
-
-Detailed and step-by-step documentation for setting up local development. For example, a new team member will use these instructions to start developing the project further. 
-
-```shell
-commands here
-```
-
-You should include what is needed (e.g. all of the configurations) to set up the dev environment. For instance, global dependencies or any other tools (include download links), explaining what database (and version) has been used, etc. If there is any virtual environment, local server, ..., explain here. 
-
-Additionally, describe and show how to run the tests, explain your code style and show how to check it.
-
-If your project needs some additional steps for the developer to build the project after some code changes, state them here. Moreover, give instructions on how to build and release a new version. In case there's some step you have to take that publishes this project to a server, it must be stated here. 
-
-## Licensing
-
-Refer to the [Project Repository License](./LICENSE.md) for information on how the project is licensed.
+This will start the application on `http://localhost:5173`.
