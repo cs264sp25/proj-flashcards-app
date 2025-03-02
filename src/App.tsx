@@ -1,5 +1,11 @@
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+
 function App() {
-  return <div>Hello world!</div>;
+  const message = useQuery(api.hello.greet, {
+    name: " world",
+  });
+  return <div>{message}</div>;
 }
 
 export default App;

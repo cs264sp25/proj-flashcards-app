@@ -4,6 +4,9 @@ This is an AI-powered Flashcards App designed to enhance the learning experience
 
 To run the application:
 
+> [!NOTE]
+> Before you begin: You'll need Node.js 18+ and Git
+
 1. Clone this repository.
 2. Open a terminal and navigate to the root directory of the repository.
 3. Install the dependencies `pnpm install`.
