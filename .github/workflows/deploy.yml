@@ -37,8 +37,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build with Vite
-        run: pnpm run build
+      - name: Deploy Convex and Build React App
+        run: npx convex deploy --cmd 'pnpm run build'
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3.0.1
