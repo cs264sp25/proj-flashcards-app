@@ -2,7 +2,7 @@
 name: Feature
 about: Suggest a new feature or functionality.
 title: 'Feature: [Brief Description]'
-labels: 'feature'
+type: 'feature'
 assignees: ''
 ---
 

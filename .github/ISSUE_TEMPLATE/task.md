@@ -2,7 +2,7 @@
 name: Task
 about: General improvements, refactoring, or documentation updates.
 title: 'Task: [Brief Description]'
-labels: 'task'
+type: 'task'
 assignees: ''
 ---
 
