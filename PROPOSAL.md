@@ -295,5 +295,5 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 3. **April 4**: Sprint 1 completion with all primary features implemented
 4. **April 11**: Markdown support and study tracking system functional
 5. **April 18**: AI Learning Companion and advanced content generation complete
-6. **April 25**: Application finalized with tertiary features and comprehensive testing
+6. **April 25**: Sprint 2 completion with all secondary features implemented
 7. **April 28**: Final project submission and demonstration

@@ -10,8 +10,6 @@ assignees: ''
 
 [Provide a clear and concise description of the bug. What is the issue?]
 
----
-
 ## Steps to Reproduce
 
 1. [Step 1]
@@ -27,13 +25,9 @@ assignees: ''
 
 [Describe what actually happened.]
 
----
-
 ## Screenshots or Logs (if applicable)
 
 [Add screenshots, error messages, or logs to help explain the issue.]
-
----
 
 ## Environment
 
@@ -41,8 +35,6 @@ assignees: ''
 - **OS:** [e.g., Windows 11, macOS Ventura, iOS 16]
 - **Browser:** [e.g., Chrome, Firefox, Safari] (if applicable)
 - **Version:** [e.g., v1.2.3]
-
----
 
 ## Additional Context
 
