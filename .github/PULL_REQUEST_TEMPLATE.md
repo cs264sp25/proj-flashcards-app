@@ -2,10 +2,10 @@
 <!-- Briefly describe your changes and the purpose of this pull request. -->
 
 ## Changes
-- [ ] Feature implementation
-- [ ] Bug fix
-- [ ] Refactoring
-- [ ] Documentation update
+- [ ] Feature implementation (enhancement)
+- [ ] Bug fix (bug)
+- [ ] Refactoring (other)
+- [ ] Documentation update (other)
 - [ ] Other (please specify):
 
 ## Checklist
