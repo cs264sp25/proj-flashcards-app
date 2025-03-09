@@ -1,27 +1,28 @@
-import { useQuery } from "convex/react";
-import { Button } from "@/components/ui/button";
-import { api } from "../convex/_generated/api";
-import { useState } from "react";
+import { useConvexAuth } from "convex/react";
+import { useAuthToken } from "@convex-dev/auth/react";
+import { SignOut } from "@/components/sign-out";
+import { SignIn } from "@/components/sign-in";
 
 function App() {
-  const [showMessage, setShowMessage] = useState(false);
-  const message = useQuery(api.hello.greet, {
-    name: " world",
-  });
+  const token = useAuthToken();
+  const { isLoading, isAuthenticated } = useConvexAuth();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-svh">
-      <Button
-        variant={showMessage ? "outline" : "default"}
-        onClick={() => setShowMessage(!showMessage)}
-      >
-        {`Click to ${showMessage ? "hide" : "show"} a message from the backend`}
-      </Button>
-      {showMessage && (
-        <div className="m-2">
-          Backend says:{" "}
-          <code className="border px-2 py-1 rounded-md text-sm">{message}</code>
-        </div>
+      {isAuthenticated ? (
+        <>
+          <SignOut />
+          <div className="m-2">
+            <div>Token:</div>
+            <pre className="max-w-lg text-wrap mx-auto overflow-auto border rounded-md p-2">
+              {token}
+            </pre>
+          </div>
+        </>
+      ) : isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <SignIn />
       )}
     </div>
   );
