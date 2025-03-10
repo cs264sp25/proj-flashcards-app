@@ -116,9 +116,9 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
    - Set up protected routes
 
 3. Design and implement database schema
-   - Design schema for users, flashcards, and decks
-   - Set up Convex database configuration
-   - Create data models and relationships
+   - Design schema for users
+   - Design schema for decks
+   - Design schema for flashcards
 
 4. Develop UI component library
    - Build reusable UI components (buttons, cards, inputs, etc.)
