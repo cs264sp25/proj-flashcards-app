@@ -1,7 +1,7 @@
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
-import { SignOut } from "@/components/sign-out";
-import { SignIn } from "@/components/sign-in";
+import { SignOut } from "@/auth/components/sign-out";
+import { SignIn } from "@/auth/components/sign-in";
 
 function App() {
   const token = useAuthToken();
