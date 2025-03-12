@@ -13,6 +13,7 @@ import {
 } from "@/core/components/sidebar";
 import { SignOut } from "@/auth/components/sign-out";
 import { useRouter } from "@/core/hooks/use-router";
+import { Page } from "@/core/config/router";
 
 // Menu items.
 const items = [
@@ -36,7 +37,7 @@ function Sidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={getPath(item.page) || "/"}>
+                    <a href={getPath(item.page as Page) || "/"}>
                       <item.icon />
                       <span>{item.title}</span>
                     </a>
