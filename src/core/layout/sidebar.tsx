@@ -11,6 +11,8 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/core/components/sidebar";
+import { SignOut } from "@/auth/components/sign-out";
+import { useRouter } from "@/core/hooks/use-router";
 
 // Menu items.
 const items = [
@@ -21,12 +23,9 @@ const items = [
   },
 ];
 
-// This is a stub until we implement client-side routing
-function getPath(pageName: string) {
-  return `/${pageName.toLowerCase()}`;
-}
-
 function Sidebar() {
+  const { getPath } = useRouter();
+
   return (
     <SidebarRoot>
       <SidebarContent>
@@ -48,7 +47,15 @@ function Sidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter></SidebarFooter>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <SignOut />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </SidebarRoot>
   );
