@@ -1,5 +1,6 @@
 import { cn } from "@/core/lib/utils";
 import { SidebarTrigger } from "@/core/components/sidebar";
+import { ThemeToggle } from "@/core/components/theme-toggle";
 
 const DEBUG = false;
 
@@ -13,16 +14,8 @@ const Header: React.FC = () => {
         },
       )}
     >
-      <div
-        className={cn(
-          "flex items-center justify-start w-full font-light text-muted-foreground",
-          {
-            "border-2 border-blue-500": DEBUG,
-          },
-        )}
-      >
-        <SidebarTrigger />
-      </div>
+      <SidebarTrigger />
+      <ThemeToggle />
     </header>
   );
 };
