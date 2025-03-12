@@ -1,18 +1,28 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { useTheme } from "@/core/hooks/use-theme";
 import { useRouter } from "@/core/hooks/use-router";
+import { useWindowSize } from "@uidotdev/usehooks";
 import Layout from "@/core/layout";
 import NotFoundPage from "@/core/pages/not-found-page";
 import LoginPage from "@/auth/pages/login-page";
 import Loading from "@/core/components/loading";
+import Empty from "./core/pages/empty";
 
 function App() {
   const token = useAuthToken();
   const { isLoading, isAuthenticated } = useConvexAuth();
   const { theme } = useTheme();
   const { currentRoute } = useRouter();
+  const size = useWindowSize();
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    if (size.width) {
+      setIsSmallScreen(size.width <= 720);
+    }
+  }, [size]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -46,7 +56,7 @@ function App() {
     switch (currentRoute) {
       case "home":
         return {
-          left: null,
+          left: isSmallScreen ? null : <Empty message="left panel" />,
           middle: (
             <div className="flex flex-col items-center justify-center min-h-svh">
               <p>Welcome</p>
@@ -58,7 +68,7 @@ function App() {
               </div>
             </div>
           ),
-          right: null,
+          right: isSmallScreen ? null : <Empty message="right panel" />,
         };
       default:
         return {

@@ -121,8 +121,11 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
    - Create data models and relationships
 
 4. Develop UI component library
+   - Create folder structure for components (domain-driven design)
    - Build reusable UI components (buttons, cards, inputs, etc.)
    - Create layout components and page templates
+   - Add theme management and styling utilities
+   - Add basic client-side routing
    - Implement responsive design
 
 **Deliverables:**
