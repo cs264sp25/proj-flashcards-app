@@ -16,6 +16,7 @@ import type {
 import type * as auth from "../auth.js";
 import type * as cards from "../cards.js";
 import type * as decks from "../decks.js";
+import type * as hello from "../hello.js";
 import type * as http from "../http.js";
 import type * as shared from "../shared.js";
 import type * as users from "../users.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   cards: typeof cards;
   decks: typeof decks;
+  hello: typeof hello;
   http: typeof http;
   shared: typeof shared;
   users: typeof users;
