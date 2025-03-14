@@ -1,4 +1,4 @@
-import { Home } from "lucide-react";
+import { FlaskConical, Home } from "lucide-react";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -22,6 +22,11 @@ const items = [
     page: "home",
     icon: Home,
   },
+  {
+    title: "Demo",
+    page: "demo",
+    icon: FlaskConical,
+  }
 ];
 
 function Sidebar() {
