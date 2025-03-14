@@ -1,13 +1,16 @@
+import { useConvexAuth } from "convex/react";
 import { cn } from "@/core/lib/utils";
-import Header from "./header";
-import Footer from "./footer";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/core/components/resizable";
 import { SidebarProvider } from "@/core/components/sidebar";
+import Loading from "@/core/components/loading";
+import LoginPage from "@/auth/pages/login-page";
 import Sidebar from "./sidebar";
+import Header from "./header";
+import Footer from "./footer";
 
 const DEBUG = false;
 
@@ -24,6 +27,16 @@ const Layout: React.FC<LayoutProps> = ({
   rightPanelContent,
   className,
 }) => {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
   return (
     <SidebarProvider
       className={cn(

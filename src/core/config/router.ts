@@ -7,6 +7,7 @@ const DEBUG = false;
 const pages = {
   home: `/${BASE_URL}/`, // Home page
   login: `/${BASE_URL}/login`, // Sign in page
+  demo: `/${BASE_URL}/demo`, // Demo page
 };
 
 export type Page = keyof typeof pages;
