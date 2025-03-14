@@ -1,0 +1,27 @@
+{
+  "unknown": {
+    "versionFramework": "4.8.0",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "command": [
+      "login"
+    ],
+    "options": {},
+    "orgId": "6bb5b1a9-30fe-4737-8555-84e364b6da22",
+    "orgName": "madooei",
+    "userId": "mn3pfy0wCJHsn7hk0g",
+    "userName": "madooei",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
