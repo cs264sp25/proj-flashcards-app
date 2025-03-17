@@ -6,6 +6,10 @@ This is an AI-powered Flashcards App designed to enhance the learning experience
 
 This project uses [Convex](https://convex.dev/) for the backend. You need to create a free account.
 
+## Serverless Python
+
+Although not used in this project, I've included the possibility to use serverless python functions. To that end, I've included a `serverless-python` folder with a simple hello-world API. It uses the Serverless Framework and the AWS provider. For more information on how to use it, please refer to the [README](serverless-python/hello-api/README.md) in the `serverless-python` folder.
+
 ## Run locally
 
 To run the application:
