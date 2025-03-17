@@ -140,22 +140,21 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 **Tasks:**
 
 1. Implement flashcard creation and organization (Primary Features #2, #3)
-   - Build flashcard editor component
-   - Create deck management interface
-   - Implement CRUD operations for flashcards and decks
+   - UI components for CRUD operations for decks
+   - UI components for CRUD operations for cards
+   - Integrate frontend with backend for database operations on decks and cards
    - Add validation and error handling
 
-2. Develop search and filter functionality (Primary Feature #4)
+2. Data fetching patterns for decks and cards (Primary Feature #4)
+   - Add pagination to get decks and cards in chunks
    - Implement full-text search capabilities
-   - Create filtering mechanisms by deck, date, etc.
    - Add sorting options (alphabetical, date created/modified)
-   - Build search results view
+   - Create filtering mechanisms by tags (optional)
 
 3. Begin implementing basic AI integration
-   - Set up Vercel AI SDK
-   - Configure API connections to language models
+   - Set up Vercel AI SDK and configure API connections to language models
    - Create service layer for AI interactions
-   - Implement error handling for AI services
+   - Implement basic chat interface for the AI Learning Companion
 
 **Deliverables:**
 
@@ -294,7 +293,7 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 ## Key Milestones
 
 1. **March 14**: Project infrastructure complete with authentication system
-2. **March 28**: Core flashcard management system functional
+2. **March 28**: Flashcard management and related features
 3. **April 4**: Sprint 1 completion with all primary features implemented
 4. **April 11**: Markdown support and study tracking system functional
 5. **April 18**: AI Learning Companion and advanced content generation complete
