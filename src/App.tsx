@@ -5,10 +5,13 @@ import { useWindowSize } from "@uidotdev/usehooks";
 import Layout from "@/core/layout";
 import NotFoundPage from "@/core/pages/not-found-page";
 import Empty from "@/core/pages/empty";
-import DemoPage from "./core/pages/demo";
-import ListDecksPage from "./decks/pages/list-decks-page";
-import AddDeckPage from "./decks/pages/add-deck-page";
-import EditDeckPage from "./decks/pages/edit-deck-page";
+import DemoPage from "@/core/pages/demo";
+import ListDecksPage from "@/decks/pages/list-decks-page";
+import AddDeckPage from "@/decks/pages/add-deck-page";
+import EditDeckPage from "@/decks/pages/edit-deck-page";
+import ListCardsPage from "@/cards/pages/list-cards-page";
+import AddCardPage from "@/cards/pages/add-card-page";
+import EditCardPage from "@/cards/pages/edit-card-page";
 
 function App() {
   const { theme } = useTheme();
@@ -79,10 +82,30 @@ function App() {
       case "cards":
         return {
           left: isSmallScreen ? null : <ListDecksPage />,
-          // middle: <ListCardsPage deckId={params.deckId as string} />,
-          middle: <Empty message="Cards Page Not Implemented Yet!" />,
+          middle: <ListCardsPage deckId={params.deckId as string} />,
           right: null,
         };
+        case "addCard":
+          return {
+            left: isSmallScreen ? null : <ListDecksPage />,
+            middle: isSmallScreen ? null : (
+              <ListCardsPage deckId={params.deckId as string} />
+            ),
+            right: <AddCardPage deckId={params.deckId as string} />,
+          };
+        case "editCard":
+          return {
+            left: isSmallScreen ? null : <ListDecksPage />,
+            middle: isSmallScreen ? null : (
+              <ListCardsPage deckId={params.deckId as string} />
+            ),
+            right: (
+              <EditCardPage
+                deckId={params.deckId as string}
+                cardId={params.cardId as string}
+              />
+            ),
+          };
       default:
         return {
           left: <NotFoundPage />,

@@ -41,7 +41,9 @@ const DeckForm: React.FC<DeckFormProps> = ({
     // Convert tags string to array if it exists
     const processedValues = {
       ...values,
-      tags: values.tags ? values.tags.map(tag => tag.trim()).filter(Boolean) : [],
+      tags: values.tags
+        ? values.tags.map((tag) => tag.trim()).filter(Boolean)
+        : [],
     };
     onSubmit(processedValues);
   };
@@ -71,9 +73,15 @@ const DeckForm: React.FC<DeckFormProps> = ({
                     <Input
                       placeholder={field.placeholder}
                       {...fieldProps}
-                      value={Array.isArray(fieldProps.value) ? fieldProps.value.join(", ") : ""}
+                      value={
+                        Array.isArray(fieldProps.value)
+                          ? fieldProps.value.join(", ")
+                          : ""
+                      }
                       onChange={(e) => {
-                        const tags = e.target.value.split(",").map(tag => tag.trim());
+                        const tags = e.target.value
+                          .split(",")
+                          .map((tag) => tag.trim());
                         fieldProps.onChange(tags);
                       }}
                     />
