@@ -25,9 +25,8 @@
     /* Resolve Path */
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "@convex-generated/*": ["./convex/_generated/*"]
     }
   },
   "include": ["src"]
