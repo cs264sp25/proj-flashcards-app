@@ -52,7 +52,6 @@ const EditDeckPage: React.FC<EditDeckPageProps> = ({ deckId }) => {
   const initialValues = {
     title: deck.title || "",
     description: deck.description ?? undefined,
-    coverImage: deck.coverImage ?? undefined,
     tags: deck.tags ?? undefined,
   };
 
