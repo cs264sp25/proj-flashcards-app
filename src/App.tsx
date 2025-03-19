@@ -6,10 +6,13 @@ import Layout from "@/core/layout";
 import NotFoundPage from "@/core/pages/not-found-page";
 import Empty from "@/core/pages/empty";
 import DemoPage from "./core/pages/demo";
+import ListDecksPage from "./decks/pages/list-decks-page";
+import AddDeckPage from "./decks/pages/add-deck-page";
+import EditDeckPage from "./decks/pages/edit-deck-page";
 
 function App() {
   const { theme } = useTheme();
-  const { currentRoute } = useRouter();
+  const { currentRoute, params } = useRouter();
   const size = useWindowSize();
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
@@ -51,6 +54,33 @@ function App() {
         return {
           left: null,
           middle: <DemoPage />,
+          right: null,
+        };
+      case "decks":
+        return {
+          left: <ListDecksPage />,
+          middle: isSmallScreen ? null : (
+            <Empty message="Select a deck to view its flashcards." />
+          ),
+          right: null,
+        };
+      case "addDeck":
+        return {
+          left: isSmallScreen ? null : <ListDecksPage />,
+          middle: <AddDeckPage />,
+          right: null,
+        };
+      case "editDeck":
+        return {
+          left: isSmallScreen ? null : <ListDecksPage />,
+          middle: <EditDeckPage deckId={params.deckId as string} />,
+          right: null,
+        };
+      case "cards":
+        return {
+          left: isSmallScreen ? null : <ListDecksPage />,
+          // middle: <ListCardsPage deckId={params.deckId as string} />,
+          middle: <Empty message="Cards Page Not Implemented Yet!" />,
           right: null,
         };
       default:
