@@ -335,9 +335,7 @@ export const create = mutation({
   args: { ...deckInSchema },
   handler: async (
     ctx: MutationCtx,
-    args: DeckInType & {
-      userId: Id<"users">;
-    },
+    args: DeckInType,
   ) => {
     const userId = await authenticationGuard(ctx);
     return await createDeck(ctx, userId, args);
