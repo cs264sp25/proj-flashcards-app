@@ -1,5 +1,8 @@
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ path: ".env" }); // Load the first .env file
+dotenv.config({ path: "../../.env.local" });
 
 export const DEBUG: boolean = process.env.DEBUG === "true";
+export const CONVEX_URL: string = process.env.VITE_CONVEX_URL || "";
+
