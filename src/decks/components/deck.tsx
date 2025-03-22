@@ -1,6 +1,6 @@
-import { Badge } from "@/core/components/badge";
 import { BookOpen, Edit, GalleryVerticalEnd } from "lucide-react";
 import { cn } from "@/core/lib/utils";
+import { Badge } from "@/core/components/badge";
 import { AspectRatio } from "@/core/components/aspect-ratio";
 import { Button } from "@/core/components/button";
 import {
