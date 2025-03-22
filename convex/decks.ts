@@ -38,7 +38,6 @@ import {
   internalAction,
   QueryCtx,
   MutationCtx,
-  ActionCtx,
 } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
@@ -333,10 +332,7 @@ export const getOne = query({
  */
 export const create = mutation({
   args: { ...deckInSchema },
-  handler: async (
-    ctx: MutationCtx,
-    args: DeckInType,
-  ) => {
+  handler: async (ctx: MutationCtx, args: DeckInType) => {
     const userId = await authenticationGuard(ctx);
     return await createDeck(ctx, userId, args);
   },
@@ -487,24 +483,16 @@ export const createSampleDecks = internalAction({
     const deckIds: Id<"decks">[] = [];
 
     if (clearExistingData) {
-      await ctx.runMutation(
-        // @ts-ignore
-        internal.decks.deleteDecksWithCascadeInternal,
-        {
-          userId: args.userId,
-        },
-      );
+      await ctx.runMutation(internal.decks.deleteDecksWithCascadeInternal, {
+        userId: args.userId,
+      });
     }
 
     for (let i = 0; i < numberOfDecks; i++) {
-      const deckId = await ctx.runMutation(
-        // @ts-ignore
-        internal.decks.createDeckInternal,
-        {
-          userId,
-          deck: { title: `Deck ${i + 1}` },
-        },
-      );
+      const deckId = await ctx.runMutation(internal.decks.createDeckInternal, {
+        userId,
+        deck: { title: `Deck ${i + 1}` },
+      });
 
       deckIds.push(deckId as Id<"decks">);
     }

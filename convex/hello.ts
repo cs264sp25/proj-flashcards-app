@@ -2,8 +2,7 @@ import { ConvexError } from "convex/values";
 import { action } from "./_generated/server";
 
 export const greet = action({
-  handler: async (ctx) => {
-
+  handler: async () => {
     const endpoint = process.env.AWS_ENDPOINT || "";
 
     if (!endpoint) {
