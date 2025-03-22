@@ -1,11 +1,12 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { ANTHROPIC_API_KEY } from './env';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { GEMINI_API_KEY } from './env';
 import { streamText } from 'ai';
-const anthropic = createAnthropic({
-    apiKey: ANTHROPIC_API_KEY
+
+const google = createGoogleGenerativeAI({
+    apiKey: GEMINI_API_KEY
 });
 
-const model = anthropic('claude-3-5-sonnet-latest');
+const model = google('gemini-2.0-flash');
 
 const { textStream } = streamText({
     model,
