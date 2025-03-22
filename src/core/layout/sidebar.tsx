@@ -1,4 +1,9 @@
-import { GalleryVerticalEnd, FlaskConical, Home } from "lucide-react";
+import {
+  GalleryVerticalEnd,
+  FlaskConical,
+  Home,
+  BotMessageSquare,
+} from "lucide-react";
 import {
   Sidebar as SidebarRoot,
   SidebarContent,
@@ -26,6 +31,11 @@ const items = [
     title: "Decks",
     page: "decks",
     icon: GalleryVerticalEnd,
+  },
+  {
+    title: "Chat",
+    page: "chats",
+    icon: BotMessageSquare,
   },
   {
     title: "Demo",

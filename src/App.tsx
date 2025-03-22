@@ -14,6 +14,10 @@ const EditDeckPage = lazy(() => import("@/decks/pages/edit-deck-page"));
 const ListCardsPage = lazy(() => import("@/cards/pages/list-cards-page"));
 const AddCardPage = lazy(() => import("@/cards/pages/add-card-page"));
 const EditCardPage = lazy(() => import("@/cards/pages/edit-card-page"));
+const ListChatsPage = lazy(() => import("@/chats/pages/list-chats-page"));
+const AddChatPage = lazy(() => import("@/chats/pages/add-chat-page"));
+const EditChatPage = lazy(() => import("@/chats/pages/edit-chat-page"));
+const MessagesPage = lazy(() => import("@/messages/pages/messages-page"));
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => <div>Loading...</div>;
@@ -174,6 +178,32 @@ function App() {
               />
             </Suspense>
           ),
+        };
+      case "chats":
+        return {
+          left: <ListChatsPage />,
+          middle: isSmallScreen ? null : (
+            <Empty message="Select a chat to view its messages." />
+          ),
+          right: null,
+        };
+      case "addChat":
+        return {
+          left: isSmallScreen ? null : <ListChatsPage />,
+          middle: <AddChatPage />,
+          right: null,
+        };
+      case "editChat":
+        return {
+          left: isSmallScreen ? null : <ListChatsPage />,
+          middle: <EditChatPage chatId={params.chatId as string} />,
+          right: null,
+        };
+      case "messages":
+        return {
+          left: isSmallScreen ? null : <ListChatsPage />,
+          middle: <MessagesPage chatId={params.chatId as string} />,
+          right: null,
         };
       default:
         return {
