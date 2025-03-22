@@ -135,7 +135,7 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 - Basic UI component library
 - Database schema documentation
 
-### Week 10 (March 24-28): Flashcard Management System
+### Week 10 (March 24-28): Flashcard management and basic AI-powered chat
 
 **Tasks:**
 
@@ -293,7 +293,7 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 ## Key Milestones
 
 1. **March 14**: Project infrastructure complete with authentication system
-2. **March 28**: Flashcard management and related features
+2. **March 28**: Flashcard management and basic AI-powered chat
 3. **April 4**: Sprint 1 completion with all primary features implemented
 4. **April 11**: Markdown support and study tracking system functional
 5. **April 18**: AI Learning Companion and advanced content generation complete
