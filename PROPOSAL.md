@@ -152,8 +152,8 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
    - Create filtering mechanisms by tags (optional)
 
 3. Begin implementing basic AI integration
-   - Set up Vercel AI SDK and configure API connections to language models
-   - Create service layer for AI interactions
+   - Add chat schema and CRUD operations on chats
+   - Add message schema and CRUD operations on messages
    - Implement basic chat interface for the AI Learning Companion
 
 **Deliverables:**
