@@ -16,6 +16,11 @@ const pages = {
   addCard: `/${BASE_URL}/decks/:deckId/cards/add`, // Add a new card to a specific deck
   card: `/${BASE_URL}/decks/:deckId/cards/:cardId`, // View a specific card
   editCard: `/${BASE_URL}/decks/:deckId/cards/:cardId/edit`, // Edit a specific card
+  chats: `/${BASE_URL}/chats`, // Chat page
+  addChat: `/${BASE_URL}/chats/add`, // Add a new chat
+  chat: `/${BASE_URL}/chats/:chatId`, // View a specific chat
+  editChat: `/${BASE_URL}/chats/:chatId/edit`, // Edit a specific chat
+  messages: `/${BASE_URL}/chats/:chatId/messages`, // View all messages in a specific chat
 };
 
 export type Page = keyof typeof pages;
@@ -23,6 +28,7 @@ export type Page = keyof typeof pages;
 export type Params = {
   deckId?: string;
   cardId?: string;
+  chatId?: string;
 };
 
 export const $router = createRouter(pages);

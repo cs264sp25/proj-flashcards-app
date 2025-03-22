@@ -460,27 +460,19 @@ export const createSampleCards = internalAction({
     const cardIds: Id<"cards">[] = [];
 
     if (clearExistingData) {
-      await ctx.runMutation(
-        // @ts-ignore
-        internal.cards.deleteCardsInternal,
-        {
-          deckId,
-        },
-      );
+      await ctx.runMutation(internal.cards.deleteCardsInternal, {
+        deckId,
+      });
     }
 
     for (let i = 0; i < numberOfCards; i++) {
-      const cardId = await ctx.runMutation(
-        // @ts-ignore
-        internal.cards.createCardInternal,
-        {
-          card: {
-            deckId,
-            front: `Front of card ${i + 1}`,
-            back: `Back of card ${i + 1}`,
-          },
+      const cardId = await ctx.runMutation(internal.cards.createCardInternal, {
+        card: {
+          deckId,
+          front: `Front of card ${i + 1}`,
+          back: `Back of card ${i + 1}`,
         },
-      );
+      });
 
       cardIds.push(cardId as Id<"cards">);
     }

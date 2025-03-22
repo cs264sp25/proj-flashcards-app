@@ -5,12 +5,21 @@
  ******************************************************************************/
 import { defineTable, PaginationResult } from "convex/server";
 import { ConvexError, Infer, v } from "convex/values";
-import { QueryCtx, MutationCtx, query, mutation, internalQuery, internalMutation, internalAction, ActionCtx } from "./_generated/server";
+import {
+  QueryCtx,
+  MutationCtx,
+  query,
+  mutation,
+  internalMutation,
+  internalAction,
+} from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 
 import type { PaginationOptsType, SortOrderType } from "./shared";
+import { deleteAllDecksWithCascade } from "./decks";
+import { deleteAllChatsWithCascade } from "./chats";
 
 /******************************************************************************
  * SCHEMA
@@ -157,6 +166,10 @@ export async function deleteUserWithCascade(
 ) {
   // Delete all decks and cards for the user
   // await deleteAllDecksWithCascade(ctx, userId);
+  // Delete all chats for the user
+  // await deleteAllChatsWithCascade(ctx, userId);
+
+  // FIXME: Uncommenting the above lines will cause a strange error durring pushing code to Convex
 
   // Delete the user
   await deleteUser(ctx, userId);
@@ -282,7 +295,7 @@ export const createUserInternal = internalMutation({
 /**
  * Create sample users.
  * numberOfUsers is optional and defaults to 5.
- * 
+ *
  * NOTE: This seed function does NOT clear previously seeded data for safety reasons.
  * It only adds new sample users to the database.
  */
@@ -295,18 +308,14 @@ export const createSampleUsers = internalAction({
     const userIds: Id<"users">[] = [];
 
     for (let i = 0; i < numberOfUsers; i++) {
-      const userId = await ctx.runMutation(
-        // @ts-ignore
-        internal.users.createUserInternal,
-        {
-          user: {
-            name: `User ${i + 1}`,
-            email: `user${i + 1}@example.com`,
-            displayName: `Test User ${i + 1}`,
-            isAnonymous: false,
-          },
-        }
-      );
+      const userId = await ctx.runMutation(internal.users.createUserInternal, {
+        user: {
+          name: `User ${i + 1}`,
+          email: `user${i + 1}@example.com`,
+          displayName: `Test User ${i + 1}`,
+          isAnonymous: false,
+        },
+      });
 
       userIds.push(userId as Id<"users">);
     }

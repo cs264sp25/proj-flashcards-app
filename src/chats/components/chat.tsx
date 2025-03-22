@@ -1,26 +1,26 @@
-import { BookOpen, Edit, GalleryVerticalEnd } from "lucide-react";
+import { Edit, MessageSquare } from "lucide-react";
 import { cn } from "@/core/lib/utils";
-import { Badge } from "@/core/components/badge";
-import { AspectRatio } from "@/core/components/aspect-ratio";
-import { Button } from "@/core/components/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/core/components/tooltip";
+import { AspectRatio } from "@/core/components/aspect-ratio";
 import { useRouter } from "@/core/hooks/use-router";
+import { Button } from "@/core/components/button";
+import { Badge } from "@/core/components/badge";
 
-import { DeckType } from "@/decks/types/deck";
+import { ChatType } from "@/chats/types/chat";
 
 const DEBUG = false;
 
-export function Deck({
+const Chat: React.FC<Partial<ChatType>> = ({
   _id,
   title,
   description,
-  cardCount,
-  tags,
-}: Partial<DeckType>) {
+  tags = [],
+  messageCount = 0,
+}) => {
   const { navigate } = useRouter();
 
   return (
@@ -37,8 +37,8 @@ export function Deck({
               "border-2 border-blue-500": DEBUG,
             })}
           >
-            {cardCount}
-            {cardCount == 1 ? " card" : " cards"}
+            {messageCount}
+            {messageCount == 1 ? " message" : " messages"}
           </div>
           <div
             className={cn("flex justify-end", {
@@ -50,13 +50,13 @@ export function Deck({
                 <Button
                   variant={"ghost"}
                   size={"icon"}
-                  onClick={() => navigate("editDeck", { deckId: _id })}
+                  onClick={() => navigate("editChat", { chatId: _id })}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Edit deck</p>
+                <p>Edit chat</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -64,13 +64,13 @@ export function Deck({
                 <Button
                   variant={"ghost"}
                   size={"icon"}
-                  onClick={() => navigate("cards", { deckId: _id })}
+                  onClick={() => navigate("messages", { chatId: _id })}
                 >
-                  <GalleryVerticalEnd className="h-4 w-4" />
+                  <MessageSquare className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Show flashcards</p>
+                <p>Show messages</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -95,32 +95,14 @@ export function Deck({
           })}
         >
           {tags?.map((tag, index) => (
-            <Badge key={index} className="mr-1 uppercase" variant={"outline"}>
+            <Badge key={index} className="mr-1" variant={"outline"}>
               {tag}
             </Badge>
           ))}
         </div>
-        <div
-          className={cn("flex items-center  justify-end", {
-            "border-2 border-blue-500": DEBUG,
-          })}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={"ghost"}
-                size={"icon"}
-                // onClick={() => navigate("study", { deckId: _id })}
-              >
-                <BookOpen className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Study this deck</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
       </div>
     </AspectRatio>
   );
-}
+};
+
+export default Chat;

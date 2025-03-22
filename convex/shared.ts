@@ -1,9 +1,3 @@
-import { Infer, v } from "convex/values";
-import { mutation } from "./_generated/server"
-import { paginationOptsValidator } from "convex/server";
-
-import { authenticationGuard } from "./users";
-
 /******************************************************************************
  * SHARED MODULE
  *
@@ -21,6 +15,11 @@ import { authenticationGuard } from "./users";
  *    - Consistent behavior across modules
  *    - DRY (Don't Repeat Yourself) principle
  ******************************************************************************/
+import { Infer, v } from "convex/values";
+import { mutation } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
+
+import { authenticationGuard } from "./users";
 
 /******************************************************************************
  * SCHEMA
