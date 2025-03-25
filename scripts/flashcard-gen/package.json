@@ -6,6 +6,8 @@
   "scripts": {
     "start": "tsx --no-warnings ./index.ts",
     "debug": "tsx --inspect-brk ./index.ts",
+    "generate": "tsx --no-warnings ./generate.ts",
+    "generate:chapter": "tsx --no-warnings ./generate.ts --folder $1",
     "type-check": "tsc --noEmit"
   },
   "keywords": [],
