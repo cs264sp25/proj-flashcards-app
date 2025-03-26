@@ -1,44 +1,34 @@
-// Generate flashcards from a given prompt and resources
-
-// 1. Read all the notes in the notes directory
-// 2. Generate flashcards for each chapter (folder)
-// 3. Save the deck of flashcards to a JSON file
-
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import { NOTES_DIRECTORY } from './env';
-import { allMarkdownFiles } from './config';
-import { 
-  FileInfo, 
-  FileInfoSchema,
-  Flashcard,
-  FlashcardSchema,
-  Deck,
-  DeckSchema
-} from './types';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { GEMINI_API_KEY } from './env';
-import { generateObject } from 'ai';
-import { createFlashcardPrompt } from './prompt';
-import { z } from 'zod';
+import * as fs from "fs/promises";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { NOTES_DIRECTORY } from "./env";
+import { allMarkdownFiles } from "./config";
+import { FileInfo, Deck, DeckSchema } from "./types";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { GEMINI_API_KEY } from "./env";
+import { generateObject } from "ai";
+import { createFlashcardPrompt } from "./prompt";
+import { z } from "zod";
 
 // Get the directory paths
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const scriptsDir = path.join(__dirname, '..');
-const dataDir = path.join(scriptsDir, 'data');
+const scriptsDir = path.join(__dirname, "..");
+const dataDir = path.join(scriptsDir, "data");
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const folderIndex = args.indexOf('--folder');
-const targetFolder = folderIndex !== -1 && folderIndex + 1 < args.length ? args[folderIndex + 1] : null;
+const folderIndex = args.indexOf("--folder");
+const targetFolder =
+  folderIndex !== -1 && folderIndex + 1 < args.length
+    ? args[folderIndex + 1]
+    : null;
 
 // Initialize Gemini AI
 const google = createGoogleGenerativeAI({
-  apiKey: GEMINI_API_KEY
+  apiKey: GEMINI_API_KEY,
 });
 
-const model = google('gemini-2.0-flash');
+const model = google("gemini-2.0-flash");
 
 // Group files by folder
 function groupFilesByFolder(files: FileInfo[]): Map<string, FileInfo[]> {
@@ -54,7 +44,10 @@ function groupFilesByFolder(files: FileInfo[]): Map<string, FileInfo[]> {
 
 // Read content of a markdown file
 async function readMarkdownFile(filePath: string): Promise<string> {
-  const content = await fs.readFile(path.join(NOTES_DIRECTORY, filePath), 'utf-8');
+  const content = await fs.readFile(
+    path.join(NOTES_DIRECTORY, filePath),
+    "utf-8",
+  );
   return content;
 }
 
@@ -70,7 +63,7 @@ async function ensureOutputDir(dir: string) {
 // Generate flashcards for a chapter using Gemini AI
 async function generateFlashcardsForChapter(
   folder: string,
-  files: FileInfo[]
+  files: FileInfo[],
 ): Promise<Deck> {
   // Sort files to ensure index.md comes first
   const sortedFiles = [...files].sort((a, b) => {
@@ -84,16 +77,16 @@ async function generateFlashcardsForChapter(
     sortedFiles.map(async (file) => {
       const content = await readMarkdownFile(file.path);
       return `
-=== ${file.isIndex ? 'INDEX FILE' : 'CONTENT FILE'} ===
+=== ${file.isIndex ? "INDEX FILE" : "CONTENT FILE"} ===
 Filename: ${file.filename}
 Path: ${file.path}
-${'-'.repeat(50)}
+${"-".repeat(50)}
 
 ${content}
 
-${'-'.repeat(50)}
+${"-".repeat(50)}
 `;
-    })
+    }),
   );
 
   // Combine all contents with clear separation
@@ -101,9 +94,9 @@ ${'-'.repeat(50)}
 === CHAPTER INFORMATION ===
 Folder: ${folder}
 Total Files: ${files.length}
-${'-'.repeat(50)}
+${"-".repeat(50)}
 
-${contents.join('\n')}`;
+${contents.join("\n")}`;
 
   // Create prompt for AI
   const prompt = createFlashcardPrompt(folder, combinedContent);
@@ -112,11 +105,11 @@ ${contents.join('\n')}`;
   const { object } = await generateObject({
     model,
     schema: z.object({
-      deck: DeckSchema
+      deck: DeckSchema,
     }),
     prompt,
   });
-  
+
   return object.deck;
 }
 
@@ -138,7 +131,7 @@ async function generateAllFlashcards() {
     const groupedFiles = groupFilesByFolder(allMarkdownFiles);
 
     // Filter folders if target folder is specified
-    const folders = targetFolder 
+    const folders = targetFolder
       ? new Map([[targetFolder, groupedFiles.get(targetFolder)]])
       : groupedFiles;
 
@@ -149,19 +142,18 @@ async function generateAllFlashcards() {
     // Generate flashcards for each chapter
     for (const [folder, files] of folders) {
       if (!files) continue;
-      
+
       console.log(`Generating flashcards for ${folder}...`);
       const deck = await generateFlashcardsForChapter(folder, files);
       await saveDeckToFile(deck, folder, dataDir);
     }
 
-    console.log('Flashcard generation complete!');
+    console.log("Flashcard generation complete!");
   } catch (error) {
-    console.error('Error generating flashcards:', error);
+    console.error("Error generating flashcards:", error);
     process.exit(1);
   }
 }
 
 // Run the generator
 generateAllFlashcards();
-
