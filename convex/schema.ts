@@ -12,6 +12,9 @@ const schema = defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
+    accessToken: v.optional(v.string()),
+    refreshToken: v.optional(v.string()),
+    refresh_token_expires_at: v.optional(v.number()),
     // other "users" fields...
   }).index("email", ["email"]),
   // Your other tables...
