@@ -2,6 +2,7 @@ import { useConvexAuth } from "convex/react";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { SignOut } from "@/components/sign-out";
 import { SignIn } from "@/components/sign-in";
+import { CalendarEvents } from "@/components/calendar-events";
 
 function App() {
   const token = useAuthToken();
@@ -18,6 +19,7 @@ function App() {
               {token}
             </pre>
           </div>
+          <CalendarEvents />
         </>
       ) : isLoading ? (
         <div>Loading...</div>
