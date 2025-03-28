@@ -3,8 +3,6 @@ import { Button } from "@/components/ui/button";
 
 export function SignOut() {
   const { signOut } = useAuthActions();
-  
-  return (
-    <Button onClick={() => void signOut()}>Sign out</Button>
-  );
+
+  return <Button onClick={() => void signOut()}>Sign out</Button>;
 }
