@@ -51,8 +51,8 @@ const Card: React.FC<CardProps> = ({
         "border-2 border-red-500": DEBUG,
       })}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex items-center justify-between shrink-0">
           <div
             className={cn("p-1 text-muted-foreground font-light text-sm", {
               "border-2 border-blue-500": DEBUG,
@@ -61,7 +61,7 @@ const Card: React.FC<CardProps> = ({
             {isFlipped ? "Back" : "Front"}
           </div>
           <div
-            className={cn("flex justify-end", {
+            className={cn("flex justify-end gap-1", {
               "border-2 border-blue-500": DEBUG,
             })}
           >
@@ -92,7 +92,7 @@ const Card: React.FC<CardProps> = ({
           </div>
         </div>
         <div
-          className={cn("flex-1 p-1", {
+          className={cn("flex-1 p-1 overflow-auto", {
             "border-2 border-green-500": DEBUG,
           })}
         >
