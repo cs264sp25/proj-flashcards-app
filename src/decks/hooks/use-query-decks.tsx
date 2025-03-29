@@ -8,13 +8,14 @@ const INITIAL_NUM_ITEMS = 5;
 const LOAD_MORE_NUM_ITEMS = 5;
 
 export function useQueryDecks(
+  searchQuery?: string,
   sortOrder: SortOrderType = "desc",
   initialNumItems: number = INITIAL_NUM_ITEMS,
   loadMoreNumItems: number = LOAD_MORE_NUM_ITEMS,
 ) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.decks.getAll,
-    { sortOrder },
+    { sortOrder, searchQuery },
     { initialNumItems },
   );
 

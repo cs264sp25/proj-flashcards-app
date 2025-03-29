@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowDown01, ArrowDown10 } from "lucide-react";
+import { useDebounce } from "@uidotdev/usehooks";
 import Loading from "@/core/components/loading";
 import Empty from "@/core/pages/empty";
 import InfiniteScroll from "@/core/components/infinite-scroll";
@@ -11,25 +12,21 @@ import { TooltipButton } from "@/core/components/tooltip-button";
 import { SortOrderType } from "convex/shared";
 
 const ChatList: React.FC = () => {
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
-  const { data: chats, loading, error, status, loadMore } = useQueryChats(sort);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  if (loading) {
-    return <Loading />;
-  }
+  const {
+    data: chats,
+    loading,
+    error,
+    status,
+    loadMore,
+  } = useQueryChats(debouncedSearchTerm, sort);
 
   if (error) {
     return <Empty message="Error loading chats" />;
   }
-
-  if (chats.length === 0) {
-    return <Empty message="No chats found. Create one to get started!" />;
-  }
-
-  const handleSort = () => {
-    setSort(sort === "asc" ? "desc" : "asc");
-  };
 
   return (
     <InfiniteScroll
@@ -42,14 +39,14 @@ const ChatList: React.FC = () => {
       <div className="flex items-center gap-2">
         <Input
           placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full"
         />
         <TooltipButton
           variant="outline"
           size="icon"
-          onClick={handleSort}
+          onClick={() => setSort(sort === "asc" ? "desc" : "asc")}
           tooltipContent="Sort"
         >
           {sort === "asc" ? (
@@ -59,17 +56,23 @@ const ChatList: React.FC = () => {
           )}
         </TooltipButton>
       </div>
-      {chats.map(({ _id, title, description, tags, messageCount }) => (
-        <div key={_id} role="listitem">
-          <Chat
-            _id={_id}
-            title={title}
-            description={description}
-            tags={tags || []}
-            messageCount={messageCount || 0}
-          />
-        </div>
-      ))}
+      {loading ? (
+        <Loading />
+      ) : chats.length === 0 ? (
+        <Empty message="No chats found. Create one to get started!" />
+      ) : (
+        chats.map(({ _id, title, description, tags, messageCount }) => (
+          <div key={_id} role="listitem">
+            <Chat
+              _id={_id}
+              title={title}
+              description={description}
+              tags={tags || []}
+              messageCount={messageCount || 0}
+            />
+          </div>
+        ))
+      )}
     </InfiniteScroll>
   );
 };

@@ -1,37 +1,33 @@
 import { useState } from "react";
 import { ArrowDown01, ArrowDown10 } from "lucide-react";
+import { useDebounce } from "@uidotdev/usehooks";
+import { SortOrderType } from "convex/shared";
+
 import Loading from "@/core/components/loading";
 import Empty from "@/core/pages/empty";
 import InfiniteScroll from "@/core/components/infinite-scroll";
-
-import { Deck } from "./deck";
-import { useQueryDecks } from "@/decks/hooks/use-query-decks";
 import { Input } from "@/core/components/input";
 import { TooltipButton } from "@/core/components/tooltip-button";
-import { SortOrderType } from "convex/shared";
+
+import { Deck } from "@/decks/components/deck";
+import { useQueryDecks } from "@/decks/hooks/use-query-decks";
 
 const DeckList: React.FC = () => {
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
-  const { data: decks, loading, error, status, loadMore } = useQueryDecks(
-    sort,
-  );
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  if (loading) {
-    return <Loading />;
-  }
+  const {
+    data: decks,
+    loading,
+    error,
+    status,
+    loadMore,
+  } = useQueryDecks(debouncedSearchTerm, sort);
 
   if (error) {
     return <Empty message="Error loading decks" />;
   }
-
-  if (decks.length === 0) {
-    return <Empty message="No decks found. Create one to get started!" />;
-  }
-
-  const handleSort = () => {
-    setSort(sort === "asc" ? "desc" : "asc");
-  };
 
   return (
     <InfiniteScroll
@@ -44,14 +40,14 @@ const DeckList: React.FC = () => {
       <div className="flex items-center gap-2">
         <Input
           placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full"
         />
         <TooltipButton
           variant="outline"
           size="icon"
-          onClick={handleSort}
+          onClick={() => setSort(sort === "asc" ? "desc" : "asc")}
           tooltipContent="Sort"
         >
           {sort === "asc" ? (
@@ -61,17 +57,23 @@ const DeckList: React.FC = () => {
           )}
         </TooltipButton>
       </div>
-      {decks.map(({ _id, title, description, cardCount, tags }) => (
-        <div key={_id} role="listitem">
-          <Deck
-            _id={_id}
-            title={title}
-            description={description}
-            cardCount={cardCount || 0}
-            tags={tags || []}
-          />
-        </div>
-      ))}
+      {loading ? (
+        <Loading />
+      ) : decks.length === 0 ? (
+        <Empty message="No decks found. Create one to get started!" />
+      ) : (
+        decks.map(({ _id, title, description, cardCount, tags }) => (
+          <div key={_id} role="listitem">
+            <Deck
+              _id={_id}
+              title={title}
+              description={description}
+              cardCount={cardCount || 0}
+              tags={tags || []}
+            />
+          </div>
+        ))
+      )}
     </InfiniteScroll>
   );
 };

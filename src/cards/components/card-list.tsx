@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowDown01, ArrowDown10 } from "lucide-react";
+import { useDebounce } from "@uidotdev/usehooks";
 import Loading from "@/core/components/loading";
 import Empty from "@/core/pages/empty";
 import InfiniteScroll from "@/core/components/infinite-scroll";
@@ -15,33 +16,21 @@ interface CardListProps {
 }
 
 const CardList: React.FC<CardListProps> = ({ deckId }) => {
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   const {
     data: cards,
     loading,
     error,
     status,
     loadMore,
-  } = useQueryCards(deckId, sort);
-
-  if (loading) {
-    return <Loading />;
-  }
+  } = useQueryCards(deckId, debouncedSearchTerm, sort);
 
   if (error) {
     return <Empty message="Error loading cards" />;
   }
-
-  if (cards.length === 0) {
-    return (
-      <Empty message="No cards in this deck yet. Add some to get started!" />
-    );
-  }
-
-  const handleSort = () => {
-    setSort(sort === "asc" ? "desc" : "asc");
-  };
 
   return (
     <InfiniteScroll
@@ -54,14 +43,14 @@ const CardList: React.FC<CardListProps> = ({ deckId }) => {
       <div className="flex items-center gap-2">
         <Input
           placeholder="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full"
         />
         <TooltipButton
           variant="outline"
           size="icon"
-          onClick={handleSort}
+          onClick={() => setSort(sort === "asc" ? "desc" : "asc")}
           tooltipContent="Sort"
         >
           {sort === "asc" ? (
@@ -71,16 +60,22 @@ const CardList: React.FC<CardListProps> = ({ deckId }) => {
           )}
         </TooltipButton>
       </div>
-      {cards.map((card) => (
-        <div key={card._id} role="listitem">
-          <Card
-            deckId={deckId}
-            _id={card._id}
-            front={card.front}
-            back={card.back}
-          />
-        </div>
-      ))}
+      {loading ? (
+        <Loading />
+      ) : cards.length === 0 ? (
+        <Empty message="No cards in this deck yet. Add some to get started!" />
+      ) : (
+        cards.map((card) => (
+          <div key={card._id} role="listitem">
+            <Card
+              deckId={deckId}
+              _id={card._id}
+              front={card.front}
+              back={card.back}
+            />
+          </div>
+        ))
+      )}
     </InfiniteScroll>
   );
 };

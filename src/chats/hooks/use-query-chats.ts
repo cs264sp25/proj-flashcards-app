@@ -8,13 +8,14 @@ const INITIAL_NUM_ITEMS = 5;
 const LOAD_MORE_NUM_ITEMS = 5;
 
 export function useQueryChats(
+  searchQuery?: string,
   sortOrder: SortOrderType = "desc",
   initialNumItems: number = INITIAL_NUM_ITEMS,
   loadMoreNumItems: number = LOAD_MORE_NUM_ITEMS,
 ) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.chats.getAll,
-    { sortOrder },
+    { sortOrder, searchQuery },
     { initialNumItems },
   );
 

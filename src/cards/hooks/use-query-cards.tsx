@@ -10,13 +10,14 @@ const LOAD_MORE_NUM_ITEMS = 5;
 
 export function useQueryCards(
   deckId: string,
+  searchQuery?: string,
   sortOrder: SortOrderType = "desc",
   initialNumItems: number = INITIAL_NUM_ITEMS,
   loadMoreNumItems: number = LOAD_MORE_NUM_ITEMS,
 ) {
   const { results, status, loadMore } = usePaginatedQuery(
     api.cards.getAll,
-    { deckId: deckId as Id<"decks">, sortOrder },
+    { deckId: deckId as Id<"decks">, sortOrder, searchQuery },
     { initialNumItems },
   );
 
