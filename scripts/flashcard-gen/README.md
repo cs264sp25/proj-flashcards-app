@@ -11,10 +11,11 @@ cd scripts/flashcard-gen
 pnpm install
 ```
 
-You should also set the `GEMINI_API_KEY` environment variable in the `.env` file:
+You should also set the `GEMINI_API_KEY` and `NOTES_DIR` environment variables in the `.env` file:
 
 ```bash
 GEMINI_API_KEY=<your-api-key>
+NOTES_DIR=<path-to-notes-directory>
 ```
 
 Then you can generate flashcards for all chapters:
