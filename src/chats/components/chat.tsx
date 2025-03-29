@@ -66,9 +66,12 @@ const Chat: React.FC<Partial<ChatType>> = ({
           {title}
         </div>
         <div
-          className={cn("flex-1 p-1 text-muted-foreground text-sm line-clamp-2 overflow-hidden", {
-            "border-2 border-green-500": DEBUG,
-          })}
+          className={cn(
+            "flex-1 p-1 text-muted-foreground text-sm line-clamp-2 overflow-hidden",
+            {
+              "border-2 border-green-500": DEBUG,
+            },
+          )}
         >
           {description}
         </div>
@@ -78,7 +81,11 @@ const Chat: React.FC<Partial<ChatType>> = ({
           })}
         >
           {tags?.map((tag, index) => (
-            <Badge key={index} className="uppercase shrink-0" variant={"outline"}>
+            <Badge
+              key={index}
+              className="uppercase shrink-0"
+              variant={"outline"}
+            >
               {tag}
             </Badge>
           ))}
