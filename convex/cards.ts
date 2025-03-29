@@ -93,6 +93,8 @@ export type CardUpdateType = Infer<typeof cardUpdateSchemaObject>;
  */
 export const cardSchema = {
   ...cardInSchema,
+  // Combined field for search
+  searchableContent: v.string(),
   // Convex will automatically add `_id` and `_creationTime` fields to the schema
 };
 
@@ -104,7 +106,12 @@ export type CardType = Infer<typeof cardSchemaObject>;
  * Card table schema definition
  */
 export const cardTables = {
-  cards: defineTable(cardSchema).index("by_deck_id", ["deckId"]),
+  cards: defineTable(cardSchema)
+    .index("by_deck_id", ["deckId"])
+    .searchIndex("search_all", {
+      searchField: "searchableContent",
+      filterFields: ["deckId"],
+    }),
 };
 
 /******************************************************************************
@@ -126,25 +133,46 @@ export async function getAllCards(
   paginationOpts: PaginationOptsType,
   deckId?: Id<"decks">,
   sortOrder?: SortOrderType,
+  searchQuery?: string,
 ) {
   sortOrder = sortOrder || "asc";
 
-  const results: PaginationResult<Doc<"cards">> = await ctx.db
-    .query("cards")
-    .withIndex(
-      "by_deck_id",
-      (q: IndexRangeBuilder<Doc<"cards">, ["deckId", "_creationTime"], 0>) => {
-        let q1;
+  let results: PaginationResult<Doc<"cards">>;
 
+  if (searchQuery) {
+    results = await ctx.db
+      .query("cards")
+      .withSearchIndex("search_all", (q) => {
         if (deckId) {
-          q1 = q.eq("deckId", deckId);
+          return q
+            .search("searchableContent", searchQuery)
+            .eq("deckId", deckId);
+        } else {
+          return q.search("searchableContent", searchQuery);
         }
+      })
+      // The order will be the order of the search results
+      .paginate(paginationOpts);
+  } else {
+    results = await ctx.db
+      .query("cards")
+      .withIndex(
+        "by_deck_id",
+        (
+          q: IndexRangeBuilder<Doc<"cards">, ["deckId", "_creationTime"], 0>,
+        ) => {
+          let q1;
 
-        return q1 || q;
-      },
-    )
-    .order(sortOrder)
-    .paginate(paginationOpts);
+          if (deckId) {
+            q1 = q.eq("deckId", deckId);
+          }
+
+          return q1 || q;
+        },
+      )
+      .order(sortOrder)
+      .paginate(paginationOpts);
+  }
 
   return {
     ...results,
@@ -165,7 +193,10 @@ export async function getCardById(ctx: QueryCtx, cardId: Id<"cards">) {
 
 // Does not update the card count of the deck.
 export async function createCard(ctx: MutationCtx, data: CardInType) {
-  return await ctx.db.insert("cards", { ...data });
+  return await ctx.db.insert("cards", {
+    ...data,
+    searchableContent: `${data.front} ${data.back}`,
+  });
 }
 
 // Does not update the card count of the deck if the deckId is changed.
@@ -174,7 +205,10 @@ export async function updateCard(
   cardId: Id<"cards">,
   data: CardUpdateType,
 ) {
-  await ctx.db.patch(cardId, data);
+  await ctx.db.patch(cardId, {
+    ...data,
+    searchableContent: `${data.front} ${data.back}`,
+  });
 }
 
 // Does not update the card count of the deck.
@@ -220,6 +254,7 @@ export const getAll = query({
     paginationOpts: paginationOptsValidator,
     deckId: v.id("decks"),
     sortOrder: v.optional(SortOrder),
+    searchQuery: v.optional(v.string()),
   },
   handler: async (
     ctx: QueryCtx,
@@ -227,13 +262,20 @@ export const getAll = query({
       paginationOpts: PaginationOptsType;
       deckId: Id<"decks">;
       sortOrder?: SortOrderType;
+      searchQuery?: string;
     },
   ) => {
-    const { deckId, sortOrder } = args;
+    const { deckId, sortOrder, searchQuery } = args;
     const userId = await authenticationGuard(ctx);
     const deck = await getDeckById(ctx, args.deckId);
     deckOwnershipCheck(userId, deck.userId);
-    return await getAllCards(ctx, args.paginationOpts, deckId, sortOrder);
+    return await getAllCards(
+      ctx,
+      args.paginationOpts,
+      deckId,
+      sortOrder,
+      searchQuery,
+    );
   },
 });
 
