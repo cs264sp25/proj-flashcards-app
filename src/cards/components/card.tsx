@@ -2,13 +2,8 @@ import { cn } from "@/core/lib/utils";
 import { useEffect, useState } from "react";
 import { Edit, RotateCcw, RotateCw } from "lucide-react";
 import { useRouter } from "@/core/hooks/use-router";
-import { Button } from "@/core/components/button";
 import { AspectRatio } from "@/core/components/aspect-ratio";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/core/components/tooltip";
+import { TooltipButton } from "@/core/components/tooltip-button";
 import Markdown from "@/core/components/markdown";
 
 import { CardType } from "@/cards/types/card";
@@ -71,36 +66,28 @@ const Card: React.FC<CardProps> = ({
             })}
           >
             {isEditable && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon"}
-                    onClick={() => navigate("editCard", { deckId, cardId })}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit card</p>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipButton
+                variant={"ghost"}
+                size={"icon"}
+                onClick={() => navigate("editCard", { deckId, cardId })}
+                tooltipContent="Edit card"
+              >
+                <Edit className="h-4 w-4" />
+              </TooltipButton>
             )}
             {mode === "flip" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant={"ghost"} size={"icon"} onClick={handleFlip}>
-                    {!isFlipped ? (
-                      <RotateCcw className="h-4 w-4" />
-                    ) : (
-                      <RotateCw className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Flip card</p>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipButton
+                variant={"ghost"}
+                size={"icon"}
+                onClick={handleFlip}
+                tooltipContent="Flip card"
+              >
+                {!isFlipped ? (
+                  <RotateCcw className="h-4 w-4" />
+                ) : (
+                  <RotateCw className="h-4 w-4" />
+                )}
+              </TooltipButton>
             )}
           </div>
         </div>

@@ -1,13 +1,8 @@
 import { Edit, MessageSquare } from "lucide-react";
 import { cn } from "@/core/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/core/components/tooltip";
 import { AspectRatio } from "@/core/components/aspect-ratio";
 import { useRouter } from "@/core/hooks/use-router";
-import { Button } from "@/core/components/button";
+import { TooltipButton } from "@/core/components/tooltip-button";
 import { Badge } from "@/core/components/badge";
 
 import { ChatType } from "@/chats/types/chat";
@@ -45,34 +40,22 @@ const Chat: React.FC<Partial<ChatType>> = ({
               "border-2 border-blue-500": DEBUG,
             })}
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  onClick={() => navigate("editChat", { chatId: _id })}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit chat</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  onClick={() => navigate("messages", { chatId: _id })}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Show messages</p>
-              </TooltipContent>
-            </Tooltip>
+            <TooltipButton
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => navigate("editChat", { chatId: _id })}
+              tooltipContent="Edit chat"
+            >
+              <Edit className="h-4 w-4" />
+            </TooltipButton>
+            <TooltipButton
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => navigate("messages", { chatId: _id })}
+              tooltipContent="Show messages"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </TooltipButton>
           </div>
         </div>
         <div

@@ -2,12 +2,7 @@ import { BookOpen, Edit, GalleryVerticalEnd } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { Badge } from "@/core/components/badge";
 import { AspectRatio } from "@/core/components/aspect-ratio";
-import { Button } from "@/core/components/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/core/components/tooltip";
+import { TooltipButton } from "@/core/components/tooltip-button";
 import { useRouter } from "@/core/hooks/use-router";
 
 import { DeckType } from "@/decks/types/deck";
@@ -45,34 +40,22 @@ export function Deck({
               "border-2 border-blue-500": DEBUG,
             })}
           >
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  onClick={() => navigate("editDeck", { deckId: _id })}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Edit deck</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant={"ghost"}
-                  size={"icon"}
-                  onClick={() => navigate("cards", { deckId: _id })}
-                >
-                  <GalleryVerticalEnd className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Show flashcards</p>
-              </TooltipContent>
-            </Tooltip>
+            <TooltipButton
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => navigate("editDeck", { deckId: _id })}
+              tooltipContent="Edit deck"
+            >
+              <Edit className="h-4 w-4" />
+            </TooltipButton>
+            <TooltipButton
+              variant={"ghost"}
+              size={"icon"}
+              onClick={() => navigate("cards", { deckId: _id })}
+              tooltipContent="Show flashcards"
+            >
+              <GalleryVerticalEnd className="h-4 w-4" />
+            </TooltipButton>
           </div>
         </div>
         <div
@@ -105,20 +88,14 @@ export function Deck({
             "border-2 border-blue-500": DEBUG,
           })}
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={"ghost"}
-                size={"icon"}
-                // onClick={() => navigate("study", { deckId: _id })}
-              >
-                <BookOpen className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Study this deck</p>
-            </TooltipContent>
-          </Tooltip>
+          <TooltipButton
+            variant={"ghost"}
+            size={"icon"}
+            tooltipContent="Study this deck"
+            // onClick={() => navigate("study", { deckId: _id })}
+          >
+            <BookOpen className="h-4 w-4" />
+          </TooltipButton>
         </div>
       </div>
     </AspectRatio>
