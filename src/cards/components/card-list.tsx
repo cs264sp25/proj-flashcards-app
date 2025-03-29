@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { ArrowDown01, ArrowDown10 } from "lucide-react";
-import { useDebounce } from "@uidotdev/usehooks";
+import { SortOrderType } from "convex/shared";
+
 import Loading from "@/core/components/loading";
 import Empty from "@/core/pages/empty";
 import InfiniteScroll from "@/core/components/infinite-scroll";
+import { SearchInput } from "@/core/components/search-input";
+import { TooltipButton } from "@/core/components/tooltip-button";
 
 import Card from "@/cards/components/card";
 import { useQueryCards } from "@/cards/hooks/use-query-cards";
-import { Input } from "@/core/components/input";
-import { TooltipButton } from "@/core/components/tooltip-button";
-import { SortOrderType } from "convex/shared";
 
 interface CardListProps {
   deckId: string;
@@ -18,7 +18,6 @@ interface CardListProps {
 const CardList: React.FC<CardListProps> = ({ deckId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const {
     data: cards,
@@ -26,7 +25,7 @@ const CardList: React.FC<CardListProps> = ({ deckId }) => {
     error,
     status,
     loadMore,
-  } = useQueryCards(deckId, debouncedSearchTerm, sort);
+  } = useQueryCards(deckId, searchTerm, sort);
 
   if (error) {
     return <Empty message="Error loading cards" />;
@@ -41,11 +40,10 @@ const CardList: React.FC<CardListProps> = ({ deckId }) => {
       className="flex flex-col gap-2"
     >
       <div className="flex items-center gap-2">
-        <Input
-          placeholder="Search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full"
+        <SearchInput
+          onSearch={setSearchTerm}
+          placeholder="Search cards"
+          className="flex-1"
         />
         <TooltipButton
           variant="outline"

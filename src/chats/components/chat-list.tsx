@@ -1,20 +1,19 @@
 import { useState } from "react";
 import { ArrowDown01, ArrowDown10 } from "lucide-react";
-import { useDebounce } from "@uidotdev/usehooks";
+import { SortOrderType } from "convex/shared";
+
 import Loading from "@/core/components/loading";
 import Empty from "@/core/pages/empty";
 import InfiniteScroll from "@/core/components/infinite-scroll";
+import { SearchInput } from "@/core/components/search-input";
+import { TooltipButton } from "@/core/components/tooltip-button";
 
 import Chat from "@/chats/components/chat";
 import { useQueryChats } from "@/chats/hooks/use-query-chats";
-import { Input } from "@/core/components/input";
-import { TooltipButton } from "@/core/components/tooltip-button";
-import { SortOrderType } from "convex/shared";
 
 const ChatList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const {
     data: chats,
@@ -22,7 +21,7 @@ const ChatList: React.FC = () => {
     error,
     status,
     loadMore,
-  } = useQueryChats(debouncedSearchTerm, sort);
+  } = useQueryChats(searchTerm, sort);
 
   if (error) {
     return <Empty message="Error loading chats" />;
@@ -37,11 +36,10 @@ const ChatList: React.FC = () => {
       className="flex flex-col gap-2"
     >
       <div className="flex items-center gap-2">
-        <Input
-          placeholder="Search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full"
+        <SearchInput
+          onSearch={setSearchTerm}
+          placeholder="Search chats"
+          className="flex-1"
         />
         <TooltipButton
           variant="outline"
