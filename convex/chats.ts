@@ -94,6 +94,8 @@ export const chatSchema = {
   ...chatInSchema,
   messageCount: v.number(),
   userId: v.id("users"),
+  // Combined field for search
+  searchableContent: v.string(),
   // Convex will automatically add `_id` and `_creationTime` fields to the schema
 };
 
@@ -105,7 +107,12 @@ export type ChatType = Infer<typeof chatSchemaObject>;
  * Chat table schema definition
  */
 export const chatTables = {
-  chats: defineTable(chatSchema).index("by_user_id", ["userId"]),
+  chats: defineTable(chatSchema)
+    .index("by_user_id", ["userId"])
+    .searchIndex("search_all", {
+      searchField: "searchableContent",
+      filterFields: ["userId"],
+    }),
 };
 
 /******************************************************************************
@@ -152,25 +159,46 @@ export async function getAllChats(
   paginationOpts: PaginationOptsType,
   userId?: Id<"users">,
   sortOrder?: SortOrderType,
+  searchQuery?: string,
 ) {
   sortOrder = sortOrder || "asc";
 
-  const results: PaginationResult<Doc<"chats">> = await ctx.db
-    .query("chats")
-    .withIndex(
-      "by_user_id",
-      (q: IndexRangeBuilder<Doc<"chats">, ["userId", "_creationTime"], 0>) => {
-        let q1;
+  let results: PaginationResult<Doc<"chats">>;
 
+  if (searchQuery) {
+    results = await ctx.db
+      .query("chats")
+      .withSearchIndex("search_all", (q) => {
         if (userId) {
-          q1 = q.eq("userId", userId);
+          return q
+            .search("searchableContent", searchQuery)
+            .eq("userId", userId);
+        } else {
+          return q.search("searchableContent", searchQuery);
         }
+      })
+      // The order will be the order of the search results
+      .paginate(paginationOpts);
+  } else {
+    results = await ctx.db
+      .query("chats")
+      .withIndex(
+        "by_user_id",
+        (
+          q: IndexRangeBuilder<Doc<"chats">, ["userId", "_creationTime"], 0>,
+        ) => {
+          let q1;
 
-        return q1 || q;
-      },
-    )
-    .order(sortOrder)
-    .paginate(paginationOpts);
+          if (userId) {
+            q1 = q.eq("userId", userId);
+          }
+
+          return q1 || q;
+        },
+      )
+      .order(sortOrder)
+      .paginate(paginationOpts);
+  }
 
   return {
     ...results,
@@ -198,6 +226,7 @@ export async function createChat(
     ...data,
     userId,
     messageCount: 0, // Initialize message count
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
   });
 }
 
@@ -206,7 +235,10 @@ export async function updateChat(
   chatId: Id<"chats">,
   data: Partial<ChatInType>,
 ) {
-  await ctx.db.patch(chatId, data);
+  await ctx.db.patch(chatId, {
+    ...data,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
+  });
 }
 
 export async function deleteChat(ctx: MutationCtx, chatId: Id<"chats">) {
@@ -284,16 +316,24 @@ export const getAll = query({
   args: {
     paginationOpts: paginationOptsValidator,
     sortOrder: v.optional(SortOrder),
+    searchQuery: v.optional(v.string()),
   },
   handler: async (
     ctx: QueryCtx,
     args: {
       paginationOpts: PaginationOptsType;
       sortOrder?: SortOrderType;
+      searchQuery?: string;
     },
   ) => {
     const userId = await authenticationGuard(ctx);
-    return await getAllChats(ctx, args.paginationOpts, userId, args.sortOrder);
+    return await getAllChats(
+      ctx,
+      args.paginationOpts,
+      userId,
+      args.sortOrder,
+      args.searchQuery,
+    );
   },
 });
 

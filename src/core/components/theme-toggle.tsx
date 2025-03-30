@@ -1,12 +1,12 @@
 import { Computer, Moon, Sun } from "lucide-react";
 
-import { Button } from "@/core/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/core/components/dropdown-menu";
+import { TooltipButton } from "@/core/components/tooltip-button";
 import { useTheme } from "@/core/hooks/use-theme";
 
 export function ThemeToggle() {
@@ -20,10 +20,11 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
+        <TooltipButton
           variant="ghost"
           size="icon"
           className="relative w-7 h-7 flex-shrink-0"
+          tooltipContent="Toggle theme"
         >
           <Sun
             className={`transition-all duration-150 ease-in-out absolute 
@@ -38,7 +39,7 @@ export function ThemeToggle() {
               ${isSystemTheme ? "rotate-0 scale-100" : "rotate-90 scale-0"}`}
           />
           <span className="sr-only">Toggle theme</span>
-        </Button>
+        </TooltipButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>

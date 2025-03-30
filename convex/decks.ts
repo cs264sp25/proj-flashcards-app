@@ -92,6 +92,8 @@ export const deckSchema = {
   ...deckInSchema,
   cardCount: v.number(),
   userId: v.id("users"),
+  // Combined field for search
+  searchableContent: v.string(),
   // Convex will automatically add `_id` and `_creationTime` fields to the schema
 };
 
@@ -103,7 +105,12 @@ export type DeckType = Infer<typeof deckSchemaObject>;
  * Deck table schema definition
  */
 export const deckTables = {
-  decks: defineTable(deckSchema).index("by_user_id", ["userId"]),
+  decks: defineTable(deckSchema)
+    .index("by_user_id", ["userId"])
+    .searchIndex("search_all", {
+      searchField: "searchableContent",
+      filterFields: ["userId"],
+    }),
 };
 
 /******************************************************************************
@@ -145,31 +152,52 @@ export const ownershipGuard = (
  *   - deleteAllDecksWithCascade: Bulk delete decks with cascade
  ******************************************************************************/
 
-// Get all decks with pagination and optional filtering by userId and sorting
+// Get all decks with pagination, optional filtering by userId, sorting, and search query
 export async function getAllDecks(
   ctx: QueryCtx,
   paginationOpts: PaginationOptsType,
   userId?: Id<"users">,
   sortOrder?: SortOrderType,
+  searchQuery?: string,
 ) {
   sortOrder = sortOrder || "asc";
 
-  const results: PaginationResult<Doc<"decks">> = await ctx.db
-    .query("decks")
-    .withIndex(
-      "by_user_id",
-      (q: IndexRangeBuilder<Doc<"decks">, ["userId", "_creationTime"], 0>) => {
-        let q1;
+  let results: PaginationResult<Doc<"decks">>;
 
+  if (searchQuery) {
+    results = await ctx.db
+      .query("decks")
+      .withSearchIndex("search_all", (q) => {
         if (userId) {
-          q1 = q.eq("userId", userId);
+          return q
+            .search("searchableContent", searchQuery)
+            .eq("userId", userId);
+        } else {
+          return q.search("searchableContent", searchQuery);
         }
+      })
+      // The order will be the order of the search results
+      .paginate(paginationOpts);
+  } else {
+    results = await ctx.db
+      .query("decks")
+      .withIndex(
+        "by_user_id",
+        (
+          q: IndexRangeBuilder<Doc<"decks">, ["userId", "_creationTime"], 0>,
+        ) => {
+          let q1;
 
-        return q1 || q;
-      },
-    )
-    .order(sortOrder)
-    .paginate(paginationOpts);
+          if (userId) {
+            q1 = q.eq("userId", userId);
+          }
+
+          return q1 || q;
+        },
+      )
+      .order(sortOrder)
+      .paginate(paginationOpts);
+  }
 
   return {
     ...results,
@@ -193,7 +221,12 @@ export async function createDeck(
   userId: Id<"users">,
   data: DeckInType,
 ) {
-  return await ctx.db.insert("decks", { ...data, cardCount: 0, userId });
+  return await ctx.db.insert("decks", {
+    ...data,
+    cardCount: 0,
+    userId,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
+  });
 }
 
 export async function updateDeck(
@@ -201,7 +234,10 @@ export async function updateDeck(
   deckId: Id<"decks">,
   data: DeckUpdateType,
 ) {
-  await ctx.db.patch(deckId, data);
+  await ctx.db.patch(deckId, {
+    ...data,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`, 
+  });
 }
 
 export async function deleteDeck(ctx: MutationCtx, deckId: Id<"decks">) {
@@ -277,16 +313,24 @@ export const getAll = query({
   args: {
     paginationOpts: paginationOptsValidator,
     sortOrder: v.optional(SortOrder),
+    searchQuery: v.optional(v.string()),
   },
   handler: async (
     ctx: QueryCtx,
     args: {
       paginationOpts: PaginationOptsType;
       sortOrder?: SortOrderType;
+      searchQuery?: string;
     },
   ) => {
     const userId = await authenticationGuard(ctx);
-    return await getAllDecks(ctx, args.paginationOpts, userId, args.sortOrder);
+    return await getAllDecks(
+      ctx,
+      args.paginationOpts,
+      userId,
+      args.sortOrder,
+      args.searchQuery,
+    );
   },
 });
 

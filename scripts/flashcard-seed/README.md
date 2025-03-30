@@ -25,7 +25,7 @@ At this point, go back to the root directory and run:
 pnpm run dev
 ```
 
-This will run the frontend dev server. You should sign into your account. Open the dev tools and go to the Local Storage section. You should see a `__convexAuthJWT` key with a value. Copy that value as the `AUTH_TOKEN` in the `env.ts` file.
+This will run the frontend dev server. You should sign into your account. Open the dev tools and go to the Local Storage section. You should see a `__convexAuthJWT` key with a value. Copy that value as the `AUTH_TOKEN` in the `.env` file.
 
 Now you can run the seeding script:
 

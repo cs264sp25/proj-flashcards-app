@@ -2,13 +2,8 @@ import { cn } from "@/core/lib/utils";
 import { useEffect, useState } from "react";
 import { Edit, RotateCcw, RotateCw } from "lucide-react";
 import { useRouter } from "@/core/hooks/use-router";
-import { Button } from "@/core/components/button";
 import { AspectRatio } from "@/core/components/aspect-ratio";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/core/components/tooltip";
+import { TooltipButton } from "@/core/components/tooltip-button";
 import Markdown from "@/core/components/markdown";
 
 import { CardType } from "@/cards/types/card";
@@ -56,8 +51,8 @@ const Card: React.FC<CardProps> = ({
         "border-2 border-red-500": DEBUG,
       })}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex items-center justify-between shrink-0">
           <div
             className={cn("p-1 text-muted-foreground font-light text-sm", {
               "border-2 border-blue-500": DEBUG,
@@ -66,46 +61,38 @@ const Card: React.FC<CardProps> = ({
             {isFlipped ? "Back" : "Front"}
           </div>
           <div
-            className={cn("flex justify-end", {
+            className={cn("flex justify-end gap-1", {
               "border-2 border-blue-500": DEBUG,
             })}
           >
             {isEditable && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon"}
-                    onClick={() => navigate("editCard", { deckId, cardId })}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit card</p>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipButton
+                variant={"ghost"}
+                size={"icon"}
+                onClick={() => navigate("editCard", { deckId, cardId })}
+                tooltipContent="Edit card"
+              >
+                <Edit className="h-4 w-4" />
+              </TooltipButton>
             )}
             {mode === "flip" && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant={"ghost"} size={"icon"} onClick={handleFlip}>
-                    {!isFlipped ? (
-                      <RotateCcw className="h-4 w-4" />
-                    ) : (
-                      <RotateCw className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Flip card</p>
-                </TooltipContent>
-              </Tooltip>
+              <TooltipButton
+                variant={"ghost"}
+                size={"icon"}
+                onClick={handleFlip}
+                tooltipContent="Flip card"
+              >
+                {!isFlipped ? (
+                  <RotateCcw className="h-4 w-4" />
+                ) : (
+                  <RotateCw className="h-4 w-4" />
+                )}
+              </TooltipButton>
             )}
           </div>
         </div>
         <div
-          className={cn("flex-1 p-1", {
+          className={cn("flex-1 p-1 overflow-auto", {
             "border-2 border-green-500": DEBUG,
           })}
         >
