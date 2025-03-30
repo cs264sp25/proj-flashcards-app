@@ -225,7 +225,7 @@ export async function createDeck(
     ...data,
     cardCount: 0,
     userId,
-    searchableContent: `${data.title} ${data.description} ${data.tags?.join(" ")}`,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
   });
 }
 
@@ -236,7 +236,7 @@ export async function updateDeck(
 ) {
   await ctx.db.patch(deckId, {
     ...data,
-    searchableContent: `${data.title} ${data.description} ${data.tags?.join(" ")}`,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`, 
   });
 }
 

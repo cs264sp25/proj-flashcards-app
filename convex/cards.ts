@@ -195,7 +195,7 @@ export async function getCardById(ctx: QueryCtx, cardId: Id<"cards">) {
 export async function createCard(ctx: MutationCtx, data: CardInType) {
   return await ctx.db.insert("cards", {
     ...data,
-    searchableContent: `${data.front} ${data.back}`,
+    searchableContent: `${(data.front || "").trim()} ${(data.back || "").trim()}`,
   });
 }
 
@@ -207,7 +207,7 @@ export async function updateCard(
 ) {
   await ctx.db.patch(cardId, {
     ...data,
-    searchableContent: `${data.front} ${data.back}`,
+    searchableContent: `${(data.front || "").trim()} ${(data.back || "").trim()}`,
   });
 }
 

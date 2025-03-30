@@ -226,7 +226,7 @@ export async function createChat(
     ...data,
     userId,
     messageCount: 0, // Initialize message count
-    searchableContent: `${data.title} ${data.description} ${data.tags?.join(" ")}`,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
   });
 }
 
@@ -237,7 +237,7 @@ export async function updateChat(
 ) {
   await ctx.db.patch(chatId, {
     ...data,
-    searchableContent: `${data.title} ${data.description} ${data.tags?.join(" ")}`,
+    searchableContent: `${(data.title || "").trim()} ${(data.description || "").trim()} ${(data.tags || []).join(" ").trim()}`,
   });
 }
 
