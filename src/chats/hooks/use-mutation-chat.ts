@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { UpdateChatType } from "@/chats/types/chat";
 
 export function useMutationChat(chatId: string) {
-  const updateMutation = useMutation(api.chats.update);
-  const deleteMutation = useMutation(api.chats.remove);
+  const updateMutation = useMutation(api.chats_mutations.update);
+  const deleteMutation = useMutation(api.chats_mutations.remove);
 
   const editChat = async (chat: UpdateChatType): Promise<boolean> => {
     try {
