@@ -29,6 +29,7 @@
  *    - Asynchronous processing via scheduler
  *    - Context-aware responses using message history
  ******************************************************************************/
+
 import {
   defineTable,
   PaginationResult,
@@ -47,8 +48,6 @@ import {
 } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
 
 import {
   SortOrder,
@@ -363,7 +362,7 @@ export const create = mutation({
     await adjustMessageCount(ctx, args.chatId, 1);
 
     // Schedule an action that calls ChatGPT and updates the message.
-    ctx.scheduler.runAfter(0, internal.messages.completion, {
+    ctx.scheduler.runAfter(0, internal.openai.completion, {
       messages,
       messageId: botMessageId,
     });
@@ -436,7 +435,7 @@ export const update = mutation({
     ctx.scheduler.runAfter(
       0,
 
-      internal.messages.completion,
+      internal.openai.completion,
       {
         messages,
         messageId: botMessageId,
@@ -480,39 +479,6 @@ export const remove = mutation({
     await deleteMessage(ctx, args.messageId);
     await adjustMessageCount(ctx, message.chatId, -1);
     return true;
-  },
-});
-
-/******************************************************************************
- * AI
- *
- * AI integration functionality using OpenAI:
- * - respond: Internal action that handles streaming AI responses
- * - Uses OpenAI's GPT-4 model
- * - Implements streaming with incremental message updates
- * - Integrates with @ai-sdk/openai for API interactions
- ******************************************************************************/
-
-type ChatParams = {
-  messages: Doc<"messages">[];
-  messageId: Id<"messages">;
-};
-
-export const completion = internalAction({
-  handler: async (ctx: ActionCtx, args: ChatParams) => {
-    const result = streamText({
-      model: openai("gpt-4o"),
-      messages: args.messages,
-    });
-
-    let fullResponse = "";
-    for await (const delta of result.textStream) {
-      fullResponse += delta;
-      await ctx.runMutation(internal.messages.updateMessageInternal, {
-        messageId: args.messageId,
-        content: fullResponse,
-      });
-    }
   },
 });
 
