@@ -19,7 +19,7 @@ import { Infer, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 
-import { authenticationGuard } from "./users";
+import { authenticationGuard } from "./users_guards";
 
 /******************************************************************************
  * SCHEMA
