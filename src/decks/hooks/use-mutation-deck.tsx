@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { UpdateDeckType } from "@/decks/types/deck";
 
 export function useMutationDeck(deckId: string) {
-  const updateMutation = useMutation(api.decks.update);
-  const deleteMutation = useMutation(api.decks.remove);
+  const updateMutation = useMutation(api.decks_mutations.update);
+  const deleteMutation = useMutation(api.decks_mutations.remove);
 
   const editDeck = async (deck: UpdateDeckType): Promise<boolean> => {
     try {

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const createDeckSchema = z.object({
-  title: z.string().min(2).max(50),
-  description: z.optional(z.string().min(2).max(200)),
+  title: z.string().min(1),
+  description: z.optional(z.string().min(1)),
   tags: z.optional(z.array(z.string())),
 });
 

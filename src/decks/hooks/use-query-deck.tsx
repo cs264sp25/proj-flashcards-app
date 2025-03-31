@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { DeckType } from "@/decks/types/deck";
 
 export function useQueryDeck(deckId: string) {
-  const deck = useQuery(api.decks.getOne, {
+  const deck = useQuery(api.decks_queries.getOne, {
     deckId: deckId as Id<"decks">,
   });
 

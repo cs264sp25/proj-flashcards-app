@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { CreateDeckType } from "@/decks/types/deck";
 
 export function useMutationDecks() {
-  const createMutation = useMutation(api.decks.create);
+  const createMutation = useMutation(api.decks_mutations.create);
 
   const createDeck = async (deck: CreateDeckType): Promise<string | null> => {
     try {
