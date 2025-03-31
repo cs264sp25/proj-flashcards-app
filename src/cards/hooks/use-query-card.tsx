@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { CardType } from "@/cards/types/card";
 
 export function useQueryCard(cardId: string) {
-  const card = useQuery(api.cards.getOne, {
+  const card = useQuery(api.cards_queries.getOne, {
     cardId: cardId as Id<"cards">,
   });
 

@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const createCardSchema = z.object({
-  front: z.string().min(1).max(1000),
-  back: z.string().min(1).max(1000),
+  front: z.string().min(1),
+  back: z.string().min(1),
 });
 
 export const updateCardSchema = createCardSchema.partial();

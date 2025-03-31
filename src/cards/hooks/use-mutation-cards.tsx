@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CreateCardType } from "@/cards/types/card";
 
 export function useMutationCards(deckId: string) {
-  const createMutation = useMutation(api.cards.create);
+  const createMutation = useMutation(api.cards_mutations.create);
 
   const createCard = async (card: CreateCardType): Promise<boolean> => {
     try {
