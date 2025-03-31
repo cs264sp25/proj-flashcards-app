@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { UpdateMessageType } from "@/messages/types/message";
 
 export function useMutationMessage(messageId: string) {
-  const updateMutation = useMutation(api.messages.update);
-  const deleteMutation = useMutation(api.messages.remove);
+  const updateMutation = useMutation(api.messages_mutations.update);
+  const deleteMutation = useMutation(api.messages_mutations.remove);
 
   const editMessage = async (
     message: UpdateMessageType,
@@ -29,7 +29,6 @@ export function useMutationMessage(messageId: string) {
     }
   };
 
-  // TODO: We may want to remove this feature!
   const deleteMessage = async (): Promise<boolean> => {
     try {
       await deleteMutation({
