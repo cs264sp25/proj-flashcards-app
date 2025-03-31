@@ -48,6 +48,7 @@ import type * as openai_helpers from "../openai_helpers.js";
 import type * as openai_internals from "../openai_internals.js";
 import type * as openai_schema from "../openai_schema.js";
 import type * as openai_tools from "../openai_tools.js";
+import type * as prompts from "../prompts.js";
 import type * as shared from "../shared.js";
 import type * as users_guards from "../users_guards.js";
 import type * as users_helpers from "../users_helpers.js";
@@ -101,6 +102,7 @@ declare const fullApi: ApiFromModules<{
   openai_internals: typeof openai_internals;
   openai_schema: typeof openai_schema;
   openai_tools: typeof openai_tools;
+  prompts: typeof prompts;
   shared: typeof shared;
   users_guards: typeof users_guards;
   users_helpers: typeof users_helpers;

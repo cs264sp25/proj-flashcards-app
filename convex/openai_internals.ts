@@ -9,6 +9,7 @@
 import { ConvexError } from "convex/values";
 import { internalAction, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { getSystemPrompt } from "./prompts";
 
 import {
   completionArgsSchemaObject,
@@ -36,7 +37,7 @@ export const completion = internalAction({
       [
         {
           role: "system",
-          content: "You are a helpful assistant for a Flashcard app.",
+          content: getSystemPrompt(),
         },
         ...args.messages,
       ],
