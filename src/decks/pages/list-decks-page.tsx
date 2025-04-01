@@ -8,7 +8,11 @@ import DeckList from "@/decks/components/deck-list";
 
 const DEBUG = false;
 
-const ListDecksPage: React.FC = () => {
+interface ListDecksPageProps {
+  activeDeckId?: string;
+}
+
+const ListDecksPage: React.FC<ListDecksPageProps> = ({ activeDeckId }) => {
   const { navigate } = useRouter();
 
   return (
@@ -34,7 +38,7 @@ const ListDecksPage: React.FC = () => {
           New Deck
         </Button>
       </div>
-      <DeckList />
+      <DeckList activeDeckId={activeDeckId} />
     </ScrollArea>
   );
 };

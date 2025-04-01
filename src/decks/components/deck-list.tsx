@@ -11,7 +11,11 @@ import { TooltipButton } from "@/core/components/tooltip-button";
 import { Deck } from "@/decks/components/deck";
 import { useQueryDecks } from "@/decks/hooks/use-query-decks";
 
-const DeckList: React.FC = () => {
+interface DeckListProps {
+  activeDeckId?: string;
+}
+
+const DeckList: React.FC<DeckListProps> = ({ activeDeckId }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sort, setSort] = useState<SortOrderType>("desc");
 
@@ -22,6 +26,8 @@ const DeckList: React.FC = () => {
     status,
     loadMore,
   } = useQueryDecks(searchTerm, sort);
+
+  const activeDeck = decks.find(deck => deck._id === activeDeckId);
 
   if (error) {
     return <Empty message="Error loading decks" />;
@@ -54,22 +60,34 @@ const DeckList: React.FC = () => {
           )}
         </TooltipButton>
       </div>
+
+      {activeDeck && (
+        <div className="sticky top-0 z-10 pb-2 bg-background">
+          <Deck
+            {...activeDeck}
+            className="border-primary shadow-sm"
+          />
+        </div>
+      )}
+
       {loading ? (
         <Loading />
       ) : decks.length === 0 ? (
         <Empty message="No decks found. Create one to get started!" />
       ) : (
-        decks.map(({ _id, title, description, cardCount, tags }) => (
-          <div key={_id} role="listitem">
-            <Deck
-              _id={_id}
-              title={title}
-              description={description}
-              cardCount={cardCount || 0}
-              tags={tags || []}
-            />
-          </div>
-        ))
+        decks
+          .filter(deck => deck._id !== activeDeckId)
+          .map(({ _id, title, description, cardCount, tags }) => (
+            <div key={_id} role="listitem">
+              <Deck
+                _id={_id}
+                title={title}
+                description={description}
+                cardCount={cardCount || 0}
+                tags={tags || []}
+              />
+            </div>
+          ))
       )}
     </InfiniteScroll>
   );
