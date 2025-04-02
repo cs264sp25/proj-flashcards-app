@@ -1,19 +1,12 @@
 import { useState, useEffect } from "react";
-import { Sparkles } from "lucide-react";
 import { Textarea } from "@/core/components/textarea";
-import { Button } from "@/core/components/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/core/components/dropdown-menu";
 import { useAiCompletion } from "@/ai/hooks/use-ai-completion";
-import { Task, TaskDescriptions } from "../types/tasks";
+import { Task, TaskType } from "../types/tasks";
 import { cn } from "@/core/lib/utils";
+import { AiActions } from "./ai-actions";
 
 interface AiEnabledTextareaProps {
-  availableTasks?: Task[];
+  availableTasks?: TaskType[];
   placeholder?: string;
   className?: string;
   value?: string;
@@ -21,7 +14,7 @@ interface AiEnabledTextareaProps {
 }
 
 const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
-  availableTasks = [Task.IMPROVE, Task.SIMPLIFY], // Default tasks
+  availableTasks = ["improve", "simplify"], // Default tasks
   placeholder = "Type something...",
   className = "",
   value: externalValue,
@@ -66,29 +59,12 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
         className={cn(className, "pr-4")}
       />
       <div className="absolute top-2 right-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              disabled={isLoading || !input.trim()}
-              className="h-8 w-8"
-            >
-              <Sparkles className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {availableTasks.map((task) => (
-              <DropdownMenuItem
-                key={task}
-                onClick={() => handleTaskSelect(task)}
-                disabled={isLoading}
-              >
-                {TaskDescriptions[task]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AiActions
+          availableTasks={availableTasks}
+          isLoading={isLoading}
+          hasInput={!!input.trim()}
+          onTaskSelect={handleTaskSelect}
+        />
       </div>
       {error && (
         <p className="mt-2 text-sm text-red-500">{error.message}</p>

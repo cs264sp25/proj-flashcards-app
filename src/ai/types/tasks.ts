@@ -1,17 +1,17 @@
-export enum Task {
-  GRAMMAR = "grammar",
-  IMPROVE = "improve",
-  SHORTEN = "shorten",
-  LENGTHEN = "lengthen",
-  SIMPLIFY = "simplify",
-  PROFESSIONAL = "professional",
+export type TaskType = "grammar" | "improve" | "shorten" | "lengthen" | "simplify" | "professional";
+
+export interface CustomTask {
+  system: string;
+  user: (text: string) => string;
 }
 
-export const TaskDescriptions: Record<Task, string> = {
-  [Task.GRAMMAR]: "Fix spelling & grammar",
-  [Task.IMPROVE]: "Improve writing",
-  [Task.SHORTEN]: "Make shorter",
-  [Task.LENGTHEN]: "Make longer",
-  [Task.SIMPLIFY]: "Simplify language",
-  [Task.PROFESSIONAL]: "Change to professional tone",
+export type Task = TaskType | CustomTask;
+
+export const TaskDescriptions: Record<TaskType, string> = {
+  grammar: "Fix grammar and spelling",
+  improve: "Improve writing",
+  shorten: "Make it shorter",
+  lengthen: "Make it longer",
+  simplify: "Simplify language",
+  professional: "Make it professional",
 };

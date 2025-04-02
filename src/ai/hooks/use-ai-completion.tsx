@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Task } from "@/ai/types/tasks";
+import { Task, TaskType, CustomTask } from "@/ai/types/tasks";
 
 const DEBUG = true;
 
@@ -24,13 +24,19 @@ export function useAiCompletion(): UseAiCompletionReturn {
     try {
       const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/completion`;
       if (DEBUG) console.log("Making request to:", url);
-      
+
+      // Send the task type and input to the backend
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt: input, task }),
+        body: JSON.stringify({ 
+          prompt: input, 
+          task: typeof task === "string" ? task : "custom",
+          customPrompt: typeof task === "string" ? undefined : task.user(input),
+          systemPrompt: typeof task === "string" ? undefined : task.system
+        }),
       });
 
       if (DEBUG) {
