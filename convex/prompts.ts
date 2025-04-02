@@ -15,4 +15,4 @@ For example:
 
 Always use these exact formats when referencing decks or cards. Do not include any additional text or formatting around the components.`;
 
-export const getSystemPrompt = () => SYSTEM_PROMPT; 
+export const getSystemPrompt = () => SYSTEM_PROMPT;

@@ -17,4 +17,4 @@ export function InMarkdownDeck({ deckId }: InMarkdownDeckProps) {
   }
 
   return <Deck {...deck} />;
-} 
+}

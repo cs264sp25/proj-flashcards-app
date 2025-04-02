@@ -17,4 +17,4 @@ export function InMarkdownCard({ cardId }: InMarkdownCardProps) {
   }
 
   return <Card {...card} mode="flip" />;
-} 
+}

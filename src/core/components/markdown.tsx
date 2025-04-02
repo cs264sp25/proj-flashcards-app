@@ -1,4 +1,4 @@
-import MarkdownToJSX from 'markdown-to-jsx'
+import MarkdownToJSX from "markdown-to-jsx";
 import { cn } from "@/core/lib/utils";
 import { InMarkdownDeck } from "@/decks/components/deck-in-markdown";
 import { InMarkdownCard } from "@/cards/components/card-in-markdown";
