@@ -16,30 +16,26 @@ const ListDecksPage: React.FC<ListDecksPageProps> = ({ activeDeckId }) => {
   const { navigate } = useRouter();
 
   return (
-    <ScrollArea
-      className={cn("p-1 md:p-2 lg:p-4 h-full", {
-        "border-2 border-red-500": DEBUG,
-      })}
-    >
-      <div
-        className={cn("flex items-center justify-between mb-6", {
-          "border-2 border-blue-500": DEBUG,
-        })}
-      >
-        <h2
-          className={cn("text-2xl font-bold", {
-            "border-2 border-green-500": DEBUG,
-          })}
-        >
-          Decks
-        </h2>
-        <Button variant="outline" size="sm" onClick={() => navigate("addDeck")}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Deck
-        </Button>
+    <div className="flex flex-col h-full">
+      <div className="flex-none p-1 md:p-2 lg:p-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">
+            Decks
+          </h2>
+          <Button variant="outline" size="sm" onClick={() => navigate("addDeck")}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Deck
+          </Button>
+        </div>
       </div>
-      <DeckList activeDeckId={activeDeckId} />
-    </ScrollArea>
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
+          <div className="p-1 md:p-2 lg:p-4">
+            <DeckList activeDeckId={activeDeckId} />
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
   );
 };
 

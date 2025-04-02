@@ -34,13 +34,7 @@ const DeckList: React.FC<DeckListProps> = ({ activeDeckId }) => {
   }
 
   return (
-    <InfiniteScroll
-      loadMore={loadMore}
-      hasMore={status === "CanLoadMore"}
-      isLoading={status === "LoadingMore"}
-      aria-label="Deck list"
-      className="flex flex-col gap-2"
-    >
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <SearchInput
           onSearch={setSearchTerm}
@@ -61,35 +55,43 @@ const DeckList: React.FC<DeckListProps> = ({ activeDeckId }) => {
         </TooltipButton>
       </div>
 
-      {activeDeck && (
-        <div className="sticky top-0 z-10 pb-2 bg-background">
-          <Deck
-            {...activeDeck}
-            className="border-primary shadow-sm"
-          />
-        </div>
-      )}
+      <InfiniteScroll
+        loadMore={loadMore}
+        hasMore={status === "CanLoadMore"}
+        isLoading={status === "LoadingMore"}
+        aria-label="Deck list"
+        className="flex flex-col gap-2"
+      >
+        {activeDeck && (
+          <div className="sticky top-0 z-10 pb-2 bg-background">
+            <Deck
+              {...activeDeck}
+              className="border-primary shadow-sm"
+            />
+          </div>
+        )}
 
-      {loading ? (
-        <Loading />
-      ) : decks.length === 0 ? (
-        <Empty message="No decks found. Create one to get started!" />
-      ) : (
-        decks
-          .filter(deck => deck._id !== activeDeckId)
-          .map(({ _id, title, description, cardCount, tags }) => (
-            <div key={_id} role="listitem">
-              <Deck
-                _id={_id}
-                title={title}
-                description={description}
-                cardCount={cardCount || 0}
-                tags={tags || []}
-              />
-            </div>
-          ))
-      )}
-    </InfiniteScroll>
+        {loading ? (
+          <Loading />
+        ) : decks.length === 0 ? (
+          <Empty message="No decks found. Create one to get started!" />
+        ) : (
+          decks
+            .filter(deck => deck._id !== activeDeckId)
+            .map(({ _id, title, description, cardCount, tags }) => (
+              <div key={_id} role="listitem">
+                <Deck
+                  _id={_id}
+                  title={title}
+                  description={description}
+                  cardCount={cardCount || 0}
+                  tags={tags || []}
+                />
+              </div>
+            ))
+        )}
+      </InfiniteScroll>
+    </div>
   );
 };
 
