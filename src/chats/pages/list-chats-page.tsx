@@ -32,7 +32,11 @@ const ListChatsPage: React.FC<ListChatsPageProps> = ({ activeChatId }) => {
           })}
         >
           <h2 className="text-2xl font-bold">Chats</h2>
-          <Button variant="outline" size="sm" onClick={() => navigate("addChat")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("addChat")}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             New Chat
           </Button>

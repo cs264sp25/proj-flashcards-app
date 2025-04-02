@@ -12,7 +12,10 @@ interface ListCardsPageProps {
   activeCardId?: string;
 }
 
-const ListCardsPage: React.FC<ListCardsPageProps> = ({ deckId, activeCardId }) => {
+const ListCardsPage: React.FC<ListCardsPageProps> = ({
+  deckId,
+  activeCardId,
+}) => {
   const { navigate } = useRouter();
 
   return (
