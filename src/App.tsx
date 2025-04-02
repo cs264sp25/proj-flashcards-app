@@ -167,7 +167,7 @@ function App() {
           ),
           middle: isSmallScreen ? null : (
             <Suspense fallback={<LoadingFallback />}>
-              <ListCardsPage deckId={params.deckId as string} />
+              <ListCardsPage deckId={params.deckId as string} activeCardId={params.cardId as string} />
             </Suspense>
           ),
           right: (
