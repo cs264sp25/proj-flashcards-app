@@ -116,7 +116,7 @@ function App() {
         return {
           left: isSmallScreen ? null : (
             <Suspense fallback={<LoadingFallback />}>
-              <ListDecksPage />
+              <ListDecksPage activeDeckId={params.deckId as string} />
             </Suspense>
           ),
           middle: (
