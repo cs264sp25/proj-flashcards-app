@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CreateMessageType } from "@/messages/types/message";
 
 export function useMutationMessages(chatId: string) {
-  const createMutation = useMutation(api.messages.create);
+  const createMutation = useMutation(api.messages_mutations.create);
 
   const createMessage = async (
     message: CreateMessageType,

@@ -15,7 +15,7 @@ export function useQueryMessages(
 ) {
   const [messages, setMessages] = useState<MessageType[]>([]);
   const { results, status, loadMore } = usePaginatedQuery(
-    api.messages.getAll,
+    api.messages_queries.getAll,
     {
       chatId: chatId as Id<"chats">,
     },

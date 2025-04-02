@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { MessageType } from "@/messages/types/message";
 
 export function useQueryMessage(messageId: string) {
-  const message = useQuery(api.messages.getOne, {
+  const message = useQuery(api.messages_queries.getOne, {
     messageId: messageId as Id<"messages">,
   });
 

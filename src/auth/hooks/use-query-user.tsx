@@ -7,7 +7,7 @@ import { UserType } from "@/auth/types/user";
 const DEBUG = false;
 
 export function useQueryUser() {
-  const user = useQuery(api.users.getAuthenticatedUser);
+  const user = useQuery(api.users_queries.getAuthenticatedUser);
 
   useEffect(() => {
     if (DEBUG) {

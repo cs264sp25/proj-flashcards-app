@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { CreateChatType } from "@/chats/types/chat";
 
 export function useMutationChats() {
-  const createMutation = useMutation(api.chats.create);
+  const createMutation = useMutation(api.chats_mutations.create);
 
   const createChat = async (chat: CreateChatType): Promise<string | null> => {
     try {

@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { ChatType } from "@/chats/types/chat";
 
 export function useQueryChat(chatId: string) {
-  const chat = useQuery(api.chats.getOne, {
+  const chat = useQuery(api.chats_queries.getOne, {
     chatId: chatId as Id<"chats">,
   });
 

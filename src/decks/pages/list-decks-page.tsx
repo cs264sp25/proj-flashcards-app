@@ -1,41 +1,54 @@
+import { PlusCircle } from "lucide-react";
 import { cn } from "@/core/lib/utils";
-import { ScrollArea } from "@/core/components/scroll-area";
 import { useRouter } from "@/core/hooks/use-router";
 import { Button } from "@/core/components/button";
-import { PlusCircle } from "lucide-react";
 
 import DeckList from "@/decks/components/deck-list";
 
 const DEBUG = false;
 
-const ListDecksPage: React.FC = () => {
+interface ListDecksPageProps {
+  activeDeckId?: string;
+}
+
+const ListDecksPage: React.FC<ListDecksPageProps> = ({ activeDeckId }) => {
   const { navigate } = useRouter();
 
   return (
-    <ScrollArea
-      className={cn("p-1 md:p-2 lg:p-4 h-full", {
+    <div
+      className={cn("flex flex-col h-full", {
         "border-2 border-red-500": DEBUG,
       })}
     >
       <div
-        className={cn("flex items-center justify-between mb-6", {
+        className={cn("flex-none p-1 md:p-2 lg:p-4", {
           "border-2 border-blue-500": DEBUG,
         })}
       >
-        <h2
-          className={cn("text-2xl font-bold", {
-            "border-2 border-green-500": DEBUG,
+        <div
+          className={cn("flex items-center justify-between", {
+            "border-2 border-yellow-500": DEBUG,
           })}
         >
-          Decks
-        </h2>
-        <Button variant="outline" size="sm" onClick={() => navigate("addDeck")}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Deck
-        </Button>
+          <h2 className="text-2xl font-bold">Decks</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("addDeck")}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Deck
+          </Button>
+        </div>
       </div>
-      <DeckList />
-    </ScrollArea>
+      <div
+        className={cn("flex-1 min-h-0 p-1 md:p-2 lg:p-4", {
+          "border-2 border-green-500": DEBUG,
+        })}
+      >
+        <DeckList activeDeckId={activeDeckId} />
+      </div>
+    </div>
   );
 };
 

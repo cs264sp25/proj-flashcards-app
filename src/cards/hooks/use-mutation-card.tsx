@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { UpdateCardType } from "@/cards/types/card";
 
 export function useMutationCard(cardId: string) {
-  const updateMutation = useMutation(api.cards.update);
-  const deleteMutation = useMutation(api.cards.remove);
+  const updateMutation = useMutation(api.cards_mutations.update);
+  const deleteMutation = useMutation(api.cards_mutations.remove);
 
   const editCard = async (card: UpdateCardType): Promise<boolean> => {
     try {

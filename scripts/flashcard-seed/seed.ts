@@ -31,7 +31,7 @@ async function readDecks(): Promise<Deck[]> {
 }
 
 async function createDeck(deck: Deck): Promise<Id<"decks">> {
-  const deckId = await client.mutation(api.decks.create, {
+  const deckId = await client.mutation(api.decks_mutations.create, {
     title: deck.title,
     description: deck.description,
     tags: deck.tags,
@@ -43,7 +43,7 @@ async function createCard(
   deckId: Id<"decks">,
   card: Flashcard,
 ): Promise<Id<"cards">> {
-  const cardId = await client.mutation(api.cards.create, {
+  const cardId = await client.mutation(api.cards_mutations.create, {
     deckId,
     front: card.front,
     back: card.back,

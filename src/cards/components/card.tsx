@@ -13,6 +13,7 @@ const DEBUG = false;
 interface CardProps extends Partial<CardType> {
   mode?: "show-front" | "show-back" | "flip";
   isEditable?: boolean;
+  className?: string;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -22,6 +23,7 @@ const Card: React.FC<CardProps> = ({
   back,
   mode = "flip",
   isEditable = true,
+  className,
 }) => {
   const { navigate } = useRouter();
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -47,9 +49,14 @@ const Card: React.FC<CardProps> = ({
   return (
     <AspectRatio
       ratio={16 / 9}
-      className={cn("w-full border rounded-xl p-2", "hover:bg-secondary", {
-        "border-2 border-red-500": DEBUG,
-      })}
+      className={cn(
+        "w-full border rounded-xl p-2",
+        "hover:bg-secondary",
+        className,
+        {
+          "border-2 border-red-500": DEBUG,
+        },
+      )}
     >
       <div className="flex flex-col h-full overflow-hidden">
         <div className="flex items-center justify-between shrink-0">

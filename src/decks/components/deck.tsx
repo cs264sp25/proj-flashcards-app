@@ -15,15 +15,21 @@ export function Deck({
   description,
   cardCount,
   tags,
-}: Partial<DeckType>) {
+  className,
+}: Partial<DeckType> & { className?: string }) {
   const { navigate } = useRouter();
 
   return (
     <AspectRatio
       ratio={16 / 9}
-      className={cn("w-full border rounded-xl p-2", "hover:bg-secondary", {
-        "border-2 border-red-500": DEBUG,
-      })}
+      className={cn(
+        "w-full border rounded-xl p-2",
+        "hover:bg-secondary",
+        className,
+        {
+          "border-2 border-red-500": DEBUG,
+        },
+      )}
     >
       <div className="flex flex-col h-full overflow-hidden">
         <div className="flex items-center justify-between shrink-0">

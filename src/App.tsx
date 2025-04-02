@@ -116,7 +116,7 @@ function App() {
         return {
           left: isSmallScreen ? null : (
             <Suspense fallback={<LoadingFallback />}>
-              <ListDecksPage />
+              <ListDecksPage activeDeckId={params.deckId as string} />
             </Suspense>
           ),
           middle: (
@@ -130,7 +130,7 @@ function App() {
         return {
           left: isSmallScreen ? null : (
             <Suspense fallback={<LoadingFallback />}>
-              <ListDecksPage />
+              <ListDecksPage activeDeckId={params.deckId as string} />
             </Suspense>
           ),
           middle: (
@@ -167,7 +167,10 @@ function App() {
           ),
           middle: isSmallScreen ? null : (
             <Suspense fallback={<LoadingFallback />}>
-              <ListCardsPage deckId={params.deckId as string} />
+              <ListCardsPage
+                deckId={params.deckId as string}
+                activeCardId={params.cardId as string}
+              />
             </Suspense>
           ),
           right: (
@@ -195,13 +198,17 @@ function App() {
         };
       case "editChat":
         return {
-          left: isSmallScreen ? null : <ListChatsPage />,
+          left: isSmallScreen ? null : (
+            <ListChatsPage activeChatId={params.chatId as string} />
+          ),
           middle: <EditChatPage chatId={params.chatId as string} />,
           right: null,
         };
       case "messages":
         return {
-          left: isSmallScreen ? null : <ListChatsPage />,
+          left: isSmallScreen ? null : (
+            <ListChatsPage activeChatId={params.chatId as string} />
+          ),
           middle: <MessagesPage chatId={params.chatId as string} />,
           right: null,
         };

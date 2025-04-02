@@ -14,7 +14,7 @@ export function useQueryChats(
   loadMoreNumItems: number = LOAD_MORE_NUM_ITEMS,
 ) {
   const { results, status, loadMore } = usePaginatedQuery(
-    api.chats.getAll,
+    api.chats_queries.getAll,
     { sortOrder, searchQuery },
     { initialNumItems },
   );

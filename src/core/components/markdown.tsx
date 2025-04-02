@@ -1,6 +1,7 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownToJSX from "markdown-to-jsx";
 import { cn } from "@/core/lib/utils";
+import { InMarkdownDeck } from "@/decks/components/deck-in-markdown";
+import { InMarkdownCard } from "@/cards/components/card-in-markdown";
 
 interface MarkdownProps {
   content: string;
@@ -12,11 +13,18 @@ const Markdown: React.FC<MarkdownProps> = ({ content, className }) => {
     <div
       className={cn("prose prose-stone prose-sm dark:prose-invert", className)}
     >
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[]}
+      <MarkdownToJSX
+        options={{
+          overrides: {
+            InMarkdownDeck: ({ deckId }: { deckId: string }) => (
+              <InMarkdownDeck deckId={deckId} />
+            ),
+            InMarkdownCard: ({ cardId }: { cardId: string }) => (
+              <InMarkdownCard cardId={cardId} />
+            ),
+          },
+        }}
         children={content}
-        components={{}}
       />
     </div>
   );
