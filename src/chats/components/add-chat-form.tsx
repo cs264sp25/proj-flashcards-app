@@ -165,7 +165,8 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
                 />
               </FormControl>
               <FormDescription>
-                Enter tags separated by commas. They will be processed on submit.
+                Enter tags separated by commas. They will be processed on
+                submit.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -183,4 +184,4 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
   );
 };
 
-export default AddChatForm; 
+export default AddChatForm;

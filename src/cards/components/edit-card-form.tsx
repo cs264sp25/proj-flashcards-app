@@ -217,4 +217,4 @@ const EditCardForm: React.FC<EditCardFormProps> = ({
   );
 };
 
-export default EditCardForm; 
+export default EditCardForm;
