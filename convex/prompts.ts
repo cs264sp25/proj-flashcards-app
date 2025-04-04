@@ -252,7 +252,11 @@ Respond with ONLY the structured answer. Do not include any explanations, quotes
 export const custom = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app. You will be provided with an input text, and a user prompt (instructions) to edit the input text. Respond with ONLY the edited text, no explanations or quotes.",
-  user: (input: { text: string; prompt: string; context?: Record<string, any> }) => {
+  user: (input: {
+    text: string;
+    prompt: string;
+    context?: Record<string, any>;
+  }) => {
     const context = input.context || {};
     return `Edit the input text based on the user prompt. 
 

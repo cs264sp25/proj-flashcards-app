@@ -49,9 +49,10 @@ export const completion = httpAction(async (ctx, request) => {
   const userPromptFunction = taskDefinition.user;
 
   // Prepare arguments for the user prompt function based on task type
-  const userFunctionArgs = task === 'custom' 
-    ? { text, prompt: customPrompt, context } 
-    : { text, context };
+  const userFunctionArgs =
+    task === "custom"
+      ? { text, prompt: customPrompt, context }
+      : { text, context };
 
   if (DEBUG) {
     console.log("DEBUG: System Prompt:", systemPrompt);
