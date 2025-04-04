@@ -4,27 +4,25 @@ import { Task, TaskType, CustomTask } from "@/ai/types/tasks";
 const DEBUG = true;
 
 interface UseAiCompletionReturn {
-  completion: string;
   isLoading: boolean;
   error: Error | null;
-  generateCompletion: (input: string, task: Task) => Promise<void>;
+  generateCompletion: (text: string, task: Task, context?: Record<string, any>) => Promise<void>;
 }
 
-export function useAiCompletion(): UseAiCompletionReturn {
-  const [completion, setCompletion] = useState<string>("");
+export function useAiCompletion(setInput: (value: string) => void): UseAiCompletionReturn {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const generateCompletion = useCallback(async (input: string, task: Task) => {
-    if (DEBUG) console.log("Starting completion request with:", { input, task });
+  const generateCompletion = useCallback(async (text: string, task: Task, context?: Record<string, any>) => {
+    if (DEBUG) console.log("Starting completion request with:", { text, task, context });
     setIsLoading(true);
     setError(null);
-    setCompletion("");
+    // Don't clear the input at the start, let the streaming response update it
 
     try {
       const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/completion`;
       if (DEBUG) console.log("Making request to:", url);
-
+      
       // Send the task type and input to the backend
       const response = await fetch(url, {
         method: "POST",
@@ -32,9 +30,9 @@ export function useAiCompletion(): UseAiCompletionReturn {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
-          prompt: input, 
+          prompt: { text, context: context || {} }, // Always send text and context (empty object if none provided)
           task: typeof task === "string" ? task : "custom",
-          customPrompt: typeof task === "string" ? undefined : task.user(input),
+          customPrompt: typeof task === "string" ? undefined : task.user({ text, context }),
           systemPrompt: typeof task === "string" ? undefined : task.system
         }),
       });
@@ -84,7 +82,7 @@ export function useAiCompletion(): UseAiCompletionReturn {
               if (DEBUG) console.log("New content:", content);
               accumulatedText += content;
               if (DEBUG) console.log("Updated accumulated text:", accumulatedText);
-              setCompletion(accumulatedText);
+              setInput(accumulatedText); // Update the textarea directly
             } catch (e) {
               if (DEBUG) console.error("Error parsing content chunk:", e);
             }
@@ -104,10 +102,9 @@ export function useAiCompletion(): UseAiCompletionReturn {
       if (DEBUG) console.log("Request complete");
       setIsLoading(false);
     }
-  }, []);
+  }, [setInput]);
 
   return {
-    completion,
     isLoading,
     error,
     generateCompletion,

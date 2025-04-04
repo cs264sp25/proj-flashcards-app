@@ -8,13 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/dropdown-menu";
 import { CustomPromptDialog } from "./custom-prompt-dialog";
-import { TaskType, TaskDescriptions } from "../types/tasks";
+import { TaskType, Task, TaskDescriptions } from "../types/tasks";
 
 interface AiActionsProps {
   availableTasks: TaskType[];
   isLoading: boolean;
   hasInput: boolean;
-  onTaskSelect: (task: TaskType) => void;
+  onTaskSelect: (task: Task) => void;
 }
 
 export const AiActions = ({

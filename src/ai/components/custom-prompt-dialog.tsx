@@ -12,11 +12,11 @@ import {
 import { Button } from "@/core/components/button";
 import { Input } from "@/core/components/input";
 import { DropdownMenuItem } from "@/core/components/dropdown-menu";
-import { TaskType } from "../types/tasks";
+import { TaskType, Task } from "../types/tasks";
 
 interface CustomPromptDialogProps {
   setDropdownOpen: (open: boolean) => void;
-  onTaskSelect: (task: TaskType) => void;
+  onTaskSelect: (task: Task) => void;
 }
 
 export const CustomPromptDialog = ({
@@ -38,7 +38,8 @@ export const CustomPromptDialog = ({
 
     const customTask = {
       system: "You are a helpful AI assistant. Follow the user's instructions carefully.",
-      user: (text: string) => customPrompt.replace("{text}", text),
+      user: (input: { text: string; context?: Record<string, any> }) => 
+        customPrompt.replace("{text}", input.text),
     };
 
     onTaskSelect(customTask);
