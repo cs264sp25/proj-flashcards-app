@@ -65,7 +65,7 @@ function App() {
           ),
           middle: (
             <Suspense fallback={<LoadingFallback />}>
-              <Empty message="Welcome!" />
+              <Empty message="Middle panel" />
             </Suspense>
           ),
           right: isSmallScreen ? null : (
