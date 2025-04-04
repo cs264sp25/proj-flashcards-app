@@ -1,31 +1,17 @@
-export type TaskType = 
-  | "grammar" 
-  | "improve" 
-  | "shorten" 
-  | "lengthen" 
+export type Task =
+  | "grammar"
+  | "improve"
+  | "shorten"
+  | "lengthen"
   | "simplify"
   | "frontToQuestion"
   | "questionImprove"
   | "answerConcise"
   | "answerComprehensive"
-  | "answerStructure";
+  | "answerStructure"
+  | "custom";
 
-export interface CardContext {
-  front: string;
-  back: string;
-  deckTitle?: string;
-  deckDescription?: string;
-  deckTags?: string[];
-}
-
-export interface CustomTask {
-  system: string;
-  user: (input: { text: string; context?: Record<string, any> }) => string;
-}
-
-export type Task = TaskType | CustomTask;
-
-export const TaskDescriptions: Record<TaskType, string> = {
+export const TaskDescriptions: Record<Task, string> = {
   grammar: "Fix grammar and spelling",
   improve: "Improve writing",
   shorten: "Make it shorter",
@@ -36,4 +22,5 @@ export const TaskDescriptions: Record<TaskType, string> = {
   answerConcise: "Make answer concise",
   answerComprehensive: "Make answer comprehensive",
   answerStructure: "Structure answer better",
+  custom: "Custom instruction...",
 };
