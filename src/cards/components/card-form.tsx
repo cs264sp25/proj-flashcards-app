@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/core/components/form";
-import { Textarea } from "@/core/components/textarea";
 import { AspectRatio } from "@/core/components/aspect-ratio";
 import Markdown from "@/core/components/markdown";
 import {
@@ -20,6 +19,8 @@ import {
   defaultValues,
 } from "@/cards/config/form-config";
 import { cn } from "@/core/lib/utils";
+import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
+import { TaskType, CardContext } from "@/ai/types/tasks";
 
 interface CardFormProps {
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -39,21 +40,64 @@ const CardForm: React.FC<CardFormProps> = ({
     defaultValues: initialValues,
   });
 
+  // Define available tasks for each field
+  const getAvailableTasks = (fieldName: string): TaskType[] => {
+    switch (fieldName) {
+      case "front":
+        return ["grammar", "improve", "frontToQuestion", "questionImprove"];
+      case "back":
+        return [
+          "grammar",
+          "improve",
+          "shorten",
+          "lengthen",
+          "answerConcise",
+          "answerComprehensive",
+          "answerStructure",
+        ];
+      default:
+        return ["grammar", "improve", "shorten", "lengthen"];
+    }
+  };
+
+  // Get the current form values for context
+  const getCardContext = (fieldName: string): CardContext | undefined => {
+    const values = form.getValues();
+    if (fieldName === "front" || fieldName === "back") {
+      return {
+        front: values.front || "",
+        back: values.back || "",
+      };
+    }
+    return undefined;
+  };
+
   function handleTab(
     e: React.KeyboardEvent<HTMLTextAreaElement>,
-    // eslint-disable-next-line
-    fieldProps: any,
+    fieldProps: {
+      onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    },
   ) {
     e.preventDefault();
-    const { selectionStart, selectionEnd, value } =
-      e.target as HTMLTextAreaElement;
-    const newValue =
-      value.substring(0, selectionStart) + "  " + value.substring(selectionEnd);
-    (e.target as HTMLTextAreaElement).value = newValue;
-    (e.target as HTMLTextAreaElement).selectionStart = (
-      e.target as HTMLTextAreaElement
-    ).selectionEnd = selectionStart + 2;
-    fieldProps.onChange(e);
+    const textarea = e.currentTarget;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const value = textarea.value;
+    const newValue = value.substring(0, start) + "  " + value.substring(end);
+
+    // Create a synthetic change event
+    const changeEvent = {
+      target: {
+        value: newValue,
+      },
+    } as React.ChangeEvent<HTMLTextAreaElement>;
+
+    fieldProps.onChange(changeEvent);
+
+    // Set cursor position after the change
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + 2;
+    }, 0);
   }
 
   return (
@@ -73,10 +117,12 @@ const CardForm: React.FC<CardFormProps> = ({
                 <FormDescription>{field.description}</FormDescription>
                 <FormControl>
                   <div className="flex flex-col gap-2">
-                    <Textarea
+                    <AiEnabledTextarea
                       {...fieldProps}
                       value={fieldProps.value ?? ""}
-                      rows={10}
+                      placeholder={field.description}
+                      availableTasks={getAvailableTasks(field.name)}
+                      cardContext={getCardContext(field.name)}
                       onKeyDown={(e) => {
                         if (e.key === "Tab") {
                           handleTab(e, fieldProps);
@@ -93,7 +139,11 @@ const CardForm: React.FC<CardFormProps> = ({
                         "hover:bg-secondary",
                       )}
                     >
-                      <Markdown content={fieldProps.value} />
+                      <div className="flex flex-col h-full overflow-hidden">
+                        <div className={cn("flex-1 p-1 overflow-auto")}>
+                          <Markdown content={fieldProps.value} />
+                        </div>
+                      </div>
                     </AspectRatio>
                   </div>
                 </FormControl>
