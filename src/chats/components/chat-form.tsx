@@ -17,7 +17,8 @@ import {
   formSchema,
   defaultValues,
 } from "@/chats/config/form-config";
-import { Textarea } from "@/core/components/textarea";
+import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
+import { Task as TaskType } from "@/ai/types/tasks";
 
 interface ChatFormProps {
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -36,6 +37,32 @@ const ChatForm: React.FC<ChatFormProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
   });
+
+  // Define available tasks for each field
+  const getAvailableTasks = (fieldName: string): TaskType[] => {
+    switch (fieldName) {
+      case "title":
+        return ["grammar", "improve", "shorten"];
+      case "description":
+        return ["grammar", "improve", "shorten", "lengthen", "simplify"];
+      default:
+        return []; // No tasks for tags yet
+    }
+  };
+
+  // Get the current form values for context (optional for now)
+  const getChatContext = (
+    fieldName: string,
+  ): Record<string, any> | undefined => {
+    const values = form.getValues();
+    if (fieldName === "title" || fieldName === "description") {
+      return {
+        title: values.title || "",
+        description: values.description || "",
+      };
+    }
+    return undefined;
+  };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     // Convert tags string to array if it exists
@@ -59,44 +86,61 @@ const ChatForm: React.FC<ChatFormProps> = ({
             key={field.name}
             control={form.control}
             name={field.name}
-            render={({ field: fieldProps }) => (
-              <FormItem>
-                <FormLabel>{field.label}</FormLabel>
-                <FormDescription>{field.description}</FormDescription>
-                <FormControl>
-                  {field.type === "textarea" ? (
-                    <Textarea
-                      {...fieldProps}
-                      value={fieldProps.value ?? ""}
-                      rows={5}
-                    />
-                  ) : field.type === "tags" ? (
-                    <Input
-                      placeholder={field.placeholder}
-                      {...fieldProps}
-                      value={
-                        Array.isArray(fieldProps.value)
-                          ? fieldProps.value.join(", ")
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const tags = e.target.value
-                          .split(",")
-                          .map((tag) => tag.trim());
-                        fieldProps.onChange(tags);
-                      }}
-                    />
-                  ) : (
-                    <Input
-                      placeholder={field.placeholder}
-                      {...fieldProps}
-                      value={fieldProps.value ?? ""}
-                    />
-                  )}
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field: fieldProps }) => {
+              const renderInput = () => {
+                switch (field.name) {
+                  case "title":
+                  case "description":
+                    return (
+                      <AiEnabledTextarea
+                        value={(fieldProps.value as string) ?? ""}
+                        onChange={fieldProps.onChange}
+                        placeholder={field.placeholder}
+                        availableTasks={getAvailableTasks(field.name)}
+                        context={getChatContext(field.name)}
+                      />
+                    );
+                  case "tags":
+                    return (
+                      <Input
+                        placeholder={field.placeholder}
+                        value={
+                          Array.isArray(fieldProps.value)
+                            ? fieldProps.value.join(", ")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const tags = e.target.value
+                            .split(",")
+                            .map((tag) => tag.trim())
+                            .filter(Boolean);
+                          fieldProps.onChange(tags);
+                        }}
+                        onBlur={fieldProps.onBlur}
+                        name={fieldProps.name}
+                        ref={fieldProps.ref}
+                      />
+                    );
+                  default:
+                    return (
+                      <Input
+                        placeholder={field.placeholder}
+                        {...fieldProps}
+                        value={(fieldProps.value as string) ?? ""}
+                      />
+                    );
+                }
+              };
+
+              return (
+                <FormItem>
+                  <FormLabel>{field.label}</FormLabel>
+                  <FormDescription>{field.description}</FormDescription>
+                  <FormControl>{renderInput()}</FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         ))}
         <div className="flex items-center justify-end gap-2">

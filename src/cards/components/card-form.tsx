@@ -20,7 +20,7 @@ import {
 } from "@/cards/config/form-config";
 import { cn } from "@/core/lib/utils";
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
-import { TaskType, CardContext } from "@/ai/types/tasks";
+import { Task as TaskType } from "@/ai/types/tasks";
 
 interface CardFormProps {
   onSubmit: (values: z.infer<typeof formSchema>) => void;
@@ -61,7 +61,9 @@ const CardForm: React.FC<CardFormProps> = ({
   };
 
   // Get the current form values for context
-  const getCardContext = (fieldName: string): CardContext | undefined => {
+  const getCardContext = (
+    fieldName: string,
+  ): Record<string, any> | undefined => {
     const values = form.getValues();
     if (fieldName === "front" || fieldName === "back") {
       return {
@@ -122,7 +124,7 @@ const CardForm: React.FC<CardFormProps> = ({
                       value={fieldProps.value ?? ""}
                       placeholder={field.description}
                       availableTasks={getAvailableTasks(field.name)}
-                      cardContext={getCardContext(field.name)}
+                      context={getCardContext(field.name)}
                       onKeyDown={(e) => {
                         if (e.key === "Tab") {
                           handleTab(e, fieldProps);
