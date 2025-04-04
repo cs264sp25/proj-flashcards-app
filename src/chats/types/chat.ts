@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createChatSchema = z.object({
   title: z.string().min(1),
-  description: z.optional(z.string().min(1)),
+  description: z.string().optional(),
   tags: z.optional(z.array(z.string())),
 });
 
