@@ -1,41 +1,39 @@
 import { useState, useEffect } from "react";
 import { Textarea } from "@/core/components/textarea";
 import { useAiCompletion } from "@/ai/hooks/use-ai-completion";
-import { Task, TaskType, CardContext } from "../types/tasks";
+import { Task } from "../types/tasks";
 import { cn } from "@/core/lib/utils";
 import { AiActions } from "./ai-actions";
 
 interface AiEnabledTextareaProps {
-  availableTasks?: TaskType[];
+  availableTasks?: Task[];
   placeholder?: string;
   className?: string;
   value?: string;
   onChange?: (value: string) => void;
-  cardContext?: CardContext;
+  context?: Record<string, any>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
 const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
-  availableTasks = ["improve", "simplify"], // Default tasks
+  availableTasks = ["improve", "simplify"],
   placeholder = "Type something...",
   className = "",
   value: externalValue,
   onChange: externalOnChange,
-  cardContext,
+  context,
   onKeyDown,
 }) => {
   const [input, setInput] = useState<string>(externalValue || "");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { isLoading, error, generateCompletion } = useAiCompletion(setInput);
 
-  // Update input when external value changes
   useEffect(() => {
     if (externalValue !== undefined) {
       setInput(externalValue);
     }
   }, [externalValue]);
 
-  // Notify parent of input changes
   useEffect(() => {
     externalOnChange?.(input);
   }, [input, externalOnChange]);
@@ -45,23 +43,18 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
     setInput(newValue);
   };
 
-  const handleTaskSelect = async (task: Task) => {
+  const handleTaskSelect = async (task: Task, customPrompt?: string) => {
     setSelectedTask(task);
-    // Extract context from cardContext if available
-    const context = cardContext ? {
-      front: cardContext.front,
-      back: cardContext.back
-    } : undefined;
     if (!input.trim()) {
-      return; // Don't proceed if there's no input
+      return;
     }
-    await generateCompletion(input.trim(), task, context);
+    await generateCompletion(input.trim(), task, context, customPrompt);
   };
 
   return (
     <div className="relative">
-      <Textarea 
-        value={input} 
+      <Textarea
+        value={input}
         onChange={handleInputChange}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
@@ -76,9 +69,7 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
           onTaskSelect={handleTaskSelect}
         />
       </div>
-      {error && (
-        <p className="mt-2 text-sm text-red-500">{error.message}</p>
-      )}
+      {error && <p className="mt-2 text-sm text-red-500">{error.message}</p>}
     </div>
   );
 };

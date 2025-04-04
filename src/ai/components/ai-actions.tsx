@@ -8,13 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/dropdown-menu";
 import { CustomPromptDialog } from "./custom-prompt-dialog";
-import { TaskType, Task, TaskDescriptions } from "../types/tasks";
+import { Task, TaskDescriptions } from "../types/tasks";
 
 interface AiActionsProps {
-  availableTasks: TaskType[];
+  availableTasks: Task[];
   isLoading: boolean;
   hasInput: boolean;
-  onTaskSelect: (task: Task) => void;
+  onTaskSelect: (task: Task, customPrompt?: string) => void;
 }
 
 export const AiActions = ({
@@ -43,20 +43,25 @@ export const AiActions = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {availableTasks.map((task) => (
-          <DropdownMenuItem
-            key={task}
-            onClick={() => {
-              onTaskSelect(task);
-              setIsDropdownOpen(false);
-            }}
-            disabled={isLoading}
-          >
-            {TaskDescriptions[task]}
-          </DropdownMenuItem>
-        ))}
-        <CustomPromptDialog setDropdownOpen={setIsDropdownOpen} onTaskSelect={onTaskSelect} />
+        {availableTasks
+          .filter((task) => task !== "custom")
+          .map((task) => (
+            <DropdownMenuItem
+              key={task}
+              onClick={() => {
+                onTaskSelect(task);
+                setIsDropdownOpen(false);
+              }}
+              disabled={isLoading}
+            >
+              {TaskDescriptions[task]}
+            </DropdownMenuItem>
+          ))}
+        <CustomPromptDialog
+          setDropdownOpen={setIsDropdownOpen}
+          onTaskSelect={onTaskSelect}
+        />
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}; 
+};

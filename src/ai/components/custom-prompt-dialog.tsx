@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wand2, Loader2 } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,11 +12,11 @@ import {
 import { Button } from "@/core/components/button";
 import { Input } from "@/core/components/input";
 import { DropdownMenuItem } from "@/core/components/dropdown-menu";
-import { TaskType, Task } from "../types/tasks";
+import { Task } from "../types/tasks";
 
 interface CustomPromptDialogProps {
   setDropdownOpen: (open: boolean) => void;
-  onTaskSelect: (task: Task) => void;
+  onTaskSelect: (task: Task, customPrompt?: string) => void;
 }
 
 export const CustomPromptDialog = ({
@@ -36,13 +36,8 @@ export const CustomPromptDialog = ({
   const handleApply = () => {
     if (!customPrompt.trim()) return;
 
-    const customTask = {
-      system: "You are a helpful AI assistant. Follow the user's instructions carefully.",
-      user: (input: { text: string; context?: Record<string, any> }) => 
-        customPrompt.replace("{text}", input.text),
-    };
+    onTaskSelect("custom", customPrompt);
 
-    onTaskSelect(customTask);
     setIsDialogOpen(false);
     setDropdownOpen(false);
     setCustomPrompt("");
@@ -72,12 +67,12 @@ export const CustomPromptDialog = ({
         <DialogHeader>
           <DialogTitle>Custom AI Prompt</DialogTitle>
           <DialogDescription>
-            Enter your custom instructions for the AI. Use {"{text}"} to reference the current text.
+            Enter your custom instructions for the AI.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <Input
-            placeholder="Example: Make this text more {text} and add some humor"
+            placeholder="Example: Make this text funnier and add emojis"
             value={customPrompt}
             onChange={(e) => setCustomPrompt(e.target.value)}
             className="w-full"
@@ -94,4 +89,4 @@ export const CustomPromptDialog = ({
       </DialogContent>
     </Dialog>
   );
-}; 
+};
