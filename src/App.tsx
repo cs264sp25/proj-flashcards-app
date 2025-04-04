@@ -3,6 +3,7 @@ import { useTheme } from "@/core/hooks/use-theme";
 import { useRouter } from "@/core/hooks/use-router";
 import { useWindowSize } from "@uidotdev/usehooks";
 import Layout from "@/core/layout";
+import Loading from "@/core/components/loading";
 
 // Lazy load all page components
 const NotFoundPage = lazy(() => import("@/core/pages/not-found-page"));
@@ -20,7 +21,7 @@ const EditChatPage = lazy(() => import("@/chats/pages/edit-chat-page"));
 const MessagesPage = lazy(() => import("@/messages/pages/messages-page"));
 
 // Loading component for Suspense fallback
-const LoadingFallback = () => <div>Loading...</div>;
+const LoadingFallback = () => <Loading />;
 
 function App() {
   const { theme } = useTheme();
