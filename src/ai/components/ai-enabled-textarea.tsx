@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Textarea } from "@/core/components/textarea";
 import { useAiCompletion } from "@/ai/hooks/use-ai-completion";
-import { Task } from "../types/tasks";
+import { Task, inputDependentTasks } from "../types/tasks";
 import { cn } from "@/core/lib/utils";
 import { AiActions } from "./ai-actions";
 
@@ -45,11 +45,22 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
 
   const handleTaskSelect = async (task: Task, customPrompt?: string) => {
     setSelectedTask(task);
-    if (!input.trim()) {
+
+    if (inputDependentTasks.has(task) && !input.trim()) {
+      console.warn(
+        `Task '${task}' requires text input, but the field is empty.`,
+      );
       return;
     }
+
     await generateCompletion(input.trim(), task, context, customPrompt);
   };
+
+  const hasInput = !!input.trim();
+  const hasContextTasks = availableTasks.some(
+    (task) => !inputDependentTasks.has(task),
+  );
+  const isTriggerEnabled = hasInput || hasContextTasks;
 
   return (
     <div className="relative">
@@ -65,7 +76,8 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
         <AiActions
           availableTasks={availableTasks}
           isLoading={isLoading}
-          hasInput={!!input.trim()}
+          isTriggerEnabled={isTriggerEnabled}
+          hasInput={hasInput}
           onTaskSelect={handleTaskSelect}
         />
       </div>

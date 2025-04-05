@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/core/components/form";
-import { Input } from "@/core/components/input";
 import { createChatSchema } from "@/chats/types/chat"; // Use chat schema
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
 import { Task as TaskType } from "@/ai/types/tasks";
@@ -68,20 +67,30 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
 
   // --- AI Task Logic (Can add chat-specific tasks/context later) ---
   const getAvailableTasks = (fieldName: string): TaskType[] => {
-    // TODO: Add chat-specific tasks, e.g., generate summary based on messages
     switch (fieldName) {
       case "title":
-        return ["grammar", "improve", "shorten" /*, 'summarizeChat' */];
+        return [
+          "grammar",
+          "improve",
+          "shorten",
+          "generateTitleFromMessages",
+        ];
       case "description":
         return [
           "grammar",
           "improve",
           "shorten",
           "lengthen",
-          "simplify" /*, 'summarizeChat' */,
+          "simplify",
+          "generateDescriptionFromMessages",
         ];
-      // case "tags":
-      //   return ["grammar", "improve", "shorten" /*, 'suggestFromChat' */];
+      case "tags":
+        return [
+          "grammar",
+          "improve",
+          "shorten",
+          "generateTagsFromMessages",
+        ];
       default:
         return [];
     }
@@ -90,7 +99,6 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
   const getChatContext = (
     fieldName: string,
   ): Record<string, any> | undefined => {
-    // TODO: Include chatId or message data if needed by AI tasks
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -101,7 +109,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
         title: values.title || "",
         description: values.description || "",
         tags: values.tags || "",
-        chatId: chatId, // Pass chatId along
+        chatId: chatId,
       };
     }
     return undefined;
@@ -148,7 +156,8 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
                 />
               </FormControl>
               <FormDescription>
-                Keep the title short and descriptive. (Limit 50 characters)
+                Keep title short (Limit 50 chars). Use AI to generate from
+                messages.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -172,15 +181,15 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
                 />
               </FormControl>
               <FormDescription>
-                You can add a brief description for your chat. (Limit 200
-                characters)
+                Add a brief description (Limit 200 chars). Use AI to generate
+                from messages.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Tags Field */}
+        {/* Tags Field (using AiEnabledTextarea) */}
         <FormField
           control={form.control}
           name="tags"
@@ -188,15 +197,16 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Add tags (comma separated)"
-                  {...field}
+                <AiEnabledTextarea
                   value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="Add tags (comma separated)"
+                  availableTasks={getAvailableTasks("tags")}
+                  context={getChatContext("tags")}
                 />
               </FormControl>
               <FormDescription>
-                Enter tags separated by commas. They will be processed on
-                submit.
+                Enter comma-separated tags. Use AI to generate from messages.
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -6,13 +6,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/core/components/dropdown-menu";
 import { CustomPromptDialog } from "./custom-prompt-dialog";
-import { Task, TaskDescriptions } from "../types/tasks";
+import { Task, TaskDescriptions, inputDependentTasks } from "../types/tasks";
 
 interface AiActionsProps {
   availableTasks: Task[];
   isLoading: boolean;
+  isTriggerEnabled: boolean;
   hasInput: boolean;
   onTaskSelect: (task: Task, customPrompt?: string) => void;
 }
@@ -20,6 +22,7 @@ interface AiActionsProps {
 export const AiActions = ({
   availableTasks,
   isLoading,
+  isTriggerEnabled,
   hasInput,
   onTaskSelect,
 }: AiActionsProps) => {
@@ -31,7 +34,7 @@ export const AiActions = ({
         <Button
           variant="ghost"
           size="icon"
-          disabled={isLoading || !hasInput}
+          disabled={!isTriggerEnabled || isLoading}
           className="h-8 w-8"
           onClick={() => setIsDropdownOpen(true)}
         >
@@ -45,18 +48,23 @@ export const AiActions = ({
       <DropdownMenuContent align="end">
         {availableTasks
           .filter((task) => task !== "custom")
-          .map((task) => (
-            <DropdownMenuItem
-              key={task}
-              onClick={() => {
-                onTaskSelect(task);
-                setIsDropdownOpen(false);
-              }}
-              disabled={isLoading}
-            >
-              {TaskDescriptions[task]}
-            </DropdownMenuItem>
-          ))}
+          .map((task) => {
+            const isItemDisabled =
+              isLoading || (!hasInput && inputDependentTasks.has(task));
+
+            return (
+              <DropdownMenuItem
+                key={task}
+                onClick={() => {
+                  onTaskSelect(task);
+                  setIsDropdownOpen(false);
+                }}
+                disabled={isItemDisabled}
+              >
+                {TaskDescriptions[task]}
+              </DropdownMenuItem>
+            );
+          })}
         <CustomPromptDialog
           setDropdownOpen={setIsDropdownOpen}
           onTaskSelect={onTaskSelect}

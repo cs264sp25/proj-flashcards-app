@@ -12,7 +12,10 @@ export type Task =
   | "custom"
   | "generateTitleFromCards"
   | "generateDescriptionFromCards"
-  | "generateTagsFromCards";
+  | "generateTagsFromCards"
+  | "generateTitleFromMessages"
+  | "generateDescriptionFromMessages"
+  | "generateTagsFromMessages";
 
 export const TaskDescriptions: Record<Task, string> = {
   grammar: "Fix grammar and spelling",
@@ -29,4 +32,22 @@ export const TaskDescriptions: Record<Task, string> = {
   generateTitleFromCards: "Generate title from cards",
   generateDescriptionFromCards: "Generate description from cards",
   generateTagsFromCards: "Generate tags from cards",
+  generateTitleFromMessages: "Generate title from messages",
+  generateDescriptionFromMessages: "Generate description from messages",
+  generateTagsFromMessages: "Generate tags from messages",
 };
+
+// Define which tasks MANDATE input text to function meaningfully
+// Tasks not listed here might use input if available, but can also work from context.
+export const inputDependentTasks: Set<Task> = new Set<Task>([
+  "grammar",
+  "improve",
+  "shorten",
+  "lengthen",
+  "simplify",
+  "questionImprove",
+  "answerConcise",
+  "answerComprehensive",
+  "answerStructure",
+  "custom",
+]);

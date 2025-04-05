@@ -281,9 +281,7 @@ Respond with ONLY the edited text. Do not include any explanations, quotes, or o
   },
 };
 
-// --- Card Generation Prompts ---
-
-// Helper to format card samples for the prompt
+// --- Helper to format card samples for the prompt ---
 const formatCardSamples = (
   cardSamples: { front: string; back?: string }[],
 ): string => {
@@ -298,10 +296,14 @@ const formatCardSamples = (
     .join("\n");
 };
 
+// --- Card Generation Prompts ---
+
 export const generateTitleFromCards = {
   system:
-    "You are an AI assistant helping create flashcard decks. Your task is to suggest a concise and descriptive title for a deck based on a sample of its cards. The title should reflect the main topic or theme of the cards. Respond with ONLY the suggested title (max 50 characters), no explanations or quotes.",
-  user: (input: { context?: { cardSamples?: { front: string; back?: string }[] } }) => {
+    "You are an AI assistant helping organize flashcards into decks. Your task is to suggest a concise and descriptive title for a deck based on a sample of its cards. The title should reflect the main topic or theme of the cards. Respond with ONLY the suggested title (max 50 characters), no explanations or quotes.",
+  user: (input: {
+    context?: { cardSamples?: { front: string; back?: string }[] };
+  }) => {
     const cardContent = formatCardSamples(input.context?.cardSamples || []);
     return `Based on the following sample of cards from a deck, please suggest a concise and descriptive title (max 50 characters).
 
@@ -310,14 +312,16 @@ Card Samples:
 ${cardContent}
 """
 
-Respond ONLY with the suggested title.`;
+Respond ONLY with the suggested title. If the card samples are empty, just return an empty string.`;
   },
 };
 
 export const generateDescriptionFromCards = {
   system:
-    "You are an AI assistant helping create flashcard decks. Your task is to write a brief description (1-2 sentences, max 200 characters) for a flashcard deck based on a sample of its cards. The description should summarize the content or purpose of the deck. Respond with ONLY the suggested description, no explanations or quotes.",
-  user: (input: { context?: { cardSamples?: { front: string; back?: string }[] } }) => {
+    "You are an AI assistant helping organize flashcards into decks. Your task is to write a brief description (1-2 sentences, max 200 characters) for a flashcard deck based on a sample of its cards. The description should summarize the content or purpose of the deck. Respond with ONLY the suggested description, no explanations or quotes.",
+  user: (input: {
+    context?: { cardSamples?: { front: string; back?: string }[] };
+  }) => {
     const cardContent = formatCardSamples(input.context?.cardSamples || []);
     return `Based on the following sample of cards from a deck, please write a brief description (1-2 sentences, max 200 characters) summarizing the deck's content or purpose.
 
@@ -326,14 +330,16 @@ Card Samples:
 ${cardContent}
 """
 
-Respond ONLY with the suggested description.`;
+Respond ONLY with the suggested description. If the card samples are empty, just return an empty string.`;
   },
 };
 
 export const generateTagsFromCards = {
   system:
-    "You are an AI assistant helping create flashcard decks. Your task is to suggest relevant tags (keywords) for a flashcard deck based on a sample of its cards. Tags should be single words or short phrases, comma-separated. Respond with ONLY the suggested tags, no explanations or quotes.",
-  user: (input: { context?: { cardSamples?: { front: string; back?: string }[] } }) => {
+    "You are an AI assistant helping organize flashcards into decks. Your task is to suggest relevant tags (keywords) for a flashcard deck based on a sample of its cards. Tags should be single words or short phrases, comma-separated. Respond with ONLY the suggested tags, no explanations or quotes.",
+  user: (input: {
+    context?: { cardSamples?: { front: string; back?: string }[] };
+  }) => {
     const cardContent = formatCardSamples(input.context?.cardSamples || []);
     return `Based on the following sample of cards from a deck, please suggest 3-5 relevant tags (keywords). Separate tags with commas.
 
@@ -342,7 +348,85 @@ Card Samples:
 ${cardContent}
 """
 
-Respond ONLY with the comma-separated tags.`;
+Respond ONLY with the comma-separated tags. If the card samples are empty, just return an empty string.`;
+  },
+};
+
+// --- Helper to format message samples for the prompt ---
+const formatMessageSamples = (
+  messageSamples: { role: string; content: string }[],
+): string => {
+  if (!messageSamples || messageSamples.length === 0) {
+    return "No message samples available.";
+  }
+  // Simple concatenation, assuming 'content' holds the text
+  return messageSamples
+    .map(
+      (msg, index) =>
+        `Message ${index + 1} (${msg.role}):\n${msg.content}\n---`,
+    )
+    .join("\n");
+};
+
+// --- Chat Generation Prompts ---
+
+export const generateTitleFromMessages = {
+  system:
+    "You are an AI assistant helping summarize chat conversations. Your task is to suggest a concise and descriptive title for a chat based on a sample of its messages. The title should reflect the main topic or theme of the conversation. Respond with ONLY the suggested title (max 50 characters), no explanations or quotes.",
+  user: (input: {
+    context?: { messageSamples?: { role: string; content: string }[] };
+  }) => {
+    const messageContent = formatMessageSamples(
+      input.context?.messageSamples || [],
+    );
+    return `Based on the following sample of messages from a chat conversation, please suggest a concise and descriptive title (max 50 characters).
+
+Message Samples:
+"""
+${messageContent}
+"""
+
+Respond ONLY with the suggested title. If the message samples are empty, just return an empty string.`;
+  },
+};
+
+export const generateDescriptionFromMessages = {
+  system:
+    "You are an AI assistant helping summarize chat conversations. Your task is to write a brief description (1-2 sentences, max 200 characters) for a chat based on a sample of its messages. The description should summarize the main points or purpose of the conversation. Respond with ONLY the suggested description, no explanations or quotes.",
+  user: (input: {
+    context?: { messageSamples?: { role: string; content: string }[] };
+  }) => {
+    const messageContent = formatMessageSamples(
+      input.context?.messageSamples || [],
+    );
+    return `Based on the following sample of messages from a chat conversation, please write a brief description (1-2 sentences, max 200 characters) summarizing the conversation's key points or purpose.
+
+Message Samples:
+"""
+${messageContent}
+"""
+
+Respond ONLY with the suggested description. If the message samples are empty, just return an empty string.`;
+  },
+};
+
+export const generateTagsFromMessages = {
+  system:
+    "You are an AI assistant helping summarize chat conversations. Your task is to suggest relevant tags (keywords) for a chat based on a sample of its messages. Tags should capture the main topics discussed. Tags should be single words or short phrases, comma-separated. Respond with ONLY the suggested tags, no explanations or quotes.",
+  user: (input: {
+    context?: { messageSamples?: { role: string; content: string }[] };
+  }) => {
+    const messageContent = formatMessageSamples(
+      input.context?.messageSamples || [],
+    );
+    return `Based on the following sample of messages from a chat conversation, please suggest 3-5 relevant tags (keywords). Separate tags with commas.
+
+Message Samples:
+"""
+${messageContent}
+"""
+
+Respond ONLY with the comma-separated tags. If the message samples are empty, just return an empty string.`;
   },
 };
 
@@ -362,4 +446,7 @@ export const prompts = {
   generateTitleFromCards,
   generateDescriptionFromCards,
   generateTagsFromCards,
+  generateTitleFromMessages,
+  generateDescriptionFromMessages,
+  generateTagsFromMessages,
 };
