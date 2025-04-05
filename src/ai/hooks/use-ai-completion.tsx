@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import { Task } from "@/ai/types/tasks";
+import { useAuthToken } from "@convex-dev/auth/react";
 
-const DEBUG = true;
+const DEBUG = false;
 
 interface UseAiCompletionReturn {
   isLoading: boolean;
@@ -17,6 +18,7 @@ interface UseAiCompletionReturn {
 export function useAiCompletion(
   setInput: (value: string) => void,
 ): UseAiCompletionReturn {
+  const token = useAuthToken();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -57,6 +59,7 @@ export function useAiCompletion(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(requestBody),
         });

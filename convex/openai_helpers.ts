@@ -9,7 +9,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { embed, streamText, ToolSet } from "ai";
 import { MessageType } from "./openai_schema";
 
-const DEBUG = true;
+const DEBUG = false;
 
 const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,

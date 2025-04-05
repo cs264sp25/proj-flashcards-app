@@ -11,7 +11,7 @@ import { z } from "zod";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export const semanticSearchAmongDecks = (
   ctx: ActionCtx,

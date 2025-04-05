@@ -14,7 +14,7 @@ import { getCompletion } from "./openai_helpers";
 import { MessageType } from "./openai_schema";
 import { ActionCtx } from "./_generated/server";
 
-const DEBUG = true;
+const DEBUG = false;
 const MAX_CARD_CONTENT_CHARS = 10000; // Approx 2500 tokens for cards
 const MAX_MESSAGE_CONTENT_CHARS = 10000; // Approx 2500 tokens for messages, adjust as needed
 
@@ -143,6 +143,46 @@ async function getMessageSamplesForContext(
 
 // --- Completion HTTP Action ---
 export const completion = httpAction(async (ctx, request) => {
+  // When we make a request from the client, we need add bearer token to the request headers.
+  // When you send a JWT token in the Authorization header, Convex automatically validates it and
+  // makes the user identity available through ctx.auth.getUserIdentity()
+  const identity = await ctx.auth.getUserIdentity();
+
+  if (!identity) {
+    console.error("ERROR: Missing or invalid authorization token");
+    return new Response(
+      JSON.stringify({ error: "Missing or invalid authorization token" }),
+      { status: 401 },
+    );
+  }
+
+  if (DEBUG) {
+    const { tokenIdentifier, subject, issuer } = identity;
+    console.log("DEBUG: identity", {
+      tokenIdentifier,
+      subject,
+      issuer,
+    });
+  }
+
+  // We can also manuallyget the token from the request headers if we need to
+  // const headers = request.headers;
+  // const token = headers.get("Authorization")?.split(" ")[1];
+  // if (!token) {
+  //   console.error("ERROR: Missing or invalid authorization token");
+  //   return new Response(JSON.stringify({ error: "Missing or invalid authorization token" }),
+  //     { status: 401 },
+  //   );
+  // }
+  //
+  // We then need to have a query to get the user from the tokenIdentifier
+  // const user = await ctx.db
+  //   .query("users")
+  //   .withIndex("by_token", (q) =>
+  //     q.eq("tokenIdentifier", identity.tokenIdentifier),
+  //   )
+  //   .unique();
+
   const body = await request.json();
   // Expect deckId OR chatId potentially
   const { text, task, context, customPrompt } = body as {
