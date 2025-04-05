@@ -9,7 +9,10 @@ export type Task =
   | "answerConcise"
   | "answerComprehensive"
   | "answerStructure"
-  | "custom";
+  | "custom"
+  | "generateTitleFromCards"
+  | "generateDescriptionFromCards"
+  | "generateTagsFromCards";
 
 export const TaskDescriptions: Record<Task, string> = {
   grammar: "Fix grammar and spelling",
@@ -23,4 +26,7 @@ export const TaskDescriptions: Record<Task, string> = {
   answerComprehensive: "Make answer comprehensive",
   answerStructure: "Structure answer better",
   custom: "Custom instruction...",
+  generateTitleFromCards: "Generate title from cards",
+  generateDescriptionFromCards: "Generate description from cards",
+  generateTagsFromCards: "Generate tags from cards",
 };

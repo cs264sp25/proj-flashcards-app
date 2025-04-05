@@ -70,17 +70,28 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
   const getAvailableTasks = (fieldName: string): TaskType[] => {
     switch (fieldName) {
       case "title":
-        return ["grammar", "improve", "shorten" /*, 'generateFromCards' */];
+        return [
+          "grammar",
+          "improve",
+          "shorten",
+          "generateTitleFromCards",
+        ];
       case "description":
         return [
           "grammar",
           "improve",
           "shorten",
           "lengthen",
-          "simplify" /*, 'generateFromCards' */,
+          "simplify",
+          "generateDescriptionFromCards",
         ];
-      // case "tags":
-      //   return ["grammar", "improve", "shorten" /*, 'generateFromCards' */];
+      case "tags":
+        return [
+          "grammar",
+          "improve",
+          "shorten",
+          "generateTagsFromCards",
+        ];
       default:
         return [];
     }
@@ -149,6 +160,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
               </FormControl>
               <FormDescription>
                 Keep the title short and descriptive. (Limit 50 characters)
+                Use AI to generate based on cards.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -172,16 +184,15 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
                 />
               </FormControl>
               <FormDescription>
-                You can add a brief description for your deck. (Limit 200
-                characters)
+                Add a brief description. (Limit 200 characters) Use AI to
+                generate based on cards.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Tags Field (using standard Input) */}
-        {/* TODO: Replace Input with AiEnabledTextarea if desired */}
+        {/* Tags Field (using AiEnabledTextarea) */}
         <FormField
           control={form.control}
           name="tags"
@@ -189,24 +200,18 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <FormControl>
-                {/* Simple Input bound to the string state */}
-                <Input
+                {/* Using AiEnabledTextarea for tags */}
+                <AiEnabledTextarea
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
                   placeholder="Add tags (comma separated)"
-                  {...field} // Pass down field props
-                  value={field.value ?? ""} // Value is the string
+                  availableTasks={getAvailableTasks("tags")}
+                  context={getDeckContext("tags")}
                 />
-                {/* Example using AiEnabledTextarea for tags:
-                 <AiEnabledTextarea
-                   value={field.value ?? ""}
-                   onChange={field.onChange}
-                   placeholder="Add tags (comma separated)"
-                   availableTasks={getAvailableTasks("tags")}
-                   context={getDeckContext("tags")}
-                 /> */}
               </FormControl>
               <FormDescription>
-                Enter tags separated by commas. They will be processed on
-                submit.
+                Enter tags separated by commas. Use AI to generate based on
+                cards.
               </FormDescription>
               <FormMessage />
             </FormItem>
