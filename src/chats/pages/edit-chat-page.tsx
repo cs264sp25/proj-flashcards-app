@@ -7,8 +7,8 @@ import Empty from "@/core/pages/empty";
 import DeleteConfirmation from "@/core/components/delete-confirmation-dialog";
 import { useRouter } from "@/core/hooks/use-router";
 
-import ChatForm from "@/chats/components/chat-form";
-import { formSchema } from "@/chats/config/form-config";
+import EditChatForm from "@/chats/components/edit-chat-form";
+import { createChatSchema } from "@/chats/types/chat";
 import { useMutationChat } from "@/chats/hooks/use-mutation-chat";
 import { useQueryChat } from "@/chats/hooks/use-query-chat";
 
@@ -23,7 +23,7 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
   const { data: chat, loading, error } = useQueryChat(chatId);
   const { edit: editChat, delete: deleteChat } = useMutationChat(chatId);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createChatSchema>) => {
     const success = await editChat(values);
     if (success) {
       navigate("chats");
@@ -45,14 +45,14 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
     return <Loading />;
   }
 
-  if (error) {
-    return <Empty message="Error loading chat" />;
+  if (error || !chat) {
+    return <Empty message="Error loading chat or chat not found" />;
   }
 
   const initialValues = {
     title: chat.title || "",
-    description: chat.description ?? undefined,
-    tags: chat.tags ?? undefined,
+    description: chat.description || "",
+    tags: chat.tags || [],
   };
 
   return (
@@ -65,11 +65,12 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
         <h2 className="text-2xl font-bold">Edit Chat</h2>
       </div>
 
-      <ChatForm
+      <EditChatForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         initialValues={initialValues}
         submitLabel="Save Changes"
+        chatId={chatId}
       />
 
       <div className="relative my-4">

@@ -7,8 +7,8 @@ import Empty from "@/core/pages/empty";
 import DeleteConfirmation from "@/core/components/delete-confirmation-dialog";
 import { useRouter } from "@/core/hooks/use-router";
 
-import CardForm from "@/cards/components/card-form";
-import { formSchema } from "@/cards/config/form-config";
+import EditCardForm from "@/cards/components/edit-card-form";
+import { createCardSchema } from "@/cards/types/card";
 import { useMutationCard } from "@/cards/hooks/use-mutation-card";
 import { useQueryCard } from "@/cards/hooks/use-query-card";
 
@@ -24,7 +24,7 @@ const EditCardPage: React.FC<EditCardPageProps> = ({ deckId, cardId }) => {
   const { data: card, loading, error } = useQueryCard(cardId);
   const { edit: editCard, delete: deleteCard } = useMutationCard(cardId);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createCardSchema>) => {
     const success = await editCard(values);
     if (success) {
       navigate("cards", { deckId });
@@ -46,13 +46,13 @@ const EditCardPage: React.FC<EditCardPageProps> = ({ deckId, cardId }) => {
     return <Loading />;
   }
 
-  if (error) {
-    return <Empty message="Error loading card" />;
+  if (error || !card) {
+    return <Empty message="Error loading card or card not found" />;
   }
 
   const initialValues = {
-    front: card.front,
-    back: card.back,
+    front: card.front || "",
+    back: card.back || "",
   };
 
   return (
@@ -65,7 +65,7 @@ const EditCardPage: React.FC<EditCardPageProps> = ({ deckId, cardId }) => {
         <h2 className="text-2xl font-bold">Edit Card</h2>
       </div>
 
-      <CardForm
+      <EditCardForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         initialValues={initialValues}

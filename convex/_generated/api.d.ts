@@ -45,6 +45,7 @@ import type * as messages_queries from "../messages_queries.js";
 import type * as messages_schema from "../messages_schema.js";
 import type * as messages_seed from "../messages_seed.js";
 import type * as openai_helpers from "../openai_helpers.js";
+import type * as openai_http_actions from "../openai_http_actions.js";
 import type * as openai_internals from "../openai_internals.js";
 import type * as openai_schema from "../openai_schema.js";
 import type * as openai_tools from "../openai_tools.js";
@@ -99,6 +100,7 @@ declare const fullApi: ApiFromModules<{
   messages_schema: typeof messages_schema;
   messages_seed: typeof messages_seed;
   openai_helpers: typeof openai_helpers;
+  openai_http_actions: typeof openai_http_actions;
   openai_internals: typeof openai_internals;
   openai_schema: typeof openai_schema;
   openai_tools: typeof openai_tools;

@@ -5,7 +5,7 @@
  * - Used by other operations like seeding and AI actions
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
 import {
@@ -21,7 +21,12 @@ import {
   createChat as createChatHelper,
   deleteAllChatsWithCascade as deleteAllChatsWithCascadeHelper,
 } from "./chats_helpers";
-import { chatInSchema, ChatInType, ChatOutType } from "./chats_schema";
+import {
+  chatInSchema,
+  ChatInType,
+  ChatOutType,
+  ChatType,
+} from "./chats_schema";
 
 /**
  * Get all chats for the given user, optionally sorted by the given order
@@ -46,6 +51,25 @@ export const getAllChats = internalQuery({
       args.userId,
       args.sortOrder,
     );
+  },
+});
+
+/**
+ * Get a chat by its ID.
+ */
+export const getChatById = internalQuery({
+  args: {
+    chatId: v.id("chats"),
+  },
+  handler: async (ctx, args): Promise<ChatType | null> => {
+    const chat = await ctx.db.get(args.chatId);
+    if (chat === null) {
+      throw new ConvexError({
+        message: `Chat ${args.chatId} not found`,
+        code: 404,
+      });
+    }
+    return chat;
   },
 });
 

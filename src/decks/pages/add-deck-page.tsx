@@ -3,8 +3,8 @@ import type { z } from "zod";
 import { useRouter } from "@/core/hooks/use-router";
 import { ScrollArea } from "@/core/components/scroll-area";
 
-import DeckForm from "@/decks/components/deck-form";
-import { formSchema } from "@/decks/config/form-config";
+import AddDeckForm from "@/decks/components/add-deck-form";
+import { createDeckSchema } from "@/decks/types/deck";
 import { useMutationDecks } from "@/decks/hooks/use-mutation-decks";
 
 const DEBUG = false;
@@ -13,7 +13,7 @@ const AddDeckPage: React.FC = () => {
   const { navigate } = useRouter();
   const { add: createDeck } = useMutationDecks();
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createDeckSchema>) => {
     const deckId = await createDeck(values);
     if (deckId) {
       navigate("cards", { deckId });
@@ -34,7 +34,7 @@ const AddDeckPage: React.FC = () => {
         <h2 className="text-2xl font-bold">Add New Deck</h2>
       </div>
 
-      <DeckForm
+      <AddDeckForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         submitLabel="Create Deck"

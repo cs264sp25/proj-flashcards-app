@@ -7,8 +7,8 @@ import Empty from "@/core/pages/empty";
 import DeleteConfirmation from "@/core/components/delete-confirmation-dialog";
 import { useRouter } from "@/core/hooks/use-router";
 
-import DeckForm from "@/decks/components/deck-form";
-import { formSchema } from "@/decks/config/form-config";
+import EditDeckForm from "@/decks/components/edit-deck-form";
+import { createDeckSchema } from "@/decks/types/deck";
 import { useMutationDeck } from "@/decks/hooks/use-mutation-deck";
 import { useQueryDeck } from "@/decks/hooks/use-query-deck";
 
@@ -23,7 +23,7 @@ const EditDeckPage: React.FC<EditDeckPageProps> = ({ deckId }) => {
   const { data: deck, loading, error } = useQueryDeck(deckId);
   const { edit: editDeck, delete: deleteDeck } = useMutationDeck(deckId);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createDeckSchema>) => {
     const success = await editDeck(values);
     if (success) {
       navigate("decks");
@@ -45,14 +45,14 @@ const EditDeckPage: React.FC<EditDeckPageProps> = ({ deckId }) => {
     return <Loading />;
   }
 
-  if (error) {
-    return <Empty message="Error loading deck" />;
+  if (error || !deck) {
+    return <Empty message="Error loading deck or deck not found" />;
   }
 
   const initialValues = {
     title: deck.title || "",
-    description: deck.description ?? undefined,
-    tags: deck.tags ?? undefined,
+    description: deck.description || "",
+    tags: deck.tags || [],
   };
 
   return (
@@ -65,11 +65,12 @@ const EditDeckPage: React.FC<EditDeckPageProps> = ({ deckId }) => {
         <h2 className="text-2xl font-bold">Edit Deck</h2>
       </div>
 
-      <DeckForm
+      <EditDeckForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         initialValues={initialValues}
         submitLabel="Save Updates"
+        deckId={deckId}
       />
 
       <div className="relative my-4">

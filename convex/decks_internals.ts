@@ -5,7 +5,7 @@
  * - Used by other operations like seeding and AI actions
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
 import {
@@ -23,7 +23,12 @@ import {
   createDeck as createDeckHelper,
   deleteAllDecksWithCascade as deleteAllDecksWithCascadeHelper,
 } from "./decks_helpers";
-import { deckInSchema, DeckInType, DeckOutType } from "./decks_schema";
+import {
+  deckInSchema,
+  DeckInType,
+  DeckOutType,
+  DeckType,
+} from "./decks_schema";
 import { getEmbedding } from "./openai_helpers";
 
 /**
@@ -49,6 +54,25 @@ export const getAllDecks = internalQuery({
       args.userId,
       args.sortOrder,
     );
+  },
+});
+
+/**
+ * Get a deck by its ID.
+ */
+export const getDeckById = internalQuery({
+  args: {
+    deckId: v.id("decks"),
+  },
+  handler: async (ctx, args): Promise<DeckType | null> => {
+    const deck = await ctx.db.get(args.deckId);
+    if (!deck) {
+      throw new ConvexError({
+        message: `Deck ${args.deckId} not found`,
+        code: 404,
+      });
+    }
+    return deck;
   },
 });
 

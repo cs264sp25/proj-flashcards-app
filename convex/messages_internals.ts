@@ -6,16 +6,54 @@
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
 import { v } from "convex/values";
+import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
-import { MutationCtx, internalMutation } from "./_generated/server";
-
 import {
+  MutationCtx,
+  QueryCtx,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
+
+import { PaginationOptsType, SortOrder, SortOrderType } from "./shared";
+import {
+  getAllMessages as getAllMessagesHelper,
   createMessage as createMessageHelper,
   updateMessage as updateMessageHelper,
   removeAllMessagesInChat as removeAllMessagesInChatHelper,
 } from "./messages_helpers";
+import {
+  MessageInType,
+  MessageOutType,
+  MessageRoleType,
+} from "./messages_schema";
 import { adjustMessageCount } from "./chats_helpers";
-import { MessageInType, MessageRoleType } from "./messages_schema";
+
+/**
+ * Get all messages for a chat.
+ */
+export const getAllMessages = internalQuery({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    sortOrder: v.optional(SortOrder),
+    chatId: v.id("chats"),
+  },
+  handler: async (
+    ctx: QueryCtx,
+    args: {
+      paginationOpts: PaginationOptsType;
+      sortOrder?: SortOrderType;
+      chatId: Id<"chats">;
+    },
+  ): Promise<PaginationResult<MessageOutType>> => {
+    return await getAllMessagesHelper(
+      ctx,
+      args.paginationOpts,
+      args.chatId,
+      args.sortOrder,
+    );
+  },
+});
 
 /**
  * Create a new message. An internal mutation wrapper around the createMessage helper

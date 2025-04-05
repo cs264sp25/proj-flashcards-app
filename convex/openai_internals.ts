@@ -9,7 +9,7 @@
 import { ConvexError } from "convex/values";
 import { internalAction, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { getSystemPrompt } from "./prompts";
+import { chat } from "./prompts";
 
 import {
   completionArgsSchemaObject,
@@ -37,7 +37,7 @@ export const completion = internalAction({
       [
         {
           role: "system",
-          content: getSystemPrompt(),
+          content: chat.system,
         },
         ...args.messages,
       ],

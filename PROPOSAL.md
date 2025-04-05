@@ -170,7 +170,7 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
 1. Implement AI-improved content generation (Primary Feature #5)
    - Develop interface for AI editing suggestions
    - Create prompting templates for different improvement types
-   - Implement content transformation logic
+   - Implement an endpoint for AI completion
    - Add user controls for accepting/rejecting AI suggestions
 
 2. Build automatic flashcard deck generation (Primary Feature #6)

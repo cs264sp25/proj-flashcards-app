@@ -3,8 +3,8 @@ import type { z } from "zod";
 import { useRouter } from "@/core/hooks/use-router";
 import { ScrollArea } from "@/core/components/scroll-area";
 
-import CardForm from "@/cards/components/card-form";
-import { formSchema } from "@/cards/config/form-config";
+import AddCardForm from "@/cards/components/add-card-form";
+import { createCardSchema } from "@/cards/types/card";
 import { useMutationCards } from "@/cards/hooks/use-mutation-cards";
 
 const DEBUG = false;
@@ -17,7 +17,7 @@ const AddCardPage: React.FC<AddCardPageProps> = ({ deckId }) => {
   const { navigate } = useRouter();
   const { add: createCard } = useMutationCards(deckId);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof createCardSchema>) => {
     const success = await createCard(values);
     if (success) {
       navigate("cards", { deckId });
@@ -38,7 +38,7 @@ const AddCardPage: React.FC<AddCardPageProps> = ({ deckId }) => {
         <h2 className="text-2xl font-bold">Add New Card</h2>
       </div>
 
-      <CardForm
+      <AddCardForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         submitLabel="Create Card"
