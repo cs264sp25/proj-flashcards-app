@@ -69,12 +69,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
   const getAvailableTasks = (fieldName: string): TaskType[] => {
     switch (fieldName) {
       case "title":
-        return [
-          "grammar",
-          "improve",
-          "shorten",
-          "generateTitleFromMessages",
-        ];
+        return ["grammar", "improve", "shorten", "generateTitleFromMessages"];
       case "description":
         return [
           "grammar",
@@ -85,12 +80,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
           "generateDescriptionFromMessages",
         ];
       case "tags":
-        return [
-          "grammar",
-          "improve",
-          "shorten",
-          "generateTagsFromMessages",
-        ];
+        return ["grammar", "improve", "shorten", "generateTagsFromMessages"];
       default:
         return [];
     }

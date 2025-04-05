@@ -23,7 +23,12 @@ import {
   createDeck as createDeckHelper,
   deleteAllDecksWithCascade as deleteAllDecksWithCascadeHelper,
 } from "./decks_helpers";
-import { deckInSchema, DeckInType, DeckOutType, DeckType } from "./decks_schema";
+import {
+  deckInSchema,
+  DeckInType,
+  DeckOutType,
+  DeckType,
+} from "./decks_schema";
 import { getEmbedding } from "./openai_helpers";
 
 /**

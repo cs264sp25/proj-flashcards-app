@@ -21,7 +21,12 @@ import {
   createChat as createChatHelper,
   deleteAllChatsWithCascade as deleteAllChatsWithCascadeHelper,
 } from "./chats_helpers";
-import { chatInSchema, ChatInType, ChatOutType, ChatType } from "./chats_schema";
+import {
+  chatInSchema,
+  ChatInType,
+  ChatOutType,
+  ChatType,
+} from "./chats_schema";
 
 /**
  * Get all chats for the given user, optionally sorted by the given order

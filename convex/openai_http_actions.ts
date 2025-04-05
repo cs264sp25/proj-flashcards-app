@@ -48,14 +48,23 @@ async function getCardSamplesForContext(
       const frontChars = card.front?.length || 0;
       const backChars = card.back?.length || 0;
       const cardChars = frontChars + backChars;
-      if (accumulatedChars + cardChars > MAX_CARD_CONTENT_CHARS && samples.length > 0) {
-        if (DEBUG) console.log(`DEBUG (Cards): Reached char limit (${accumulatedChars}), sampled ${samples.length} cards.`);
+      if (
+        accumulatedChars + cardChars > MAX_CARD_CONTENT_CHARS &&
+        samples.length > 0
+      ) {
+        if (DEBUG)
+          console.log(
+            `DEBUG (Cards): Reached char limit (${accumulatedChars}), sampled ${samples.length} cards.`,
+          );
         break;
       }
       samples.push({ front: card.front, back: card.back });
       accumulatedChars += cardChars;
     }
-     if (DEBUG && samples.length === cards.length) console.log(`DEBUG (Cards): Included all ${samples.length} cards (${accumulatedChars} chars).`);
+    if (DEBUG && samples.length === cards.length)
+      console.log(
+        `DEBUG (Cards): Included all ${samples.length} cards (${accumulatedChars} chars).`,
+      );
     return samples;
   } catch (error) {
     console.error(`Error fetching cards for deck ${deckId}:`, error);
@@ -71,7 +80,8 @@ async function getMessageSamplesForContext(
 ): Promise<{ role: string; content: string }[]> {
   try {
     // Assume getChatById returns an object with messageCount or similar
-    const chat = await ctx.runQuery(internal.chats_internals.getChatById, { // Adjust if needed
+    const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
+      // Adjust if needed
       chatId,
     });
     // Fetch a reasonable number of latest messages, or all if count is low
@@ -96,21 +106,33 @@ async function getMessageSamplesForContext(
     const samples: { role: string; content: string }[] = [];
     // Iterate backwards through messages (most recent first) for sampling
     for (let i = messages.length - 1; i >= 0; i--) {
-        const message = messages[i];
-        // Ensure content is a string, handle potential non-string content types if necessary
-        const contentString = typeof message.content === 'string' ? message.content : JSON.stringify(message.content);
-        const messageChars = contentString.length || 0;
+      const message = messages[i];
+      // Ensure content is a string, handle potential non-string content types if necessary
+      const contentString =
+        typeof message.content === "string"
+          ? message.content
+          : JSON.stringify(message.content);
+      const messageChars = contentString.length || 0;
 
-        if (accumulatedChars + messageChars > MAX_MESSAGE_CONTENT_CHARS && samples.length > 0) {
-            if (DEBUG) console.log(`DEBUG (Messages): Reached char limit (${accumulatedChars}), sampled ${samples.length} messages.`);
-            break; // Stop adding older messages
-        }
-        // Add message to the beginning of samples to maintain chronological order for the AI
-        samples.unshift({ role: message.role, content: contentString });
-        accumulatedChars += messageChars;
+      if (
+        accumulatedChars + messageChars > MAX_MESSAGE_CONTENT_CHARS &&
+        samples.length > 0
+      ) {
+        if (DEBUG)
+          console.log(
+            `DEBUG (Messages): Reached char limit (${accumulatedChars}), sampled ${samples.length} messages.`,
+          );
+        break; // Stop adding older messages
+      }
+      // Add message to the beginning of samples to maintain chronological order for the AI
+      samples.unshift({ role: message.role, content: contentString });
+      accumulatedChars += messageChars;
     }
 
-     if (DEBUG && samples.length === messages.length) console.log(`DEBUG (Messages): Included all ${samples.length} messages (${accumulatedChars} chars).`);
+    if (DEBUG && samples.length === messages.length)
+      console.log(
+        `DEBUG (Messages): Included all ${samples.length} messages (${accumulatedChars} chars).`,
+      );
     return samples; // Return chronologically ordered samples
   } catch (error) {
     console.error(`Error fetching messages for chat ${chatId}:`, error);
@@ -118,7 +140,6 @@ async function getMessageSamplesForContext(
   }
 }
 // --- End Message Helper ---
-
 
 // --- Completion HTTP Action ---
 export const completion = httpAction(async (ctx, request) => {
@@ -134,15 +155,23 @@ export const completion = httpAction(async (ctx, request) => {
   // Unified validation
   if (!(task in prompts)) {
     console.error(`ERROR: Invalid or unknown task type received: ${task}`);
-    return new Response(JSON.stringify({ error: "Invalid task type" }), { status: 400 });
+    return new Response(JSON.stringify({ error: "Invalid task type" }), {
+      status: 400,
+    });
   }
   const validTask = task as keyof typeof prompts;
   const taskDefinition = prompts[validTask];
 
   // Custom prompt validation
-  if (validTask === "custom" && (typeof customPrompt !== "string" || !customPrompt.trim())) {
-     console.error("ERROR: Missing or invalid custom prompt for custom task");
-     return new Response(JSON.stringify({ error: "Missing or invalid custom prompt" }), { status: 400 });
+  if (
+    validTask === "custom" &&
+    (typeof customPrompt !== "string" || !customPrompt.trim())
+  ) {
+    console.error("ERROR: Missing or invalid custom prompt for custom task");
+    return new Response(
+      JSON.stringify({ error: "Missing or invalid custom prompt" }),
+      { status: 400 },
+    );
   }
 
   if (DEBUG) {
@@ -157,10 +186,14 @@ export const completion = httpAction(async (ctx, request) => {
 
   // Identify task type for data fetching
   const isDeckGenerationTask = [
-    "generateTitleFromCards", "generateDescriptionFromCards", "generateTagsFromCards",
+    "generateTitleFromCards",
+    "generateDescriptionFromCards",
+    "generateTagsFromCards",
   ].includes(validTask);
   const isChatGenerationTask = [
-    "generateTitleFromMessages", "generateDescriptionFromMessages", "generateTagsFromMessages",
+    "generateTitleFromMessages",
+    "generateDescriptionFromMessages",
+    "generateTagsFromMessages",
   ].includes(validTask);
 
   // --- Fetch Context Data ---
@@ -168,29 +201,41 @@ export const completion = httpAction(async (ctx, request) => {
   if (isDeckGenerationTask) {
     if (!context?.deckId) {
       console.error(`ERROR: Missing deckId in context for task: ${validTask}`);
-      return new Response(JSON.stringify({ error: "Missing deckId" }), { status: 400 });
+      return new Response(JSON.stringify({ error: "Missing deckId" }), {
+        status: 400,
+      });
     }
     const deckId = context.deckId as Id<"decks">;
     const cardSamples = await getCardSamplesForContext(ctx, deckId);
     dynamicContext = { cardSamples };
-    if (DEBUG) console.log(`DEBUG: Fetched ${cardSamples.length} card samples for deck ${deckId}`);
-
+    if (DEBUG)
+      console.log(
+        `DEBUG: Fetched ${cardSamples.length} card samples for deck ${deckId}`,
+      );
   } else if (isChatGenerationTask) {
     if (!context?.chatId) {
-        console.error(`ERROR: Missing chatId in context for task: ${validTask}`);
-        return new Response(JSON.stringify({ error: "Missing chatId" }), { status: 400 });
+      console.error(`ERROR: Missing chatId in context for task: ${validTask}`);
+      return new Response(JSON.stringify({ error: "Missing chatId" }), {
+        status: 400,
+      });
     }
     const chatId = context.chatId as Id<"chats">;
     const messageSamples = await getMessageSamplesForContext(ctx, chatId);
     dynamicContext = { messageSamples };
-    if (DEBUG) console.log(`DEBUG: Fetched ${messageSamples.length} message samples for chat ${chatId}`);
+    if (DEBUG)
+      console.log(
+        `DEBUG: Fetched ${messageSamples.length} message samples for chat ${chatId}`,
+      );
   }
   // --- End Fetch Context Data ---
 
-
   // --- Construct User Prompt Arguments ---
   if (validTask === "custom") {
-    userFunctionArgs = { text, prompt: customPrompt, context: { ...context, ...dynamicContext } };
+    userFunctionArgs = {
+      text,
+      prompt: customPrompt,
+      context: { ...context, ...dynamicContext },
+    };
   } else {
     // For generation tasks, primary input is the fetched context
     // For other tasks, primary input is 'text'
@@ -198,7 +243,6 @@ export const completion = httpAction(async (ctx, request) => {
     userFunctionArgs = { text, context: { ...context, ...dynamicContext } };
   }
   // --- End Construct User Prompt Arguments ---
-
 
   if (DEBUG) {
     console.log("DEBUG: System Prompt:", systemPrompt);

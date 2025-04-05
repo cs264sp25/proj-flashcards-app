@@ -70,12 +70,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
   const getAvailableTasks = (fieldName: string): TaskType[] => {
     switch (fieldName) {
       case "title":
-        return [
-          "grammar",
-          "improve",
-          "shorten",
-          "generateTitleFromCards",
-        ];
+        return ["grammar", "improve", "shorten", "generateTitleFromCards"];
       case "description":
         return [
           "grammar",
@@ -86,12 +81,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
           "generateDescriptionFromCards",
         ];
       case "tags":
-        return [
-          "grammar",
-          "improve",
-          "shorten",
-          "generateTagsFromCards",
-        ];
+        return ["grammar", "improve", "shorten", "generateTagsFromCards"];
       default:
         return [];
     }
@@ -159,8 +149,8 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
                 />
               </FormControl>
               <FormDescription>
-                Keep the title short and descriptive. (Limit 50 characters)
-                Use AI to generate based on cards.
+                Keep the title short and descriptive. (Limit 50 characters) Use
+                AI to generate based on cards.
               </FormDescription>
               <FormMessage />
             </FormItem>
