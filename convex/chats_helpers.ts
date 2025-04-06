@@ -162,7 +162,8 @@ export async function deleteChat(
   ctx: MutationCtx,
   chatId: Id<"chats">,
 ): Promise<void> {
-  await ctx.db.delete(chatId);
+  const chat = await getChatById(ctx, chatId);
+  await ctx.db.delete(chat._id);
 }
 
 /**

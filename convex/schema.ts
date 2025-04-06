@@ -5,6 +5,7 @@ import { deckTables } from "./decks_schema";
 import { cardTables } from "./cards_schema";
 import { chatTables } from "./chats_schema";
 import { messageTables } from "./messages_schema";
+import { assistantTables } from "./assistants_schema";
 
 const schema = defineSchema({
   ...authTables,
@@ -13,6 +14,7 @@ const schema = defineSchema({
   ...cardTables,
   ...chatTables,
   ...messageTables,
+  ...assistantTables,
 });
 
 export default schema;
