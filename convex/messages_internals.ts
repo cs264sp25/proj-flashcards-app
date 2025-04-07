@@ -5,6 +5,7 @@
  * - Used by other operations like seeding and AI actions
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
+
 import { v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
@@ -127,5 +128,18 @@ export const deleteMessages = internalMutation({
     );
     await adjustMessageCount(ctx, args.chatId, -numMessagesDeleted);
     return numMessagesDeleted;
+  },
+});
+
+// Internal mutation to update the OpenAI message ID
+export const updateOpenAIMessageId = internalMutation({
+  args: {
+    messageId: v.id("messages"),
+    openaiMessageId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, {
+      openaiMessageId: args.openaiMessageId,
+    });
   },
 });

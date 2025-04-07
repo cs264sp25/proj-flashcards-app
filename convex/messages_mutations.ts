@@ -34,6 +34,7 @@ import {
   messageInSchema,
   messageUpdateSchema,
 } from "./messages_schema";
+import { getAssistantById } from "./assistants_helpers";
 
 // The number of messages to send to the AI as context.
 const CHAT_HISTORY_LENGTH = 10;
@@ -46,24 +47,9 @@ export const create = mutation({
   args: { ...messageInSchema },
   handler: async (ctx: MutationCtx, args: MessageInType) => {
     const userId = await authenticationGuard(ctx);
-    await ownershipGuardThroughChat(ctx, userId, args.chatId);
+    const chat = await ownershipGuardThroughChat(ctx, userId, args.chatId);
     const userMessageId = await createMessage(ctx, "user", args);
     await adjustMessageCount(ctx, args.chatId, 1);
-
-    // Fetch the latest HISTORY_SIZE messages to send as context.
-    const paginatedMessages = await getAllMessages(
-      ctx,
-      {
-        numItems: CHAT_HISTORY_LENGTH,
-        cursor: null,
-      },
-      args.chatId,
-      "desc",
-    );
-
-    const { page: messages } = paginatedMessages;
-    // Reverse the list so that it's in chronological order.
-    messages.reverse();
 
     // Insert a message with a placeholder body.
     const botMessageId = await createMessage(ctx, "assistant", {
@@ -73,15 +59,57 @@ export const create = mutation({
 
     await adjustMessageCount(ctx, args.chatId, 1);
 
-    // Schedule an action that calls ChatGPT and updates the message.
-    ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
-      userId,
-      placeholderMessageId: botMessageId,
-    });
+    if (chat.openaiThreadId) {
+      // Create the user message in OpenAI
+      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+        messageId: userMessageId,
+        openaiThreadId: chat.openaiThreadId,
+        content: args.content,
+        role: "user",
+      });
+
+      if (chat.assistantId) {
+        // Get the assistant details
+        const assistant = await getAssistantById(ctx, chat.assistantId);
+        // If the assistant has an OpenAI assistant ID, start a streaming run with the assistant
+        if (assistant.openaiAssistantId) {
+          // Start a streaming run with the assistant
+          ctx.scheduler.runAfter(0, internal.openai_runs.streamRun, {
+            openaiThreadId: chat.openaiThreadId,
+            openaiAssistantId: assistant.openaiAssistantId,
+            placeholderMessageId: botMessageId,
+          });
+        }
+      } else {
+        // If we don't have an OpenAI thread ID or assistant ID, use the old completion method
+
+        // Fetch the latest HISTORY_SIZE messages to send as context.
+        const paginatedMessages = await getAllMessages(
+          ctx,
+          {
+            numItems: CHAT_HISTORY_LENGTH + 1,
+            cursor: null,
+          },
+          args.chatId,
+          "desc",
+        );
+
+        const { page: messages } = paginatedMessages;
+        // Reverse the list so that it's in chronological order.
+        messages.reverse();
+        messages.pop(); // dump the placeholder message
+
+        // Schedule an action that calls OpenAI to generate a response and updates the placeholder message.
+        ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
+          messages: messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
+          userId,
+          placeholderMessageId: botMessageId,
+        });
+      }
+    }
 
     return { userMessageId, botMessageId };
   },

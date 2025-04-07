@@ -59,6 +59,7 @@ export const getAll = query({
         tags: chat.tags,
         messageCount: chat.messageCount,
         userId: chat.userId,
+        assistantId: chat.assistantId,
         // We don't need to send the searchableContent or openaiThreadId to the client
       })),
     };
@@ -90,6 +91,7 @@ export const getOne = query({
       tags: chat.tags,
       messageCount: chat.messageCount,
       userId: chat.userId,
+      assistantId: chat.assistantId,
       // We don't need to send the searchableContent or openaiThreadId to the client
     };
   },

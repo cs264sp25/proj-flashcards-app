@@ -53,6 +53,8 @@ export const chatSchema = {
   searchableContent: v.string(),
   // OpenAI thread ID
   openaiThreadId: v.optional(v.string()), // Managed internally, can be 'pending' until the thread is created
+  // Which assistant to use for this chat
+  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line
@@ -68,6 +70,7 @@ export const chatOutSchema = {
   ...chatInSchema,
   messageCount: v.number(),
   userId: v.id("users"),
+  assistantId: v.optional(v.id("assistants")),
   // We don't need to return the searchableContent or openaiThreadId fields
 };
 

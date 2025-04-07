@@ -118,6 +118,7 @@ export async function createChat(
     messageCount: 0, // Initialize message count
     openaiThreadId: "pending",
     searchableContent,
+    // assistantId: data.assistantId, // TODO: Add the only assistant for now
   });
 
   // Create a corresponding thread in OpenAI
