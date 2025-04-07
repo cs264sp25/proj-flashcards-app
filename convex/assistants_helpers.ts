@@ -5,15 +5,19 @@
  * - Core CRUD operations:
  *   - getAllAssistants: Paginated/sorted/searchable assistant retrieval
  *   - getAssistantById: Single assistant retrieval
- *   - createAssistant: Basic assistant creation (handles searchable content)
- *   - updateAssistant: Basic assistant update (handles searchable content)
+ *   - createAssistant: Basic assistant creation
+ *      - Handles searchable content and OpenAI assistant creation
+ *   - updateAssistant: Basic assistant update
+ *      - Handles searchable content and OpenAI assistant updates
  *   - deleteAssistant: Basic assistant deletion
+ *      - Handles OpenAI assistant deletion
  ******************************************************************************/
 
 import { PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import { AssistantInType, AssistantUpdateType } from "./assistants_schema";
 import { PaginationOptsType, SortOrderType } from "./shared";
@@ -60,6 +64,7 @@ export async function getAssistantById(
   assistantId: Id<"assistants">,
 ): Promise<Doc<"assistants">> {
   const assistant = await ctx.db.get(assistantId);
+
   if (!assistant) {
     throw new ConvexError({
       message: `Assistant ${assistantId} not found`,
@@ -72,7 +77,7 @@ export async function getAssistantById(
 
 /**
  * Create a new assistant in the database.
- * Note: Does not handle OpenAI Assistant creation.
+ * Note: Handles OpenAI Assistant creation.
  */
 export async function createAssistant(
   ctx: MutationCtx,
@@ -86,15 +91,28 @@ export async function createAssistant(
   // Add internal fields before insertion
   const assistantData = {
     ...data,
-    openaiAssistantId: "pending", // Initialize as pending
+    name,
+    description,
     searchableContent,
+    openaiAssistantId: "pending", // Initialize as pending
   };
-  return await ctx.db.insert("assistants", assistantData);
+
+  const assistantId = await ctx.db.insert("assistants", assistantData);
+
+  // Schedule an action to create the assistant in OpenAI
+  await ctx.scheduler.runAfter(0, internal.openai_assistants.createAssistant, {
+    assistantId, // Pass the new Convex ID
+    ...data,
+    name,
+    description,
+  });
+
+  return assistantId;
 }
 
 /**
  * Update an assistant in the database.
- * Note: Does not handle OpenAI Assistant updates.
+ * Note: Handles OpenAI Assistant updates.
  */
 export async function updateAssistant(
   ctx: MutationCtx,
@@ -109,15 +127,34 @@ export async function updateAssistant(
   const description = (data.description || existing.description || "").trim();
   const searchableContent = `${name} ${description}`;
 
+  // Update the assistant in the database
   await ctx.db.patch(assistantId, {
     ...data,
+    name,
+    description,
     searchableContent,
   });
+
+  // Schedule an action to update the assistant in OpenAI if it has a real ID
+  if (existing.openaiAssistantId && existing.openaiAssistantId !== "pending") {
+    await ctx.scheduler.runAfter(
+      0,
+      internal.openai_assistants.updateAssistant,
+      {
+        assistantId: assistantId, // Pass the convex ID
+        openaiAssistantId: existing.openaiAssistantId, // Pass the OpenAI ID
+        // Pass only the fields that were provided for the update
+        ...data,
+        name,
+        description,
+      },
+    );
+  }
 }
 
 /**
  * Delete an assistant from the database.
- * Note: Does not handle OpenAI Assistant deletion.
+ * Note: Handles OpenAI Assistant deletion.
  */
 export async function deleteAssistant(
   ctx: MutationCtx,
@@ -126,4 +163,15 @@ export async function deleteAssistant(
   // Ensure the assistant exists before deleting
   const existing = await getAssistantById(ctx, assistantId);
   await ctx.db.delete(existing._id);
+
+  // Schedule an action to delete the assistant in OpenAI if it has a real ID
+  if (existing.openaiAssistantId && existing.openaiAssistantId !== "pending") {
+    await ctx.scheduler.runAfter(
+      0,
+      internal.openai_assistants.deleteAssistant,
+      {
+        openaiAssistantId: existing.openaiAssistantId,
+      },
+    );
+  }
 }

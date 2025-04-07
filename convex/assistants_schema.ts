@@ -18,7 +18,7 @@ import { defineTable } from "convex/server";
 const toolType = v.union(
   v.literal("file_search"),
   v.literal("code_interpreter"),
-  // v.literal("function"),
+  // v.literal("function"), // FIXME: Add this back in
 );
 
 // Schema for a single tool configuration
