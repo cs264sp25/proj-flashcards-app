@@ -51,6 +51,8 @@ export const chatSchema = {
   userId: v.id("users"),
   // Combined field for full-text search
   searchableContent: v.string(),
+  // OpenAI thread ID
+  openaiThreadId: v.optional(v.string()), // Managed internally, can be 'pending' until the thread is created
 };
 
 // eslint-disable-next-line
@@ -66,7 +68,7 @@ export const chatOutSchema = {
   ...chatInSchema,
   messageCount: v.number(),
   userId: v.id("users"),
-  // We don't need to return the searchableContent field
+  // We don't need to return the searchableContent or openaiThreadId fields
 };
 
 // eslint-disable-next-line

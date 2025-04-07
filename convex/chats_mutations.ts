@@ -13,6 +13,7 @@
  * - update: Update existing chat
  * - remove: Delete chat
  ******************************************************************************/
+
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MutationCtx, mutation } from "./_generated/server";
@@ -39,7 +40,8 @@ export const create = mutation({
   args: { ...chatInSchema },
   handler: async (ctx: MutationCtx, args: ChatInType): Promise<Id<"chats">> => {
     const userId = await authenticationGuard(ctx);
-    return await createChat(ctx, userId, args);
+    const chatId = await createChat(ctx, userId, args);
+    return chatId;
   },
 });
 

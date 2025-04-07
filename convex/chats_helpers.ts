@@ -14,13 +14,15 @@
  *   - deleteChatWithCascade: Handles deletion of chat and its messages
  *   - deleteAllChatsWithCascade: Bulk delete chats with cascade
  ******************************************************************************/
+
 import { IndexRangeBuilder, PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 
-import { ChatInType, ChatOutType, ChatUpdateType } from "./chats_schema";
 import { PaginationOptsType, SortOrderType } from "./shared";
+import { ChatInType, ChatUpdateType } from "./chats_schema";
 import { removeAllMessagesInChat } from "./messages_helpers";
 
 /**
@@ -33,7 +35,7 @@ export async function getAllChats(
   userId?: Id<"users">,
   sortOrder?: SortOrderType,
   searchQuery?: string,
-): Promise<PaginationResult<ChatOutType>> {
+): Promise<PaginationResult<Doc<"chats">>> {
   sortOrder = sortOrder || "asc";
 
   let results: PaginationResult<Doc<"chats">>;
@@ -73,19 +75,7 @@ export async function getAllChats(
       .paginate(paginationOpts);
   }
 
-  return {
-    ...results,
-    page: results.page.map((chat) => ({
-      _id: chat._id,
-      _creationTime: chat._creationTime,
-      title: chat.title,
-      description: chat.description,
-      tags: chat.tags,
-      messageCount: chat.messageCount,
-      userId: chat.userId,
-      // We don't need to send the searchableContent to the client
-    })),
-  };
+  return results;
 }
 
 /**
@@ -94,7 +84,7 @@ export async function getAllChats(
 export async function getChatById(
   ctx: QueryCtx,
   chatId: Id<"chats">,
-): Promise<ChatOutType> {
+): Promise<Doc<"chats">> {
   const chat = await ctx.db.get(chatId);
   if (!chat) {
     throw new ConvexError({
@@ -102,16 +92,7 @@ export async function getChatById(
       code: 404,
     });
   }
-  return {
-    _id: chat._id,
-    _creationTime: chat._creationTime,
-    title: chat.title,
-    description: chat.description,
-    tags: chat.tags,
-    messageCount: chat.messageCount,
-    userId: chat.userId,
-    // We don't need to send the searchableContent to the client
-  };
+  return chat;
 }
 
 /**
@@ -124,15 +105,32 @@ export async function createChat(
 ): Promise<Id<"chats">> {
   const title = (data.title || "").trim();
   const description = (data.description || "").trim();
-  const tags = (data.tags || []).join(" ").trim();
-  const searchableContent = `${title} ${description} ${tags}`;
+  const tags = data.tags || [];
+  const searchableContent = `${title} ${description} ${tags.join(" ").trim()}`;
 
-  return await ctx.db.insert("chats", {
+  // Create a new chat in the database
+  const chatId = await ctx.db.insert("chats", {
     ...data,
+    title,
+    description,
+    tags,
     userId,
     messageCount: 0, // Initialize message count
+    openaiThreadId: "pending",
     searchableContent,
   });
+
+  // Create a corresponding thread in OpenAI
+  await ctx.scheduler.runAfter(0, internal.openai_threads.createThread, {
+    chatId,
+    metadata: {
+      title,
+      description,
+      _id: chatId,
+    },
+  });
+
+  return chatId;
 }
 
 /**
@@ -146,13 +144,29 @@ export async function updateChat(
   const chat = await getChatById(ctx, chatId);
   const title = (data.title || chat.title || "").trim();
   const description = (data.description || chat.description || "").trim();
-  const tags = (data.tags || chat.tags || []).join(" ").trim();
-  const searchableContent = `${title} ${description} ${tags}`;
+  const tags = data.tags || chat.tags || [];
+  const searchableContent = `${title} ${description} ${tags.join(" ").trim()}`;
 
+  // Update the chat in the database
   await ctx.db.patch(chatId, {
     ...data,
+    title,
+    description,
+    tags,
     searchableContent,
   });
+
+  // If the chat has an OpenAI thread ID, update the thread metadata
+  if (chat.openaiThreadId) {
+    await ctx.scheduler.runAfter(0, internal.openai_threads.updateThread, {
+      openaiThreadId: chat.openaiThreadId,
+      metadata: {
+        title,
+        description,
+        _id: chatId,
+      },
+    });
+  }
 }
 
 /**
@@ -164,6 +178,13 @@ export async function deleteChat(
 ): Promise<void> {
   const chat = await getChatById(ctx, chatId);
   await ctx.db.delete(chat._id);
+
+  // If the chat has an OpenAI thread ID, delete the thread
+  if (chat.openaiThreadId) {
+    await ctx.scheduler.runAfter(0, internal.openai_threads.deleteThread, {
+      openaiThreadId: chat.openaiThreadId,
+    });
+  }
 }
 
 /**

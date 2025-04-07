@@ -5,6 +5,7 @@
  * - Used by other operations like seeding and AI actions
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
+
 import { ConvexError, v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
@@ -137,5 +138,20 @@ export const deleteChatsWithCascade = internalMutation({
     },
   ): Promise<number> => {
     return await deleteAllChatsWithCascadeHelper(ctx, args.userId);
+  },
+});
+
+/**
+ * Internal mutation to update the OpenAI thread ID
+ */
+export const updateOpenAIThreadId = internalMutation({
+  args: {
+    chatId: v.id("chats"),
+    openaiThreadId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.chatId, {
+      openaiThreadId: args.openaiThreadId,
+    });
   },
 });

@@ -10,6 +10,7 @@
  * - getAll: List user's chats
  * - getOne: Get single chat
  ******************************************************************************/
+
 import { paginationOptsValidator, PaginationResult } from "convex/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
@@ -40,13 +41,27 @@ export const getAll = query({
     },
   ): Promise<PaginationResult<ChatOutType>> => {
     const userId = await authenticationGuard(ctx);
-    return await getAllChats(
+    const results = await getAllChats(
       ctx,
       args.paginationOpts,
       userId,
       args.sortOrder,
       args.searchQuery,
     );
+
+    return {
+      ...results,
+      page: results.page.map((chat) => ({
+        _id: chat._id,
+        _creationTime: chat._creationTime,
+        title: chat.title,
+        description: chat.description,
+        tags: chat.tags,
+        messageCount: chat.messageCount,
+        userId: chat.userId,
+        // We don't need to send the searchableContent or openaiThreadId to the client
+      })),
+    };
   },
 });
 
@@ -67,6 +82,15 @@ export const getOne = query({
     const userId = await authenticationGuard(ctx);
     const chat = await getChatById(ctx, args.chatId);
     ownershipGuard(userId, chat.userId);
-    return chat;
+    return {
+      _id: chat._id,
+      _creationTime: chat._creationTime,
+      title: chat.title,
+      description: chat.description,
+      tags: chat.tags,
+      messageCount: chat.messageCount,
+      userId: chat.userId,
+      // We don't need to send the searchableContent or openaiThreadId to the client
+    };
   },
 });
