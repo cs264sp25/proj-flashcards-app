@@ -69,7 +69,7 @@ export type AssistantUpdateType = Infer<typeof assistantUpdateSchemaObject>;
 export const assistantSchema = {
   // Convex automatically adds _id and _creationTime
   ...assistantInSchema,
-  openaiAssistantId: v.optional(v.string()), // Managed internally, can be 'pending'
+  openaiAssistantId: v.optional(v.string()), // Managed internally, can be 'pending' until the assistant is created
   // Combined field for full-text search
   searchableContent: v.string(), // name + description
 };

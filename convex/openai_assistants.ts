@@ -1,9 +1,17 @@
+/******************************************************************************
+ * OPENAI ASSISTANTS
+ *
+ * Actions for creating, updating, and deleting assistants in OpenAI.
+ ******************************************************************************/
 import OpenAI from "openai";
+import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { v } from "convex/values";
 
-import { assistantInSchema, assistantUpdateSchema } from "./assistants_schema";
+import {
+  assistantInSchema,
+  assistantUpdateSchema,
+} from "./assistants_schema";
 
 const DEBUG = false;
 
