@@ -13,12 +13,13 @@
  *   - adjustMessageCount: Update message count when messages are added/removed
  *   - deleteChatWithCascade: Handles deletion of chat and its messages
  *   - deleteAllChatsWithCascade: Bulk delete chats with cascade
+ *   - getMessageSamplesForContext: Get a sample of messages from a chat
  ******************************************************************************/
 
 import { IndexRangeBuilder, PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 import { PaginationOptsType, SortOrderType } from "./shared";
@@ -241,4 +242,67 @@ export async function deleteAllChatsWithCascade(
   await Promise.all(chats.map((chat) => deleteChatWithCascade(ctx, chat._id)));
 
   return chats.length;
+}
+
+/**
+ * Get a sample of messages from a chat.
+ *
+ * Returns an array of message objects with role and content.
+ * The total number of characters in the content of the messages
+ * will not exceed the given maxChars.
+ */
+export async function getMessageSamplesForContext(
+  ctx: ActionCtx,
+  chatId: Id<"chats">,
+  maxChars: number = 10000,
+): Promise<{ role: string; content: string }[]> {
+  try {
+    // Assume getChatById returns an object with messageCount or similar
+    const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
+      // Adjust if needed
+      chatId,
+    });
+    // Fetch a reasonable number of latest messages, or all if count is low
+    const numMessagesToFetch = chat?.messageCount || 100; // Adjust limit as needed
+
+    // Assume getAllMessages takes chatId and pagination opts (fetching latest)
+    // You might need to adjust the query/index for fetching latest messages efficiently
+    const paginatedMessages = await ctx.runQuery(
+      internal.messages_internals.getAllMessages, // Adjust if needed
+      {
+        chatId,
+        paginationOpts: { numItems: numMessagesToFetch, cursor: null }, // Might need sorting/cursor logic for "latest"
+      },
+    );
+    // Assuming page contains message objects with { role: string, content: string }
+    // Reverse the page to get chronological order if fetched in reverse
+    const messages = paginatedMessages.page.reverse(); // Or adjust query order
+
+    if (!messages || messages.length === 0) return [];
+
+    let accumulatedChars = 0;
+    const samples: { role: string; content: string }[] = [];
+    // Iterate backwards through messages (most recent first) for sampling
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
+      // Ensure content is a string, handle potential non-string content types if necessary
+      const contentString =
+        typeof message.content === "string"
+          ? message.content
+          : JSON.stringify(message.content);
+      const messageChars = contentString.length || 0;
+
+      if (accumulatedChars + messageChars > maxChars && samples.length > 0) {
+        break; // Stop adding older messages
+      }
+      // Add message to the beginning of samples to maintain chronological order for the AI
+      samples.unshift({ role: message.role, content: contentString });
+      accumulatedChars += messageChars;
+    }
+
+    return samples; // Return chronologically ordered samples
+  } catch (error) {
+    console.error(`Error fetching messages for chat ${chatId}:`, error);
+    return [];
+  }
 }
