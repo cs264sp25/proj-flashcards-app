@@ -129,9 +129,7 @@ completionRoute.post(
           console.error(
             `ERROR: Missing chatId in context for task: ${validTask}`,
           );
-          return new Response(JSON.stringify({ error: "Missing chatId" }), {
-            status: 400,
-          });
+          return c.json({ error: "Missing chatId" }, 400);
         }
         const chatId = context.chatId as Id<"chats">;
         const messageSamples = await getMessageSamplesForContext(ctx, chatId);
