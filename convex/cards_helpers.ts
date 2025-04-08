@@ -11,11 +11,12 @@
  * - Special operations:
  *   - removeAllCardsInDeck: Handles deletion of all cards in a deck
  *   - removeAllCardsForUser: Handles deletion of all cards for a user
+ *   - getCardSamplesForContext: Get a sample of cards from a deck
  ******************************************************************************/
 import { IndexRangeBuilder, PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 import { CardInType, CardOutType, CardUpdateType } from "./cards_schema";
@@ -214,4 +215,54 @@ export async function removeAllCardsForUser(
   await Promise.all(cards.map((card) => deleteCard(ctx, card._id)));
 
   return cards.length;
+}
+
+/**
+ * Get a sample of cards from a deck.
+ *
+ * Returns an array of card objects with front and back content.
+ * The total number of characters in the front and back content of the cards
+ * will not exceed the given maxChars.
+ */
+export async function getCardSamplesForContext(
+  ctx: ActionCtx,
+  deckId: Id<"decks">,
+  maxChars: number = 10000,
+): Promise<{ front: string; back?: string }[]> {
+  try {
+    // Assume getDeckById returns an object with cardCount or similar
+    const deck = await ctx.runQuery(internal.decks_internals.getDeckById, {
+      deckId,
+    });
+    const numCardsToFetch = deck?.cardCount || 100; // Fetch all or a reasonable max
+
+    // Assume getAllCards takes pagination opts
+    const paginatedCards = await ctx.runQuery(
+      internal.cards_internals.getAllCards,
+      {
+        deckId,
+        paginationOpts: { numItems: numCardsToFetch, cursor: null },
+      },
+    );
+    const { page: cards } = paginatedCards;
+
+    if (!cards || cards.length === 0) return [];
+
+    let accumulatedChars = 0;
+    const samples: { front: string; back?: string }[] = [];
+    for (const card of cards) {
+      const frontChars = card.front?.length || 0;
+      const backChars = card.back?.length || 0;
+      const cardChars = frontChars + backChars;
+      if (accumulatedChars + cardChars > maxChars && samples.length > 0) {
+        break;
+      }
+      samples.push({ front: card.front, back: card.back });
+      accumulatedChars += cardChars;
+    }
+    return samples;
+  } catch (error) {
+    console.error(`Error fetching cards for deck ${deckId}:`, error);
+    return [];
+  }
 }
