@@ -30,6 +30,7 @@ interface EditChatFormProps {
   onSubmit: (values: EditChatFormSubmitValues) => void;
   onCancel: () => void;
   initialValues: EditChatFormInitialValues;
+  chatId: string;
   submitLabel?: string;
 }
 
@@ -50,6 +51,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
   onSubmit,
   onCancel,
   initialValues,
+  chatId,
   submitLabel = "Save Changes",
 }) => {
   // Use internal schema and type
@@ -94,6 +96,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
       fieldName === "tags"
     ) {
       return {
+        chatId: chatId,
         title: values.title || "",
         description: values.description || "",
         tags: values.tags || "",

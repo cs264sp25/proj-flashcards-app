@@ -30,6 +30,7 @@ interface EditDeckFormProps {
   onSubmit: (values: EditDeckFormSubmitValues) => void; // Expects final array format
   onCancel: () => void;
   initialValues: EditDeckFormInitialValues; // Received initial values with array
+  deckId: string;
   submitLabel?: string;
 }
 
@@ -50,6 +51,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
   onSubmit,
   onCancel,
   initialValues,
+  deckId,
   submitLabel = "Save Changes",
 }) => {
   // Use internal schema and type
@@ -94,6 +96,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
       fieldName === "tags"
     ) {
       return {
+        deckId: deckId,
         title: values.title || "",
         description: values.description || "",
         tags: values.tags || "",

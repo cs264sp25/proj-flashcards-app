@@ -69,7 +69,8 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         initialValues={initialValues}
-        submitLabel="Save Changes"
+        submitLabel="Save Updates"
+        chatId={chatId}
       />
 
       <div className="relative my-4">
