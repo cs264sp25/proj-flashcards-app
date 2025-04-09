@@ -63,7 +63,7 @@ const AddDeckForm: React.FC<AddDeckFormProps> = ({
   // Get context for AI tasks - Specific to Add form if needed
   const getDeckContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||

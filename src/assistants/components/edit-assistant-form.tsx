@@ -124,7 +124,7 @@ const EditAssistantForm: React.FC<EditAssistantFormProps> = ({
 
   const getAssistantContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "name" ||
@@ -283,7 +283,9 @@ const EditAssistantForm: React.FC<EditAssistantFormProps> = ({
               <FormControl>
                 <Slider
                   value={[temperatureDisplayValue]}
-                  onValueChange={(value) => setTemperatureDisplayValue(value[0])}
+                  onValueChange={(value) =>
+                    setTemperatureDisplayValue(value[0])
+                  }
                   min={0}
                   max={2}
                   step={0.1}

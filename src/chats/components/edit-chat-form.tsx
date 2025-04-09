@@ -31,7 +31,6 @@ interface EditChatFormProps {
   onCancel: () => void;
   initialValues: EditChatFormInitialValues;
   submitLabel?: string;
-  chatId: string; // Needed for context-aware AI tasks later
 }
 
 // Helper to convert initial array to string for form state
@@ -52,7 +51,6 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
   onCancel,
   initialValues,
   submitLabel = "Save Changes",
-  chatId,
 }) => {
   // Use internal schema and type
   const form = useForm<EditChatInternalValues>({
@@ -88,7 +86,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
 
   const getChatContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -99,7 +97,6 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
         title: values.title || "",
         description: values.description || "",
         tags: values.tags || "",
-        chatId: chatId,
       };
     }
     return undefined;

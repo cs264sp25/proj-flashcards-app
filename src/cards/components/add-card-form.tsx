@@ -64,7 +64,7 @@ const AddCardForm: React.FC<AddCardFormProps> = ({
   // Get the current form values for context
   const getCardContext = (
     fieldName: "front" | "back",
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (fieldName === "front" || fieldName === "back") {
       return {

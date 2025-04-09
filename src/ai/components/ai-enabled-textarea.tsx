@@ -11,7 +11,7 @@ interface AiEnabledTextareaProps {
   className?: string;
   value?: string;
   onChange?: (value: string) => void;
-  context?: Record<string, any>;
+  context?: Record<string, string>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 

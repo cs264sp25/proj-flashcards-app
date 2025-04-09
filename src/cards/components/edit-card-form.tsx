@@ -71,13 +71,12 @@ const EditCardForm: React.FC<EditCardFormProps> = ({
   // Get the current form values for context
   const getCardContext = (
     fieldName: "front" | "back",
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (fieldName === "front" || fieldName === "back") {
       return {
         front: values.front || "",
         back: values.back || "",
-        // Could add cardId here if needed for AI context
       };
     }
     return undefined;

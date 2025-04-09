@@ -15,13 +15,14 @@ For example:
 <InMarkdownCard cardId="xyz789" />
 
 Always use these exact formats when referencing decks or cards. Do not include any additional text or formatting around the components.`,
-  user: (input: { text: string; context?: Record<string, any> }) => input.text, // Chat doesn't need a user prompt transformation
+  user: (input: { text: string; context?: Record<string, string> }) =>
+    input.text, // Chat doesn't need a user prompt transformation
 };
 
 export const grammar = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in proofreading and correcting spelling and grammar mistakes in English texts to convert them to standard English. You will be provided with an input text and you will need to correct the spelling and grammar mistakes. Respond with ONLY the corrected text, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     return `Please rewrite the following input text after proofreading. 
 Correct all spelling and grammar mistakes. You may lightly restructure the text to improve formatting but this should limit to adjusting elements such as whitespaces, line breaks, breaking long sentences or paragraphs, joining smaller sentences, etc. Do not make any other changes.
 
@@ -39,7 +40,7 @@ export const improve = {
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in improving writing quality while maintaining the original message and tone. You will be provided with an input text and you will need to improve the writing quality. Respond with ONLY the improved text, no explanations or quotes.",
   user: (input: {
     text: string;
-    context?: Record<string, any>;
+    context?: Record<string, string>;
   }) => `Please improve the following input text while maintaining its core message. 
 Focus on readability, clarity, coherence, and flow. You may reorganize sentences, enhance word choice, and improve flow.
 
@@ -56,7 +57,7 @@ export const simplify = {
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in simplifying text to make it easier to understand. You will be provided with an input text and you will need to simplify the text. Respond with ONLY the simplified text, no explanations or quotes.",
   user: (input: {
     text: string;
-    context?: Record<string, any>;
+    context?: Record<string, string>;
   }) => `Simplify the following input text to make it easier to understand. 
 Use may use simpler words or shorter sentences to make it accessible to a broader audience but do not change the core message.
 
@@ -73,7 +74,7 @@ export const shorten = {
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in making text shorter while preserving key information. You will be provided with an input text and you will need to make the text shorter. Respond with ONLY the shortened text, no explanations or quotes.",
   user: (input: {
     text: string;
-    context?: Record<string, any>;
+    context?: Record<string, string>;
   }) => `Make the following input text shorter while keeping all important information. 
 Remove redundancies and unnecessary details. Make it concise but ensure it remains clear and complete.
 
@@ -90,7 +91,7 @@ export const lengthen = {
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in expanding and elaborating text while maintaining quality and relevance. You will be provided with an input text and you will need to make the text longer. Respond with ONLY the expanded text, no explanations or quotes.",
   user: (input: {
     text: string;
-    context?: Record<string, any>;
+    context?: Record<string, string>;
   }) => `Expand the following input text to make it longer and more detailed. 
 You may want to expand the text to make it more detailed and informative but maintain the original message and tone. Also, in most cases, the input text is written in the front or back of a flashcard and so you should not expand the text too much.
 
@@ -105,7 +106,7 @@ Respond with ONLY the expanded text. Do not include any explanations, quotes, or
 export const frontToQuestion = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in converting statements into engaging questions for flashcards. You will be provided with an input text and you will need to convert the text into an effective question. Respond with ONLY the question, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     const context = input.context || {};
     return `Turn the following input text into an effective question to be used as the front of a flashcard.
 
@@ -134,7 +135,7 @@ Respond with ONLY the question. Do not include any explanations, quotes, or othe
 export const questionImprove = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in improving flashcard questions to be more effective for learning. You will be provided with an input text, which is the question to be improved, and you will need to improve the question. Respond with ONLY the improved question, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     const context = input.context || {};
     return `Improve the following input text (question) to be more clear, specific, and engaging while maintaining the same concept being tested.
 
@@ -165,7 +166,7 @@ Respond with ONLY the improved question. Do not include any explanations, quotes
 export const answerConcise = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in making flashcard answers (written on the back of the flashcard) clear and concise. You will be provided with an input text, which is the answer (text on the back of the flashcard) to be improved, and you will need to improve it. Respond with ONLY the improved answer, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     const context = input.context || {};
     return `Make the input text (answer written on the back of the flashcard) more concise while preserving all key information. 
 
@@ -194,7 +195,7 @@ Respond with ONLY the concise answer. Do not include any explanations, quotes, o
 export const answerComprehensive = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in creating comprehensive yet concise flashcard answers (text on the back of the flashcard) that enhance understanding. You will be provided with an input text, which is the answer to be improved, and you will need to improve it. Respond with ONLY the improved answer, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     const context = input.context || {};
     return `Expand the input text (answer written on the back of the flashcard) to be more comprehensive while keeping it concise enough for a flashcard. 
 
@@ -223,7 +224,7 @@ Respond with ONLY the expanded answer. Do not include any explanations, quotes, 
 export const answerStructure = {
   system:
     "You are the AI-assistant for an AI-powered Flashcard app and your expertise is in structuring flashcard answers (text on the back of the flashcard) for better retention. You will be provided with an input text, which is the answer to be structured, and you will need to structure it. Respond with ONLY the structured answer, no explanations or quotes.",
-  user: (input: { text: string; context?: Record<string, any> }) => {
+  user: (input: { text: string; context?: Record<string, string> }) => {
     const context = input.context || {};
     return `Restructure the input text (answer written on the back of the flashcard) to use bullet points, numbering, or other organizational elements that make it easier to understand and remember. 
 
@@ -255,7 +256,7 @@ export const custom = {
   user: (input: {
     text: string;
     prompt: string;
-    context?: Record<string, any>;
+    context?: Record<string, string>;
   }) => {
     const context = input.context || {};
     return `Edit the input text based on the user prompt. 

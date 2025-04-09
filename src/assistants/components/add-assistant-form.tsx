@@ -104,7 +104,7 @@ const AddAssistantForm: React.FC<AddAssistantFormProps> = ({
   // Get context for AI tasks
   const getAssistantContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "name" ||
@@ -260,7 +260,9 @@ const AddAssistantForm: React.FC<AddAssistantFormProps> = ({
               <FormControl>
                 <Slider
                   value={[temperatureDisplayValue]}
-                  onValueChange={(value) => setTemperatureDisplayValue(value[0])}
+                  onValueChange={(value) =>
+                    setTemperatureDisplayValue(value[0])
+                  }
                   min={0}
                   max={2}
                   step={0.1}

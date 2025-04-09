@@ -31,7 +31,6 @@ interface EditDeckFormProps {
   onCancel: () => void;
   initialValues: EditDeckFormInitialValues; // Received initial values with array
   submitLabel?: string;
-  deckId: string;
 }
 
 // Helper to convert initial array to string for form state
@@ -52,7 +51,6 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
   onCancel,
   initialValues,
   submitLabel = "Save Changes",
-  deckId,
 }) => {
   // Use internal schema and type
   const form = useForm<EditDeckInternalValues>({
@@ -88,7 +86,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
 
   const getDeckContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -98,8 +96,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
       return {
         title: values.title || "",
         description: values.description || "",
-        tags: values.tags || "", // Pass string context
-        deckId: deckId,
+        tags: values.tags || "",
       };
     }
     return undefined;

@@ -62,7 +62,7 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
   // Get context for AI tasks
   const getChatContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -72,7 +72,7 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
       return {
         title: values.title || "",
         description: values.description || "",
-        tags: values.tags || "", // Pass string context if needed
+        tags: values.tags || "",
       };
     }
     return undefined;
