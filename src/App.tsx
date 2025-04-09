@@ -19,6 +19,15 @@ const ListChatsPage = lazy(() => import("@/chats/pages/list-chats-page"));
 const AddChatPage = lazy(() => import("@/chats/pages/add-chat-page"));
 const EditChatPage = lazy(() => import("@/chats/pages/edit-chat-page"));
 const MessagesPage = lazy(() => import("@/messages/pages/messages-page"));
+const ListAssistantsPage = lazy(
+  () => import("@/assistants/pages/list-assistants-page"),
+);
+const AddAssistantPage = lazy(
+  () => import("@/assistants/pages/add-assistant-page"),
+);
+const EditAssistantPage = lazy(
+  () => import("@/assistants/pages/edit-assistant-page"),
+);
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => <Loading />;
@@ -211,6 +220,28 @@ function App() {
             <ListChatsPage activeChatId={params.chatId as string} />
           ),
           middle: <MessagesPage chatId={params.chatId as string} />,
+          right: null,
+        };
+      case "assistants":
+        return {
+          left: <ListAssistantsPage />,
+          middle: isSmallScreen ? null : (
+            <Empty message="Select an assistant to view its details." />
+          ),
+          right: null,
+        };
+      case "addAssistant":
+        return {
+          left: isSmallScreen ? null : <ListAssistantsPage />,
+          middle: <AddAssistantPage />,
+          right: null,
+        };
+      case "editAssistant":
+        return {
+          left: isSmallScreen ? null : <ListAssistantsPage />,
+          middle: (
+            <EditAssistantPage assistantId={params.assistantId as string} />
+          ),
           right: null,
         };
       default:
