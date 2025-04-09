@@ -127,13 +127,10 @@ export const streamRun = internalAction({
           }
 
           // Update the OpenAI message ID in our database
-          ctx.runMutation(
-            internal.messages_internals.updateOpenAIMessageId,
-            {
-              messageId: args.placeholderMessageId,
-              openaiMessageId: message.id,
-            },
-          );
+          ctx.runMutation(internal.messages_internals.updateOpenAIMessageId, {
+            messageId: args.placeholderMessageId,
+            openaiMessageId: message.id,
+          });
         })
         .on("textCreated", (text: Text) => {
           // A new text message is being created

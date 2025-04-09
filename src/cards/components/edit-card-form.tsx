@@ -73,11 +73,14 @@ const EditCardForm: React.FC<EditCardFormProps> = ({
     fieldName: "front" | "back",
   ): Record<string, any> | undefined => {
     const values = form.getValues();
-    return {
-      front: values.front || "",
-      back: values.back || "",
-      // Could add cardId here if needed for AI context
-    };
+    if (fieldName === "front" || fieldName === "back") {
+      return {
+        front: values.front || "",
+        back: values.back || "",
+        // Could add cardId here if needed for AI context
+      };
+    }
+    return undefined;
   };
 
   // Handle tab key for indentation

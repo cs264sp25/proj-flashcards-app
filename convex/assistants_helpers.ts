@@ -88,12 +88,17 @@ export async function createAssistant(
   const description = (data.description || "").trim();
   const searchableContent = `${name} ${description}`;
 
+  const model = data.model || "gpt-4o-mini";
+  const temperature = data.temperature || 1;
+
   // Add internal fields before insertion
   const assistantData = {
     ...data,
     name,
     description,
     searchableContent,
+    model,
+    temperature,
     openaiAssistantId: "pending", // Initialize as pending
   };
 

@@ -34,7 +34,7 @@ export const assistantInSchema = {
   name: v.string(),
   description: v.optional(v.string()),
   instructions: v.optional(v.string()),
-  model: v.string(), // We'll use the default model in mutations if not specified
+  model: v.optional(v.string()), // We'll use the default model in mutations if not specified
   temperature: v.optional(v.number()),
   metadata: v.optional(v.record(v.string(), v.string())),
   tools: v.optional(v.array(toolSchema)),

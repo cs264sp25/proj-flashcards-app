@@ -11,8 +11,6 @@ import { internal } from "./_generated/api";
 
 import { assistantInSchema, assistantUpdateSchema } from "./assistants_schema";
 
-const DEBUG = false;
-
 // Internal action to create an assistant in OpenAI
 export const createAssistant = internalAction({
   args: {
@@ -31,8 +29,8 @@ export const createAssistant = internalAction({
         name: args.name,
         description: args.description,
         instructions: args.instructions,
-        model: args.model,
-        temperature: args.temperature,
+        model: args.model || "gpt-4o-mini",
+        temperature: args.temperature || 1,
         tools: args.tools || [],
         metadata: args.metadata || {},
       });

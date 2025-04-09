@@ -9,8 +9,6 @@ import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
-const DEBUG = false;
-
 // Internal action to create a message in OpenAI
 export const createMessage = internalAction({
   args: {
@@ -36,13 +34,10 @@ export const createMessage = internalAction({
       );
 
       // Update our database with the OpenAI message ID
-      await ctx.runMutation(
-        internal.messages_internals.updateOpenAIMessageId,
-        {
-          messageId: args.messageId,
-          openaiMessageId: message.id,
-        },
-      );
+      await ctx.runMutation(internal.messages_internals.updateOpenAIMessageId, {
+        messageId: args.messageId,
+        openaiMessageId: message.id,
+      });
 
       return message.id;
     } catch (error) {

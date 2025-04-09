@@ -7,7 +7,7 @@
  * - remove: Deletes an assistant from DB and schedules OpenAI deletion
  ******************************************************************************/
 
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MutationCtx, mutation } from "./_generated/server";
 
@@ -21,7 +21,6 @@ import {
   createAssistant,
   updateAssistant,
   deleteAssistant,
-  getAssistantById,
 } from "./assistants_helpers";
 import { authenticationGuard } from "./users_guards";
 
@@ -57,15 +56,9 @@ export const update = mutation({
   ): Promise<boolean> => {
     // Make sure the user is authenticated
     await authenticationGuard(ctx);
-
     const { assistantId, ...updateData } = args;
-
-    // Get the current assistant data (needed for OpenAI ID)
-    const assistant = await getAssistantById(ctx, assistantId);
-
     // Use the helper to update the assistant in the database
     await updateAssistant(ctx, assistantId, updateData);
-
     return true;
   },
 });
@@ -83,10 +76,8 @@ export const remove = mutation({
   ): Promise<boolean> => {
     // Make sure the user is authenticated
     await authenticationGuard(ctx);
-
     // Use the helper to delete the assistant
     await deleteAssistant(ctx, args.assistantId);
-
     return true;
   },
 });

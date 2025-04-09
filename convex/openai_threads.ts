@@ -9,8 +9,6 @@ import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-const DEBUG = false;
-
 // Internal action to create a thread in OpenAI
 export const createThread = internalAction({
   args: {
@@ -57,11 +55,11 @@ export const updateThread = internalAction({
       });
 
       // Update the thread in OpenAI
-      const thread = await openai.beta.threads.update(args.openaiThreadId, {
+      await openai.beta.threads.update(args.openaiThreadId, {
         metadata: args.metadata,
       });
 
-      return { success: true };
+      return true;
     } catch (error) {
       console.error("Error updating thread in OpenAI:", error);
       throw error;
@@ -84,7 +82,7 @@ export const deleteThread = internalAction({
       // Delete the thread in OpenAI
       await openai.beta.threads.del(args.openaiThreadId);
 
-      return { success: true };
+      return true;
     } catch (error) {
       console.error("Error deleting thread in OpenAI:", error);
       throw error;
