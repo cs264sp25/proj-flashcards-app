@@ -32,7 +32,7 @@ const ListAssistantsPage: React.FC<ListAssistantsPageProps> = ({
             "border-2 border-yellow-500": DEBUG,
           })}
         >
-          <h2 className="text-2xl font-bold">Chats</h2>
+          <h2 className="text-2xl font-bold">Assistants</h2>
           <Button
             variant="outline"
             size="sm"
