@@ -94,6 +94,7 @@ export const getChats = internalQuery({
         tags: chat.tags,
         messageCount: chat.messageCount,
         userId: chat.userId,
+        assistantId: chat.assistantId,
       });
     }
     return results;

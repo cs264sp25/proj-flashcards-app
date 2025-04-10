@@ -10,7 +10,7 @@ import {
 import { useQueryAssistants } from "@/assistants/hooks/use-query-assistants";
 
 interface AssistantDropdownProps {
-  value: Id<"assistants">;
+  value: Id<"assistants"> | undefined;
   onChange: (value: Id<"assistants">) => void | Promise<void>;
   className?: string;
   disabled?: boolean;
@@ -38,7 +38,6 @@ const AssistantDropdown: React.FC<AssistantDropdownProps> = ({
         <SelectValue placeholder="Select an assistant" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="default">Default Assistant</SelectItem>
         {loading && (
           <SelectItem value="loading" disabled>
             Loading...

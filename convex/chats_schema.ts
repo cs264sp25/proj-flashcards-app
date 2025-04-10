@@ -22,6 +22,8 @@ export const chatInSchema = {
   title: v.string(),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
+  // Which assistant to use for this chat
+  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line
@@ -35,6 +37,7 @@ export const chatUpdateSchema = {
   title: v.optional(v.string()),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
+  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line
@@ -53,8 +56,6 @@ export const chatSchema = {
   searchableContent: v.string(),
   // OpenAI thread ID
   openaiThreadId: v.optional(v.string()), // Managed internally, can be 'pending' until the thread is created
-  // Which assistant to use for this chat
-  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line

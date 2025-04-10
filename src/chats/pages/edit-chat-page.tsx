@@ -53,6 +53,7 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
     title: chat.title || "",
     description: chat.description || "",
     tags: chat.tags || [],
+    assistantId: chat.assistantId || undefined,
   };
 
   return (

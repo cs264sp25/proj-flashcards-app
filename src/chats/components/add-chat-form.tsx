@@ -15,6 +15,8 @@ import { Input } from "@/core/components/input";
 import { createChatSchema } from "@/chats/types/chat"; // Use chat schema
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
 import { Task as TaskType } from "@/ai/types/tasks";
+import AssistantDropdown from "@/assistants/components/assistant-dropdown"; // Import the dropdown
+import { Id } from "@convex-generated/dataModel"; // Import Id type
 
 // --- Internal Form Schema and Type ---
 const addChatInternalSchema = createChatSchema.extend({
@@ -42,6 +44,7 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
       title: "",
       description: "",
       tags: "", // Default tags to empty string
+      assistantId: undefined, // Default assistantId to undefined
     },
   });
 
@@ -52,8 +55,8 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
         return ["grammar", "improve", "shorten"];
       case "description":
         return ["grammar", "improve", "shorten", "lengthen", "simplify"];
-      // case "tags": // Add tasks for tags if using AiEnabledTextarea here
-      //   return ["grammar", "improve", "shorten"];
+      case "tags":
+        return ["grammar", "improve"];
       default:
         return [];
     }
@@ -85,12 +88,13 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean)
-      : [];
+      : undefined; // Use undefined if empty
 
     const finalValues: AddChatFormSubmitValues = {
-      ...internalValues,
+      title: internalValues.title,
       description: internalValues.description || undefined,
       tags: finalTags,
+      assistantId: internalValues.assistantId || undefined, // Ensure undefined if not selected
     };
     onSubmit(finalValues);
   };
@@ -158,15 +162,39 @@ const AddChatForm: React.FC<AddChatFormProps> = ({
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Add tags (comma separated)"
-                  {...field}
+                <AiEnabledTextarea
                   value={field.value ?? ""}
+                  onChange={field.onChange}
+                  placeholder="Add tags (comma separated)"
+                  availableTasks={getAvailableTasks("tags")}
+                  context={getChatContext("tags")}
                 />
               </FormControl>
               <FormDescription>
                 Enter tags separated by commas. They will be processed on
                 submit.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Assistant Field */}
+        <FormField
+          control={form.control}
+          name="assistantId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Assistant (Optional)</FormLabel>
+              <FormControl>
+                <AssistantDropdown
+                  value={field.value as Id<"assistants"> | undefined} // Cast or handle potential undefined
+                  onChange={field.onChange}
+                  className="w-full"
+                />
+              </FormControl>
+              <FormDescription>
+                Optionally select an assistant to use for this chat.
               </FormDescription>
               <FormMessage />
             </FormItem>

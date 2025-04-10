@@ -4,6 +4,7 @@ export const createChatSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   tags: z.optional(z.array(z.string())),
+  assistantId: z.string().optional(),
 });
 
 export const updateChatSchema = createChatSchema.partial();
