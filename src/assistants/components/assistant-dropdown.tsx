@@ -6,6 +6,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/core/components/select";
+import { cn } from "@/core/lib/utils";
 
 import { useQueryAssistants } from "@/assistants/hooks/use-query-assistants";
 
@@ -34,7 +35,7 @@ const AssistantDropdown: React.FC<AssistantDropdownProps> = ({
       onValueChange={handleChange}
       disabled={disabled || loading}
     >
-      <SelectTrigger className={className}>
+      <SelectTrigger className={cn("w-fit", className)}>
         <SelectValue placeholder="Select an assistant" />
       </SelectTrigger>
       <SelectContent>

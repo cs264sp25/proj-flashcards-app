@@ -1,54 +1,16 @@
-/**
- * MessageInput Component
- *
- * A textarea-based input component for sending messages in a chat interface.
- *
- * Requirements:
- *
- * 1. Layout & Positioning
- *    - Fixed at the bottom of the chat interface
- *    - Full width of the container
- *    - Subtle border around the entire component
- *    - Clean, minimal design without rounded corners
- *
- * 2. Textarea Behavior
- *    - Comfortable minimum height
- *    - Expands as user types until 1/3 of viewport height
- *    - Shows scrollbars after reaching max height
- *    - No horizontal resizing
- *    - Auto-focus on chat open
- *
- * 3. Input Area Features
- *    - Paperclip icon on the left (non-functional)
- *    - Send button on the right
- *    - Icons maintain bottom position as textarea expands
- *    - Proper text padding to avoid icon overlap
- *
- * 4. Visual Design
- *    - White background
- *    - Subtle borders
- *    - Subtle scrollbar styling
- *    - Clear separation from message list
- *    - Consistent spacing
- *
- * 5. Interaction
- *    - Enter to submit
- *    - Shift+Enter for new line
- *    - Prevents empty submissions
- *    - Clears after submission
- *
- * 6. Responsive Behavior
- *    - Desktop and mobile compatible
- *    - Handles window resizing
- *    - Proper content handling
- */
-
 import React, { useState, useRef, useEffect } from "react";
+import { Id } from "@convex-generated/dataModel";
 import { Button } from "@/core/components/button";
 import { Textarea } from "@/core/components/textarea";
-import { Paperclip, Send } from "lucide-react";
+import { Paperclip } from "lucide-react";
 import { cn } from "@/core/lib/utils";
+import { toast } from "sonner";
+
+import AssistantDropdown from "@/assistants/components/assistant-dropdown";
+import { useQueryChat } from "@/chats/hooks/use-query-chat";
+import { useMutationChat } from "@/chats/hooks/use-mutation-chat";
 import { useMutationMessages } from "@/messages/hooks/use-mutation-messages";
+import { Label } from "@/core/components/label";
 
 const DEBUG = false;
 
@@ -60,6 +22,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { add: createMessage } = useMutationMessages(chatId);
+  const { data: chat } = useQueryChat(chatId);
+  const { edit: editChat } = useMutationChat(chatId);
 
   // Auto-focus textarea when component mounts
   useEffect(() => {
@@ -103,6 +67,17 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     }
   };
 
+  const handleFileUpload = async () => {
+    toast.error("File upload is not implemented");
+  };
+
+  const handleAssistantChange = async (value: Id<"assistants">) => {
+    const success = await editChat({ assistantId: value });
+    if (!success) {
+      toast.error("Failed to update assistant");
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -110,24 +85,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
         "border-2 border-red-500": DEBUG,
       })}
     >
-      <div
-        className={cn(
-          "relative flex items-end border border-input bg-background rounded-lg",
-          {
-            "border-2 border-blue-500": DEBUG,
-          },
-        )}
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className={cn("absolute left-4 bottom-3 h-8 w-8 hover:bg-accent", {
-            "border-2 border-green-500": DEBUG,
-          })}
-        >
-          <Paperclip className="h-5 w-5 text-muted-foreground" />
-        </Button>
+      <div className="flex flex-col gap-2">
         <Textarea
           ref={textareaRef}
           value={text}
@@ -136,10 +94,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
           placeholder="Write a message..."
           className={cn(
             "w-full overflow-y-auto",
-            "pl-14 pr-14 py-5", // Space for icons
             "focus-visible:ring-0",
-            "border-0 focus-visible:ring-offset-0 rounded-lg",
-            "min-h-[60px]",
+            "border border-input rounded-lg",
             "resize-none",
             "bg-background text-foreground",
             // Updated scrollbar classes to use theme colors
@@ -150,26 +106,46 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
               "border-2 border-yellow-500": DEBUG,
             },
           )}
-          rows={1}
+          rows={3}
         />
-        <Button
-          type="submit"
-          size="icon"
-          variant="ghost"
+        <div
           className={cn(
-            "absolute right-4 bottom-3",
-            "h-8 w-8",
-            "flex items-center justify-center",
-            "hover:bg-accent",
-            "disabled:opacity-50",
+            "flex items-center justify-between border-t border-input bg-background",
+            // "pt-2",
             {
-              "border-2 border-purple-500": DEBUG,
+              "border-2 border-blue-500": DEBUG,
             },
           )}
-          disabled={!text.trim()}
         >
-          <Send className="h-4 w-4" />
-        </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn("hover:bg-accent", {
+              "border-2 border-green-500": DEBUG,
+            })}
+            onClick={handleFileUpload}
+          >
+            <Paperclip className="h-5 w-5 text-muted-foreground" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <Label className="text-sm text-muted-foreground">Assistant:</Label>
+            <AssistantDropdown
+              value={chat?.assistantId as Id<"assistants">}
+              onChange={handleAssistantChange}
+            />
+            <Button
+              type="submit"
+              variant="ghost"
+              className={cn("px-4", "hover:bg-accent", "disabled:opacity-50", {
+                "border-2 border-purple-500": DEBUG,
+              })}
+              disabled={!text.trim()}
+            >
+              Send
+            </Button>
+          </div>
+        </div>
       </div>
     </form>
   );
