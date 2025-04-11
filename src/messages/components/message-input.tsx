@@ -22,7 +22,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { add: createMessage } = useMutationMessages(chatId);
-  const { data: chat } = useQueryChat(chatId);
+  const { data: chat /*, isLoading: isChatLoading */ } = useQueryChat(chatId);
   const { edit: editChat } = useMutationChat(chatId);
 
   // Auto-focus textarea when component mounts
@@ -72,11 +72,20 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   };
 
   const handleAssistantChange = async (value: Id<"assistants">) => {
-    const success = await editChat({ assistantId: value });
-    if (!success) {
-      toast.error("Failed to update assistant");
+    // Only update if chat data is loaded and the assistantId has actually changed
+    if (chat && value !== chat.assistantId) {
+      const success = await editChat({ assistantId: value });
+      if (!success) {
+        toast.error("Failed to update assistant");
+      }
+    } else if (!chat) {
+      // Optional: Log if the change was attempted before chat loaded
+      console.warn("Assistant change triggered before chat data was loaded.");
     }
   };
+
+  // Determine if the dropdown should be disabled (e.g., while chat is loading)
+  const isChatLoading = !chat; // Simple check if chat data is not yet available
 
   return (
     <form
@@ -133,6 +142,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             <AssistantDropdown
               value={chat?.assistantId as Id<"assistants">}
               onChange={handleAssistantChange}
+              disabled={isChatLoading}
             />
             <Button
               type="submit"
