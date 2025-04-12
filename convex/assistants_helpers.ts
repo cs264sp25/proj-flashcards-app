@@ -104,14 +104,6 @@ export async function createAssistant(
 
   const assistantId = await ctx.db.insert("assistants", assistantData);
 
-  // Schedule an action to create the assistant in OpenAI
-  await ctx.scheduler.runAfter(0, internal.openai_assistants.createAssistant, {
-    assistantId, // Pass the new Convex ID
-    ...data,
-    name,
-    description,
-  });
-
   return assistantId;
 }
 
@@ -139,22 +131,6 @@ export async function updateAssistant(
     description,
     searchableContent,
   });
-
-  // Schedule an action to update the assistant in OpenAI if it has a real ID
-  if (existing.openaiAssistantId && existing.openaiAssistantId !== "pending") {
-    await ctx.scheduler.runAfter(
-      0,
-      internal.openai_assistants.updateAssistant,
-      {
-        assistantId: assistantId, // Pass the convex ID
-        openaiAssistantId: existing.openaiAssistantId, // Pass the OpenAI ID
-        // Pass only the fields that were provided for the update
-        ...data,
-        name,
-        description,
-      },
-    );
-  }
 }
 
 /**
@@ -168,15 +144,4 @@ export async function deleteAssistant(
   // Ensure the assistant exists before deleting
   const existing = await getAssistantById(ctx, assistantId);
   await ctx.db.delete(existing._id);
-
-  // Schedule an action to delete the assistant in OpenAI if it has a real ID
-  if (existing.openaiAssistantId && existing.openaiAssistantId !== "pending") {
-    await ctx.scheduler.runAfter(
-      0,
-      internal.openai_assistants.deleteAssistant,
-      {
-        openaiAssistantId: existing.openaiAssistantId,
-      },
-    );
-  }
 }
