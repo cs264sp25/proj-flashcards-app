@@ -125,12 +125,6 @@ export async function createDeck(
     searchableContent,
   });
 
-  // Schedule an action that embeds the deck and updates the deck.
-  ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-    text: searchableContent,
-    deckId,
-  });
-
   return deckId;
 }
 
@@ -149,14 +143,6 @@ export async function updateDeck(
     ...data,
     searchableContent,
   });
-
-  if (data.title || data.description || data.tags) {
-    // Schedule an action that embeds the deck and updates the deck.
-    ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-      text: searchableContent,
-      deckId,
-    });
-  }
 }
 
 export async function deleteDeck(

@@ -16,6 +16,7 @@
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MutationCtx, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import { authenticationGuard } from "./users_guards";
 import { ownershipGuard } from "./decks_guards";
@@ -39,13 +40,26 @@ export const create = mutation({
   args: { ...deckInSchema },
   handler: async (ctx: MutationCtx, args: DeckInType): Promise<Id<"decks">> => {
     const userId = await authenticationGuard(ctx);
-    return await createDeck(ctx, userId, args);
+    const deckId = await createDeck(ctx, userId, args);
+
+    const title = args.title || "";
+    const description = args.description || "";
+    const tags = args.tags || [];
+    const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
+
+    await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+      text: searchableContent,
+      deckId,
+    });
+
+    return deckId;
   },
 });
 
 /**
  * Update an existing deck.
  * The authenticated user must own the deck, or an error is thrown.
+ * Also schedules embedding generation if relevant fields changed.
  */
 export const update = mutation({
   args: {
@@ -62,7 +76,21 @@ export const update = mutation({
     const userId = await authenticationGuard(ctx);
     const deck = await getDeckById(ctx, deckId);
     ownershipGuard(userId, deck.userId);
+
     await updateDeck(ctx, deckId, data);
+
+    if (data.title || data.description || data.tags) {
+      const title = data.title || deck.title;
+      const description = data.description || deck.description || "";
+      const tags = data.tags || deck.tags || [];
+      const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
+
+      await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+        text: searchableContent,
+        deckId,
+      });
+    }
+
     return true;
   },
 });
