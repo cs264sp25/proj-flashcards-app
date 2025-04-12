@@ -122,16 +122,6 @@ export async function createChat(
     // assistantId: data.assistantId, // TODO: Add the only assistant for now
   });
 
-  // Create a corresponding thread in OpenAI
-  await ctx.scheduler.runAfter(0, internal.openai_threads.createThread, {
-    chatId,
-    metadata: {
-      title,
-      description,
-      _id: chatId,
-    },
-  });
-
   return chatId;
 }
 
@@ -157,18 +147,6 @@ export async function updateChat(
     tags,
     searchableContent,
   });
-
-  // If the chat has an OpenAI thread ID, update the thread metadata
-  if (chat.openaiThreadId) {
-    await ctx.scheduler.runAfter(0, internal.openai_threads.updateThread, {
-      openaiThreadId: chat.openaiThreadId,
-      metadata: {
-        title,
-        description,
-        _id: chatId,
-      },
-    });
-  }
 }
 
 /**
@@ -180,13 +158,6 @@ export async function deleteChat(
 ): Promise<void> {
   const chat = await getChatById(ctx, chatId);
   await ctx.db.delete(chat._id);
-
-  // If the chat has an OpenAI thread ID, delete the thread
-  if (chat.openaiThreadId) {
-    await ctx.scheduler.runAfter(0, internal.openai_threads.deleteThread, {
-      openaiThreadId: chat.openaiThreadId,
-    });
-  }
 }
 
 /**
