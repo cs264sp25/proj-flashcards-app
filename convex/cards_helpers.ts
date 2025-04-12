@@ -130,12 +130,6 @@ export async function createCard(
     searchableContent,
   });
 
-  // Schedule an action that embeds the card and updates the card.
-  ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-    text: searchableContent,
-    cardId,
-  });
-
   return cardId;
 }
 
@@ -156,14 +150,6 @@ export async function updateCard(
     ...data,
     searchableContent,
   });
-
-  // If the content changed, update the embedding
-  if (data.front || data.back) {
-    ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-      text: searchableContent,
-      cardId,
-    });
-  }
 }
 
 /**
