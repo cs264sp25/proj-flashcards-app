@@ -153,7 +153,7 @@ export const deleteMessagesByIds = internalMutation({
     }
 
     // Delete messages concurrently
-    await Promise.all(args.messageIds.map(id => ctx.db.delete(id)));
+    await Promise.all(args.messageIds.map((id) => ctx.db.delete(id)));
 
     // Adjust message count
     const numDeleted = args.messageIds.length;

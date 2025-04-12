@@ -84,7 +84,7 @@ export const update = mutation({
 
     const title = (data.title || chat.title || "").trim();
     const description = (data.description || chat.description || "").trim();
-    if (chat.openaiThreadId && chat.openaiThreadId !== 'pending') {
+    if (chat.openaiThreadId && chat.openaiThreadId !== "pending") {
       await ctx.scheduler.runAfter(0, internal.openai_threads.updateThread, {
         openaiThreadId: chat.openaiThreadId,
         metadata: {
@@ -118,7 +118,7 @@ export const remove = mutation({
     const chat = await getChatById(ctx, args.chatId);
     ownershipGuard(userId, chat.userId);
 
-    if (chat.openaiThreadId && chat.openaiThreadId !== 'pending') {
+    if (chat.openaiThreadId && chat.openaiThreadId !== "pending") {
       await ctx.scheduler.runAfter(0, internal.openai_threads.deleteThread, {
         openaiThreadId: chat.openaiThreadId,
       });

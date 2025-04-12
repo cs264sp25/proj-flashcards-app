@@ -44,12 +44,16 @@ export const create = mutation({
     // Need to reconstruct necessary fields potentially modified by the helper
     const name = (args.name || "").trim();
     const description = (args.description || "").trim();
-    await ctx.scheduler.runAfter(0, internal.openai_assistants.createAssistant, {
-      assistantId, // Pass the new Convex ID
-      ...args, // Pass original args provided by the client
-      name,    // Pass potentially trimmed name
-      description, // Pass potentially trimmed description
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.openai_assistants.createAssistant,
+      {
+        assistantId, // Pass the new Convex ID
+        ...args, // Pass original args provided by the client
+        name, // Pass potentially trimmed name
+        description, // Pass potentially trimmed description
+      },
+    );
 
     return assistantId;
   },
@@ -80,17 +84,28 @@ export const update = mutation({
     await updateAssistant(ctx, assistantId, updateData);
 
     // Schedule the update of the corresponding OpenAI assistant
-    if (existingAssistant.openaiAssistantId && existingAssistant.openaiAssistantId !== 'pending') {
+    if (
+      existingAssistant.openaiAssistantId &&
+      existingAssistant.openaiAssistantId !== "pending"
+    ) {
       // Need to reconstruct necessary fields potentially modified by the helper
       const name = (updateData.name || existingAssistant.name || "").trim();
-      const description = (updateData.description || existingAssistant.description || "").trim();
-      await ctx.scheduler.runAfter(0, internal.openai_assistants.updateAssistant, {
-        assistantId: assistantId,
-        openaiAssistantId: existingAssistant.openaiAssistantId,
-        ...updateData, // Pass only the fields provided for the update
-        name,          // Pass potentially updated/trimmed name
-        description,   // Pass potentially updated/trimmed description
-      });
+      const description = (
+        updateData.description ||
+        existingAssistant.description ||
+        ""
+      ).trim();
+      await ctx.scheduler.runAfter(
+        0,
+        internal.openai_assistants.updateAssistant,
+        {
+          assistantId: assistantId,
+          openaiAssistantId: existingAssistant.openaiAssistantId,
+          ...updateData, // Pass only the fields provided for the update
+          name, // Pass potentially updated/trimmed name
+          description, // Pass potentially updated/trimmed description
+        },
+      );
     }
 
     return true;
@@ -115,10 +130,17 @@ export const remove = mutation({
     const existingAssistant = await getAssistantById(ctx, args.assistantId);
 
     // Schedule the deletion of the corresponding OpenAI assistant *before* deleting Convex data
-    if (existingAssistant.openaiAssistantId && existingAssistant.openaiAssistantId !== 'pending') {
-      await ctx.scheduler.runAfter(0, internal.openai_assistants.deleteAssistant, {
-        openaiAssistantId: existingAssistant.openaiAssistantId,
-      });
+    if (
+      existingAssistant.openaiAssistantId &&
+      existingAssistant.openaiAssistantId !== "pending"
+    ) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.openai_assistants.deleteAssistant,
+        {
+          openaiAssistantId: existingAssistant.openaiAssistantId,
+        },
+      );
     }
 
     // Use the helper to delete the assistant from the database

@@ -17,7 +17,6 @@ import { PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 import { AssistantInType, AssistantUpdateType } from "./assistants_schema";
 import { PaginationOptsType, SortOrderType } from "./shared";

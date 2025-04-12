@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/core/components/form";
-import { Input } from "@/core/components/input";
 import { createChatSchema } from "@/chats/types/chat"; // Use chat schema
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
 import { Task as TaskType } from "@/ai/types/tasks";

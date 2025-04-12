@@ -49,12 +49,7 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
     return <Empty message="Error loading chat or chat not found" />;
   }
 
-  const initialValues = {
-    title: chat.title || "",
-    description: chat.description || "",
-    tags: chat.tags || [],
-    assistantId: chat.assistantId || undefined,
-  };
+  const initialValues = chat;
 
   return (
     <ScrollArea

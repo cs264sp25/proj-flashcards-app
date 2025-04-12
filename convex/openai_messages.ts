@@ -99,25 +99,29 @@ export const deleteMessages = internalAction({
       openaiMessageIds: string[];
       openaiThreadId: string;
     },
-  ): Promise<boolean[]> => { // Return an array of deletion statuses
+  ): Promise<boolean[]> => {
+    // Return an array of deletion statuses
     try {
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });
 
       // Perform deletions concurrently
-      const deletionPromises = args.openaiMessageIds.map(messageId =>
-        openai.beta.threads.messages.del(args.openaiThreadId, messageId)
-          .then(response => response.deleted)
-          .catch(error => {
-            console.error(`Error deleting OpenAI message ${messageId} in thread ${args.openaiThreadId}:`, error);
+      const deletionPromises = args.openaiMessageIds.map((messageId) =>
+        openai.beta.threads.messages
+          .del(args.openaiThreadId, messageId)
+          .then((response) => response.deleted)
+          .catch((error) => {
+            console.error(
+              `Error deleting OpenAI message ${messageId} in thread ${args.openaiThreadId}:`,
+              error,
+            );
             return false; // Indicate failure for this specific message
-          })
+          }),
       );
 
       const results = await Promise.all(deletionPromises);
       return results;
-
     } catch (error) {
       // Catch broader errors (e.g., OpenAI client init)
       console.error("Error during bulk OpenAI message deletion:", error);

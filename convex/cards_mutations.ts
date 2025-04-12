@@ -86,7 +86,7 @@ export const update = mutation({
     const card = await getCardById(ctx, cardId);
     await ownershipGuard(userId, card.userId);
 
-    let oldDeckId = card.deckId;
+    const oldDeckId = card.deckId;
     let contentChanged = false;
 
     // Move card to a different deck?
@@ -96,7 +96,6 @@ export const update = mutation({
       // Adjust card counts
       await adjustCardCount(ctx, card.deckId, -1);
       await adjustCardCount(ctx, deckId, 1);
-      oldDeckId = deckId; // The card's deckId will be updated by updateCard
     }
 
     // Check if content is changing before updating
