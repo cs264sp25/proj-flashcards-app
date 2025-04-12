@@ -72,7 +72,6 @@ export const create = mutation({
 export const update = mutation({
   args: {
     cardId: v.id("cards"),
-    deckId: v.optional(v.id("decks")),
     ...cardUpdateSchema,
   },
   handler: async (

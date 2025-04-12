@@ -34,6 +34,7 @@ export type CardInType = Infer<typeof cardInSchemaObject>;
 export const cardUpdateSchema = {
   front: v.optional(v.string()),
   back: v.optional(v.string()),
+  deckId: v.optional(v.id("decks")),
 };
 
 // eslint-disable-next-line
