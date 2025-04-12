@@ -1,4 +1,5 @@
 import { api } from "@convex-generated/api";
+import { Id } from "@convex-generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 
@@ -11,6 +12,7 @@ export function useMutationChats() {
     try {
       const chatId = await createMutation({
         ...chat,
+        assistantId: chat.assistantId as Id<"assistants">,
       });
       toast.success("Chat created successfully");
       return chatId;

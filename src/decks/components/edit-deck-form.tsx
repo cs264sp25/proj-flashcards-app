@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/core/components/form";
-import { Input } from "@/core/components/input";
 import { createDeckSchema } from "@/decks/types/deck"; // Base schema for final output
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
 import { Task as TaskType } from "@/ai/types/tasks";
@@ -31,8 +30,8 @@ interface EditDeckFormProps {
   onSubmit: (values: EditDeckFormSubmitValues) => void; // Expects final array format
   onCancel: () => void;
   initialValues: EditDeckFormInitialValues; // Received initial values with array
-  submitLabel?: string;
   deckId: string;
+  submitLabel?: string;
 }
 
 // Helper to convert initial array to string for form state
@@ -52,8 +51,8 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
   onSubmit,
   onCancel,
   initialValues,
-  submitLabel = "Save Changes",
   deckId,
+  submitLabel = "Save Changes",
 }) => {
   // Use internal schema and type
   const form = useForm<EditDeckInternalValues>({
@@ -89,7 +88,7 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
 
   const getDeckContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -97,10 +96,10 @@ const EditDeckForm: React.FC<EditDeckFormProps> = ({
       fieldName === "tags"
     ) {
       return {
+        deckId: deckId,
         title: values.title || "",
         description: values.description || "",
-        tags: values.tags || "", // Pass string context
-        deckId: deckId,
+        tags: values.tags || "",
       };
     }
     return undefined;

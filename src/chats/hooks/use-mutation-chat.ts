@@ -13,6 +13,7 @@ export function useMutationChat(chatId: string) {
     try {
       await updateMutation({
         ...chat,
+        assistantId: chat.assistantId as Id<"assistants">,
         chatId: chatId as Id<"chats">,
       });
       toast.success("Chat updated successfully");

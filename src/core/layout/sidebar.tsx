@@ -3,6 +3,7 @@ import {
   FlaskConical,
   Home,
   BotMessageSquare,
+  Bot,
 } from "lucide-react";
 import {
   Sidebar as SidebarRoot,
@@ -41,6 +42,11 @@ const items = [
     title: "Demo",
     page: "demo",
     icon: FlaskConical,
+  },
+  {
+    title: "Assistants",
+    page: "assistants",
+    icon: Bot,
   },
 ];
 

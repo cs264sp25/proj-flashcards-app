@@ -5,6 +5,7 @@
  * - Used by other operations like seeding and AI actions
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
+
 import { v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
@@ -127,5 +128,50 @@ export const deleteMessages = internalMutation({
     );
     await adjustMessageCount(ctx, args.chatId, -numMessagesDeleted);
     return numMessagesDeleted;
+  },
+});
+
+/**
+ * Delete specific messages by their IDs. Used after editing a message in
+ * an Assistants API chat to clean up the outdated subsequent messages.
+ */
+export const deleteMessagesByIds = internalMutation({
+  args: {
+    messageIds: v.array(v.id("messages")),
+    chatId: v.id("chats"), // Needed for count adjustment
+  },
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      messageIds: Id<"messages">[];
+      chatId: Id<"chats">;
+    },
+  ) => {
+    // Check if there are any IDs to delete to avoid unnecessary operations
+    if (args.messageIds.length === 0) {
+      return 0;
+    }
+
+    // Delete messages concurrently
+    await Promise.all(args.messageIds.map((id) => ctx.db.delete(id)));
+
+    // Adjust message count
+    const numDeleted = args.messageIds.length;
+    await adjustMessageCount(ctx, args.chatId, -numDeleted);
+
+    return numDeleted;
+  },
+});
+
+// Internal mutation to update the OpenAI message ID
+export const updateOpenAIMessageId = internalMutation({
+  args: {
+    messageId: v.id("messages"),
+    openaiMessageId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, {
+      openaiMessageId: args.openaiMessageId,
+    });
   },
 });

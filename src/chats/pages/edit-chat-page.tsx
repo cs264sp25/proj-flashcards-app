@@ -49,11 +49,7 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
     return <Empty message="Error loading chat or chat not found" />;
   }
 
-  const initialValues = {
-    title: chat.title || "",
-    description: chat.description || "",
-    tags: chat.tags || [],
-  };
+  const initialValues = chat;
 
   return (
     <ScrollArea
@@ -69,7 +65,7 @@ const EditChatPage: React.FC<EditChatPageProps> = ({ chatId }) => {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         initialValues={initialValues}
-        submitLabel="Save Changes"
+        submitLabel="Save Updates"
         chatId={chatId}
       />
 

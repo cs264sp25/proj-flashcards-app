@@ -70,7 +70,7 @@ const EditDeckPage: React.FC<EditDeckPageProps> = ({ deckId }) => {
         onCancel={handleCancel}
         initialValues={initialValues}
         submitLabel="Save Updates"
-        deckId={deckId}
+        deckId={deck._id}
       />
 
       <div className="relative my-4">

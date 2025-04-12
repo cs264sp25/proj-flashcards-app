@@ -81,6 +81,32 @@ export async function getAllMessages(
 }
 
 /**
+ * Get all messages in a chat created after a specified timestamp.
+ */
+export async function getSubsequentMessages(
+  ctx: QueryCtx, // This can be QueryCtx as it only reads
+  chatId: Id<"chats">,
+  afterThisCreationTime: number,
+): Promise<Doc<"messages">[]> {
+  // Return type is an array of Docs
+  const messages = await ctx.db
+    .query("messages")
+    // Use the correct index 'by_chat_id' which includes _creationTime
+    .withIndex("by_chat_id", (q) =>
+      q
+        .eq("chatId", chatId)
+        // Ensure we only get messages strictly *after* the given time
+        .gt("_creationTime", afterThisCreationTime),
+    )
+    // Order by creation time ascending to process them chronologically if needed,
+    // although for deletion, order might not strictly matter.
+    .order("asc")
+    .collect();
+
+  return messages;
+}
+
+/**
  * Get a message by its ID.
  */
 export async function getMessageById(

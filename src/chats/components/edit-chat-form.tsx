@@ -11,27 +11,33 @@ import {
   FormLabel,
   FormMessage,
 } from "@/core/components/form";
-import { createChatSchema } from "@/chats/types/chat"; // Use chat schema
+import { createChatSchema, ChatType } from "@/chats/types/chat"; // Use chat schema and ChatType
 import AiEnabledTextarea from "@/ai/components/ai-enabled-textarea";
 import { Task as TaskType } from "@/ai/types/tasks";
 import { useEffect } from "react";
+import AssistantDropdown from "@/assistants/components/assistant-dropdown"; // Import the dropdown
+import { Id } from "@convex-generated/dataModel"; // Import Id type
 
 // --- Internal Form Schema and Type ---
+// assistantId is already optional in createChatSchema
 const editChatInternalSchema = createChatSchema.extend({
   tags: z.string().optional(),
 });
 type EditChatInternalValues = z.infer<typeof editChatInternalSchema>;
+
 // --- External onSubmit Type ---
+// Uses createChatSchema which includes optional assistantId
 type EditChatFormSubmitValues = z.infer<typeof createChatSchema>;
-// --- Initial Values Prop Type (expects array) ---
-type EditChatFormInitialValues = z.infer<typeof createChatSchema>;
+
+// --- Initial Values Prop Type --- Use the full ChatType from chat.ts
+type EditChatFormInitialValues = ChatType;
 
 interface EditChatFormProps {
   onSubmit: (values: EditChatFormSubmitValues) => void;
   onCancel: () => void;
   initialValues: EditChatFormInitialValues;
+  chatId: string;
   submitLabel?: string;
-  chatId: string; // Needed for context-aware AI tasks later
 }
 
 // Helper to convert initial array to string for form state
@@ -44,6 +50,7 @@ const getInitialFormValues = (
     tags: Array.isArray(initialValues.tags)
       ? initialValues.tags.join(", ") // Convert array to string with ", "
       : "",
+    assistantId: initialValues.assistantId || undefined, // Get assistantId
   };
 };
 
@@ -51,13 +58,13 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
   onSubmit,
   onCancel,
   initialValues,
-  submitLabel = "Save Changes",
   chatId,
+  submitLabel = "Save Changes",
 }) => {
   // Use internal schema and type
   const form = useForm<EditChatInternalValues>({
     resolver: zodResolver(editChatInternalSchema),
-    defaultValues: getInitialFormValues(initialValues),
+    defaultValues: getInitialFormValues(initialValues), // defaultValues will now include assistantId
   });
 
   // Reset form if initialValues change
@@ -88,7 +95,7 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
 
   const getChatContext = (
     fieldName: string,
-  ): Record<string, any> | undefined => {
+  ): Record<string, string> | undefined => {
     const values = form.getValues();
     if (
       fieldName === "title" ||
@@ -96,10 +103,10 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
       fieldName === "tags"
     ) {
       return {
+        chatId: chatId,
         title: values.title || "",
         description: values.description || "",
         tags: values.tags || "",
-        chatId: chatId,
       };
     }
     return undefined;
@@ -113,12 +120,13 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
           .split(",")
           .map((tag) => tag.trim())
           .filter(Boolean)
-      : [];
+      : undefined; // Use undefined if empty
 
     const finalValues: EditChatFormSubmitValues = {
-      ...internalValues,
+      title: internalValues.title,
       description: internalValues.description || undefined,
       tags: finalTags,
+      assistantId: internalValues.assistantId || undefined, // Ensure undefined if not selected
     };
     onSubmit(finalValues);
   };
@@ -197,6 +205,28 @@ const EditChatForm: React.FC<EditChatFormProps> = ({
               </FormControl>
               <FormDescription>
                 Enter comma-separated tags. Use AI to generate from messages.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Assistant Field */}
+        <FormField
+          control={form.control}
+          name="assistantId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Assistant (Optional)</FormLabel>
+              <FormControl>
+                <AssistantDropdown
+                  value={field.value as Id<"assistants"> | undefined} // Cast or handle potential undefined
+                  onChange={field.onChange}
+                  className="w-full"
+                />
+              </FormControl>
+              <FormDescription>
+                Optionally select an assistant to use for this chat.
               </FormDescription>
               <FormMessage />
             </FormItem>

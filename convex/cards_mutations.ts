@@ -16,6 +16,7 @@
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MutationCtx, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import { authenticationGuard } from "./users_guards";
 import { ownershipGuard, ownershipGuardThroughDeck } from "./cards_guards";
@@ -50,6 +51,16 @@ export const create = mutation({
     await ownershipGuardThroughDeck(ctx, userId, args.deckId);
     const cardId = await createCard(ctx, args, args.deckId, userId);
     await adjustCardCount(ctx, args.deckId, 1);
+
+    // Schedule the embedding generation
+    const front = args.front || "";
+    const back = args.back || "";
+    const searchableContent = `${front.trim()} ${back.trim()}`;
+    await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+      text: searchableContent,
+      cardId,
+    });
+
     return cardId;
   },
 });
@@ -61,7 +72,6 @@ export const create = mutation({
 export const update = mutation({
   args: {
     cardId: v.id("cards"),
-    deckId: v.optional(v.id("decks")),
     ...cardUpdateSchema,
   },
   handler: async (
@@ -76,18 +86,37 @@ export const update = mutation({
     const card = await getCardById(ctx, cardId);
     await ownershipGuard(userId, card.userId);
 
+    const oldDeckId = card.deckId;
+    let contentChanged = false;
+
     // Move card to a different deck?
     if (deckId && deckId !== card.deckId) {
       // Check if the new deck is owned by the user
       await ownershipGuardThroughDeck(ctx, userId, deckId);
-
       // Adjust card counts
       await adjustCardCount(ctx, card.deckId, -1);
       await adjustCardCount(ctx, deckId, 1);
     }
 
-    // Update the card
-    await updateCard(ctx, cardId, data);
+    // Check if content is changing before updating
+    if (data.front || data.back) {
+      contentChanged = true;
+    }
+
+    // Update the card (including potential deckId change)
+    await updateCard(ctx, cardId, { ...data, deckId: deckId }); // Ensure deckId is passed if changed
+
+    // Schedule embedding regeneration if content changed
+    if (contentChanged) {
+      const front = data.front || card.front || "";
+      const back = data.back || card.back || "";
+      const searchableContent = `${front.trim()} ${back.trim()}`;
+      await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+        text: searchableContent,
+        cardId,
+      });
+    }
+
     return true;
   },
 });

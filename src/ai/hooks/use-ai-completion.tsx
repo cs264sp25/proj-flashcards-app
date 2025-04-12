@@ -10,7 +10,7 @@ interface UseAiCompletionReturn {
   generateCompletion: (
     text: string,
     task: Task,
-    context?: Record<string, any>,
+    context?: Record<string, string>,
     customPrompt?: string,
   ) => Promise<void>;
 }
@@ -26,7 +26,7 @@ export function useAiCompletion(
     async (
       text: string,
       task: Task,
-      context?: Record<string, any>,
+      context?: Record<string, string>,
       customPrompt?: string,
     ) => {
       if (DEBUG)

@@ -11,7 +11,7 @@ interface AiEnabledTextareaProps {
   className?: string;
   value?: string;
   onChange?: (value: string) => void;
-  context?: Record<string, any>;
+  context?: Record<string, string>;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -25,12 +25,13 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
   onKeyDown,
 }) => {
   const [input, setInput] = useState<string>(externalValue || "");
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const { isLoading, error, generateCompletion } = useAiCompletion(setInput);
 
   useEffect(() => {
-    if (externalValue !== undefined) {
-      setInput(externalValue);
+    if (externalValue) {
+      if (externalValue !== input) {
+        setInput(externalValue);
+      }
     }
   }, [externalValue]);
 
@@ -44,8 +45,6 @@ const AiEnabledTextarea: React.FC<AiEnabledTextareaProps> = ({
   };
 
   const handleTaskSelect = async (task: Task, customPrompt?: string) => {
-    setSelectedTask(task);
-
     if (inputDependentTasks.has(task) && !input.trim()) {
       console.warn(
         `Task '${task}' requires text input, but the field is empty.`,

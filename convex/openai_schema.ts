@@ -22,7 +22,6 @@ export const messageSchema = {
   content: v.string(),
 };
 
-// eslint-disable-next-line
 export const messageSchemaObject = v.object(messageSchema);
 export type MessageType = Infer<typeof messageSchemaObject>;
 
@@ -32,7 +31,6 @@ export const completionArgsSchema = {
   placeholderMessageId: v.id("messages"),
 };
 
-// eslint-disable-next-line
 export const completionArgsSchemaObject = v.object(completionArgsSchema);
 export type CompletionArgsType = Infer<typeof completionArgsSchemaObject>;
 
@@ -42,6 +40,5 @@ export const getEmbeddingsArgsSchema = {
   cardId: v.optional(v.id("cards")),
 };
 
-// eslint-disable-next-line
 export const getEmbeddingsArgsSchemaObject = v.object(getEmbeddingsArgsSchema);
 export type GetEmbeddingsArgsType = Infer<typeof getEmbeddingsArgsSchemaObject>;

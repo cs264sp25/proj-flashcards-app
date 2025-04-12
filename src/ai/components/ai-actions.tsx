@@ -6,7 +6,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/core/components/dropdown-menu";
 import { CustomPromptDialog } from "./custom-prompt-dialog";
 import { Task, TaskDescriptions, inputDependentTasks } from "../types/tasks";

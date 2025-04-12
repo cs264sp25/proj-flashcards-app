@@ -13,6 +13,12 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as assistants_helpers from "../assistants_helpers.js";
+import type * as assistants_internals from "../assistants_internals.js";
+import type * as assistants_mutations from "../assistants_mutations.js";
+import type * as assistants_queries from "../assistants_queries.js";
+import type * as assistants_schema from "../assistants_schema.js";
+import type * as assistants_seed from "../assistants_seed.js";
 import type * as auth from "../auth.js";
 import type * as cards_guards from "../cards_guards.js";
 import type * as cards_helpers from "../cards_helpers.js";
@@ -44,10 +50,14 @@ import type * as messages_mutations from "../messages_mutations.js";
 import type * as messages_queries from "../messages_queries.js";
 import type * as messages_schema from "../messages_schema.js";
 import type * as messages_seed from "../messages_seed.js";
+import type * as openai_assistants from "../openai_assistants.js";
 import type * as openai_handlers from "../openai_handlers.js";
 import type * as openai_helpers from "../openai_helpers.js";
 import type * as openai_internals from "../openai_internals.js";
+import type * as openai_messages from "../openai_messages.js";
+import type * as openai_runs from "../openai_runs.js";
 import type * as openai_schema from "../openai_schema.js";
+import type * as openai_threads from "../openai_threads.js";
 import type * as openai_tools from "../openai_tools.js";
 import type * as prompts from "../prompts.js";
 import type * as shared from "../shared.js";
@@ -68,6 +78,12 @@ import type * as users_seed from "../users_seed.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  assistants_helpers: typeof assistants_helpers;
+  assistants_internals: typeof assistants_internals;
+  assistants_mutations: typeof assistants_mutations;
+  assistants_queries: typeof assistants_queries;
+  assistants_schema: typeof assistants_schema;
+  assistants_seed: typeof assistants_seed;
   auth: typeof auth;
   cards_guards: typeof cards_guards;
   cards_helpers: typeof cards_helpers;
@@ -99,10 +115,14 @@ declare const fullApi: ApiFromModules<{
   messages_queries: typeof messages_queries;
   messages_schema: typeof messages_schema;
   messages_seed: typeof messages_seed;
+  openai_assistants: typeof openai_assistants;
   openai_handlers: typeof openai_handlers;
   openai_helpers: typeof openai_helpers;
   openai_internals: typeof openai_internals;
+  openai_messages: typeof openai_messages;
+  openai_runs: typeof openai_runs;
   openai_schema: typeof openai_schema;
+  openai_threads: typeof openai_threads;
   openai_tools: typeof openai_tools;
   prompts: typeof prompts;
   shared: typeof shared;

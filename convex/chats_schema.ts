@@ -22,6 +22,8 @@ export const chatInSchema = {
   title: v.string(),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
+  // Which assistant to use for this chat
+  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line
@@ -35,6 +37,7 @@ export const chatUpdateSchema = {
   title: v.optional(v.string()),
   description: v.optional(v.string()),
   tags: v.optional(v.array(v.string())),
+  assistantId: v.optional(v.id("assistants")),
 };
 
 // eslint-disable-next-line
@@ -51,6 +54,8 @@ export const chatSchema = {
   userId: v.id("users"),
   // Combined field for full-text search
   searchableContent: v.string(),
+  // OpenAI thread ID
+  openaiThreadId: v.optional(v.string()), // Managed internally, can be 'pending' until the thread is created
 };
 
 // eslint-disable-next-line
@@ -66,7 +71,8 @@ export const chatOutSchema = {
   ...chatInSchema,
   messageCount: v.number(),
   userId: v.id("users"),
-  // We don't need to return the searchableContent field
+  assistantId: v.optional(v.id("assistants")),
+  // We don't need to return the searchableContent or openaiThreadId fields
 };
 
 // eslint-disable-next-line

@@ -1,5 +1,4 @@
 import { cn } from "@/core/lib/utils";
-import { ScrollArea } from "@/core/components/scroll-area";
 import { useRouter } from "@/core/hooks/use-router";
 import { Button } from "@/core/components/button";
 import { PlusCircle } from "lucide-react";

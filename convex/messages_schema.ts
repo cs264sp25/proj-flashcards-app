@@ -9,6 +9,7 @@
  * - Uses shared MessageRole enum from shared schema
  * - Includes database indexes for efficient querying (by_chat_id)
  ******************************************************************************/
+
 import { defineTable } from "convex/server";
 import { Infer, v } from "convex/values";
 
@@ -45,9 +46,10 @@ export type MessageUpdateType = Infer<typeof messageUpdateSchemaObject>;
  * Type representing a message in the database
  */
 export const messageSchema = {
+  // Convex will automatically add `_id` and `_creationTime` fields to the schema
   ...messageInSchema,
   role: MessageRole,
-  // Convex will automatically add `_id` and `_creationTime` fields to the schema
+  openaiMessageId: v.optional(v.string()), // Managed internally, can be 'pending' until the message is created
 };
 
 // eslint-disable-next-line
@@ -61,6 +63,7 @@ export const messageOutSchema = {
   _id: v.id("messages"),
   _creationTime: v.number(),
   ...messageSchema,
+  // We don't need to return the openaiMessageId field
 };
 
 // eslint-disable-next-line

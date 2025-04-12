@@ -17,7 +17,6 @@ import { IndexRangeBuilder, PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
-import { internal } from "./_generated/api";
 
 import { DeckInType, DeckOutType, DeckUpdateType } from "./decks_schema";
 import { PaginationOptsType, SortOrderType } from "./shared";
@@ -125,12 +124,6 @@ export async function createDeck(
     searchableContent,
   });
 
-  // Schedule an action that embeds the deck and updates the deck.
-  ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-    text: searchableContent,
-    deckId,
-  });
-
   return deckId;
 }
 
@@ -149,14 +142,6 @@ export async function updateDeck(
     ...data,
     searchableContent,
   });
-
-  if (data.title || data.description || data.tags) {
-    // Schedule an action that embeds the deck and updates the deck.
-    ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
-      text: searchableContent,
-      deckId,
-    });
-  }
 }
 
 export async function deleteDeck(
