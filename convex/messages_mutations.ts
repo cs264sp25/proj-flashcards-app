@@ -14,7 +14,7 @@
  * - remove: Delete message and update chat count
  ******************************************************************************/
 import { ConvexError, v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import { MutationCtx, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
@@ -26,6 +26,7 @@ import {
   deleteMessage,
   getMessageById,
   getAllMessages,
+  getSubsequentMessages,
 } from "./messages_helpers";
 import { adjustMessageCount } from "./chats_helpers";
 import {
@@ -35,6 +36,9 @@ import {
   messageUpdateSchema,
 } from "./messages_schema";
 import { getAssistantById } from "./assistants_helpers";
+import { getChatById } from "./chats_helpers";
+
+const DEBUG = true;
 
 // The number of messages to send to the AI as context.
 const CHAT_HISTORY_LENGTH = 10;
@@ -118,7 +122,8 @@ export const create = mutation({
 /**
  * Update an existing message.
  * The authenticated user must own the chat containing the message, or an error is thrown.
- * Also triggers a new AI response.
+ * If the chat uses the OpenAI Assistants API, it handles edits by deleting/recreating messages.
+ * Otherwise, it triggers a legacy completion.
  */
 export const update = mutation({
   args: {
@@ -133,67 +138,186 @@ export const update = mutation({
   ) => {
     const { messageId, ...data } = args;
 
-    const userId = await authenticationGuard(ctx);
-    let message = await getMessageById(ctx, messageId);
-    await ownershipGuardThroughChat(ctx, userId, message.chatId);
+    if (DEBUG) {
+      console.log("Updating message", messageId, data);
+    }
 
-    if (message.role === "assistant") {
+    const userId = await authenticationGuard(ctx);
+    const originalMessage = await getMessageById(ctx, messageId);
+    const chat = await getChatById(ctx, originalMessage.chatId);
+    await ownershipGuardThroughChat(ctx, userId, originalMessage.chatId);
+
+    if (DEBUG) {
+      console.log("Original message", originalMessage);
+    }
+
+    if (originalMessage.role === "assistant") {
       throw new ConvexError({
         code: 400,
-        message: "Cannot update assistant messages",
+        message: "Cannot update assistant messages directly",
       });
     }
 
-    await updateMessage(ctx, messageId, data);
-    message = await getMessageById(ctx, messageId);
+    let assistant: Doc<"assistants"> | null = null;
+    if (chat.assistantId) {
+      assistant = await getAssistantById(ctx, chat.assistantId);
+    }
 
-    // Fetch the latest HISTORY_SIZE messages to send as context.
-    const paginatedMessages = await getAllMessages(
-      ctx,
-      {
-        numItems: CHAT_HISTORY_LENGTH,
-        cursor: null,
-      },
-      message.chatId,
-      "desc",
-      undefined,
-      message._creationTime,
-    );
+    if (chat.openaiThreadId && assistant?.openaiAssistantId) {
+      if (DEBUG) {
+        console.log("Chat", chat);
+        console.log("Assistant", assistant);
+      }
 
-    let { page: messages } = paginatedMessages;
-    // Reverse the list so that it's in chronological order.
-    messages.reverse();
+      // 1. Update the Convex message content first
+      let updatedMessage = originalMessage;
+      if (data.content !== originalMessage.content) {
+        await updateMessage(ctx, messageId, data);
+        updatedMessage = await getMessageById(ctx, messageId);
+      }
 
-    messages = [...messages, message];
+      if (DEBUG) {
+        console.log("Updated message", updatedMessage);
+      }
 
-    // Insert a message with a placeholder body.
-    const botMessageId = await createMessage(ctx, "assistant", {
-      content: "...",
-      chatId: message.chatId,
-    });
+      // 2. Find subsequent messages in Convex DB using the new helper
+      const subsequentMessages = await getSubsequentMessages(
+        ctx, // Use ctx directly here, helper expects QueryCtx/MutationCtx
+        updatedMessage.chatId,
+        updatedMessage._creationTime, // Use updated message's time
+      );
 
-    const botMessage = await getMessageById(ctx, botMessageId);
+      if (DEBUG) {
+        console.log("Subsequent messages", subsequentMessages);
+      }
 
-    await adjustMessageCount(ctx, message.chatId, 1);
+      // 3. Schedule deletion of original and subsequent OpenAI messages
+      // Collect IDs to delete in OpenAI
+      const openaiMessageIdsToDelete: string[] = [];
+      if (originalMessage.openaiMessageId) {
+        openaiMessageIdsToDelete.push(originalMessage.openaiMessageId);
+      }
+      subsequentMessages.forEach((msg) => {
+        if (msg.openaiMessageId) {
+          openaiMessageIdsToDelete.push(msg.openaiMessageId);
+        }
+      });
 
-    // Schedule an action that calls ChatGPT and updates the message.
-    ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
-      userId,
-      placeholderMessageId: botMessageId,
-    });
+      // Schedule a *single* action to delete all relevant OpenAI messages
+      if (openaiMessageIdsToDelete.length > 0) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.openai_messages.deleteMessages,
+          {
+            openaiThreadId: chat.openaiThreadId,
+            openaiMessageIds: openaiMessageIdsToDelete,
+          },
+        );
+      }
 
-    // Schedule an action to delete all messages after the edited one and before the AI response
-    ctx.scheduler.runAfter(0, internal.messages_internals.deleteMessages, {
-      chatId: message.chatId,
-      afterThisCreationTime: message._creationTime,
-      beforeThisCreationTime: botMessage._creationTime,
-    });
+      if (DEBUG) {
+        console.log("Scheduled deletion of OpenAI messages");
+      }
 
-    return true;
+      // 4. Schedule creation of the *new* user message in OpenAI thread
+      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+        messageId: updatedMessage._id,
+        openaiThreadId: chat.openaiThreadId,
+        content: updatedMessage.content,
+        role: "user",
+      });
+
+      const placeholderMessageId = await createMessage(ctx, "assistant", {
+        content: "...",
+        chatId: updatedMessage.chatId,
+      });
+
+      if (DEBUG) {
+        console.log("Placeholder message", placeholderMessageId);
+      }
+
+      await adjustMessageCount(ctx, updatedMessage.chatId, 1);
+
+      if (DEBUG) {
+        console.log("Scheduling stream run to update the placeholder message");
+      }
+
+      await ctx.scheduler.runAfter(0, internal.openai_runs.streamRun, {
+        openaiThreadId: chat.openaiThreadId,
+        openaiAssistantId: assistant.openaiAssistantId,
+        placeholderMessageId: placeholderMessageId,
+      });
+
+      if (DEBUG) {
+        console.log("Schedule deletion of subsequent messages");
+      }
+
+      // 7. Schedule deletion of subsequent *Convex* messages using the new internal mutation
+      const convexMessageIdsToDelete = subsequentMessages.map((msg) => msg._id);
+      if (convexMessageIdsToDelete.length > 0) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.messages_internals.deleteMessagesByIds,
+          {
+            messageIds: convexMessageIdsToDelete,
+            chatId: updatedMessage.chatId,
+          },
+        );
+      }
+
+      return true;
+    } else {
+      await updateMessage(ctx, messageId, data);
+      const updatedMessage = await getMessageById(ctx, messageId);
+
+      const paginatedMessages = await getAllMessages(
+        ctx,
+        {
+          numItems: CHAT_HISTORY_LENGTH,
+          cursor: null,
+        },
+        updatedMessage.chatId,
+        "desc",
+        undefined,
+        updatedMessage._creationTime,
+      );
+
+      let { page: messages } = paginatedMessages;
+      messages.reverse();
+      messages = [...messages, updatedMessage];
+
+      const placeholderMessageId = await createMessage(ctx, "assistant", {
+        content: "...",
+        chatId: updatedMessage.chatId,
+      });
+      await adjustMessageCount(ctx, updatedMessage.chatId, 1);
+
+      const placeholderMessage = await getMessageById(
+        ctx,
+        placeholderMessageId,
+      );
+
+      await ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
+        messages: messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+        userId,
+        placeholderMessageId: placeholderMessageId,
+      });
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.messages_internals.deleteMessages,
+        {
+          chatId: updatedMessage.chatId,
+          afterThisCreationTime: updatedMessage._creationTime,
+          beforeThisCreationTime: placeholderMessage._creationTime,
+        },
+      );
+
+      return true;
+    }
   },
 });
 
