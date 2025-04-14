@@ -32,7 +32,7 @@ export async function getAllCards(
   deckId?: Id<"decks">,
   sortOrder?: SortOrderType,
   searchQuery?: string,
-): Promise<PaginationResult<CardOutType>> {
+): Promise<PaginationResult<Doc<"cards">>> {
   sortOrder = sortOrder || "asc";
 
   let results: PaginationResult<Doc<"cards">>;
@@ -72,18 +72,7 @@ export async function getAllCards(
       .paginate(paginationOpts);
   }
 
-  return {
-    ...results,
-    page: results.page.map((card) => ({
-      _id: card._id,
-      _creationTime: card._creationTime,
-      deckId: card.deckId,
-      userId: card.userId,
-      front: card.front,
-      back: card.back,
-      // We don't need to send the searchableContent or embedding to the client
-    })),
-  };
+  return results;
 }
 
 /**
@@ -92,7 +81,7 @@ export async function getAllCards(
 export async function getCardById(
   ctx: QueryCtx,
   cardId: Id<"cards">,
-): Promise<CardOutType> {
+): Promise<Doc<"cards">> {
   const card = await ctx.db.get(cardId);
   if (!card) {
     throw new ConvexError({
@@ -100,15 +89,7 @@ export async function getCardById(
       code: 404,
     });
   }
-  return {
-    _id: card._id,
-    _creationTime: card._creationTime,
-    deckId: card.deckId,
-    userId: card.userId,
-    front: card.front,
-    back: card.back,
-    // We don't need to send the searchableContent or embedding to the client
-  };
+  return card;
 }
 
 /**

@@ -44,13 +44,26 @@ export const getAll = query({
     const { deckId, sortOrder, searchQuery } = args;
     const userId = await authenticationGuard(ctx);
     await ownershipGuardThroughDeck(ctx, userId, deckId);
-    return await getAllCards(
+    const results = await getAllCards(
       ctx,
       args.paginationOpts,
       deckId,
       sortOrder,
       searchQuery,
     );
+
+    return {
+      ...results,
+      page: results.page.map((card) => ({
+        _id: card._id,
+        _creationTime: card._creationTime,
+        deckId: card.deckId,
+        userId: card.userId,
+        front: card.front,
+        back: card.back,
+        // We don't need to send the searchableContent or embedding to the client
+      })),
+    };
   },
 });
 
@@ -71,6 +84,14 @@ export const getOne = query({
     const userId = await authenticationGuard(ctx);
     const card = await getCardById(ctx, args.cardId);
     await ownershipGuard(userId, card.userId);
-    return card;
+    return {
+      _id: card._id,
+      _creationTime: card._creationTime,
+      deckId: card.deckId,
+      userId: card.userId,
+      front: card.front,
+      back: card.back,
+      // We don't need to send the searchableContent or embedding to the client
+    };
   },
 });
