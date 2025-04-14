@@ -4,6 +4,7 @@ import {
   Home,
   BotMessageSquare,
   Bot,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar as SidebarRoot,
@@ -37,6 +38,11 @@ const items = [
     title: "Chat",
     page: "chats",
     icon: BotMessageSquare,
+  },
+  {
+    title: "Studies",
+    page: "studies",
+    icon: BookOpen,
   },
   {
     title: "Demo",

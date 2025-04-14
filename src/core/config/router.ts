@@ -25,6 +25,8 @@ const pages = {
   addAssistant: `/${BASE_URL}/assistants/add`, // Add a new assistant
   assistant: `/${BASE_URL}/assistants/:assistantId`, // View a specific assistant
   editAssistant: `/${BASE_URL}/assistants/:assistantId/edit`, // Edit a specific assistant
+  studies: `/${BASE_URL}/studies`, // View all studies
+  viewStudy: `/${BASE_URL}/studies/:studyId`, // View and interact with a specific study
 };
 
 export type Page = keyof typeof pages;
@@ -34,6 +36,7 @@ export type Params = {
   cardId?: string;
   chatId?: string;
   assistantId?: string;
+  studyId?: string;
 };
 
 export const $router = createRouter(pages);
