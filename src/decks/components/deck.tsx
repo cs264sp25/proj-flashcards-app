@@ -4,6 +4,8 @@ import { Badge } from "@/core/components/badge";
 import { AspectRatio } from "@/core/components/aspect-ratio";
 import { TooltipButton } from "@/core/components/tooltip-button";
 import { useRouter } from "@/core/hooks/use-router";
+import { useMutationStudies } from "@/studies/hooks/use-mutation-studies";
+import { Id } from "@convex-generated/dataModel";
 
 import { DeckType } from "@/decks/types/deck";
 
@@ -18,6 +20,19 @@ export function Deck({
   className,
 }: Partial<DeckType> & { className?: string }) {
   const { navigate } = useRouter();
+  const { add: createStudy } = useMutationStudies();
+
+  const handleStudyClick = async () => {
+    try {
+      // Create a new study for this deck
+      const studyId = await createStudy({ deckId: _id as Id<"decks"> });
+      // Navigate to the study view
+      navigate("viewStudy", { studyId });
+    } catch (error) {
+      console.error("Failed to create study:", error);
+      // You might want to show an error toast or message here
+    }
+  };
 
   return (
     <AspectRatio
@@ -105,7 +120,7 @@ export function Deck({
             variant={"ghost"}
             size={"icon"}
             tooltipContent="Study this deck"
-            // onClick={() => navigate("study", { deckId: _id })}
+            onClick={handleStudyClick}
           >
             <BookOpen className="h-4 w-4" />
           </TooltipButton>

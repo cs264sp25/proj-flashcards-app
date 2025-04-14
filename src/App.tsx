@@ -28,6 +28,8 @@ const AddAssistantPage = lazy(
 const EditAssistantPage = lazy(
   () => import("@/assistants/pages/edit-assistant-page"),
 );
+const ListStudiesPage = lazy(() => import("@/studies/pages/list-studies-page"));
+const ViewStudyPage = lazy(() => import("@/studies/pages/study-page"));
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => <Loading />;
@@ -194,7 +196,11 @@ function App() {
         };
       case "chats":
         return {
-          left: <ListChatsPage />,
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListChatsPage />
+            </Suspense>
+          ),
           middle: isSmallScreen ? null : (
             <Empty message="Select a chat to view its messages." />
           ),
@@ -202,29 +208,49 @@ function App() {
         };
       case "addChat":
         return {
-          left: isSmallScreen ? null : <ListChatsPage />,
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListChatsPage />
+            </Suspense>
+          ),
           middle: <AddChatPage />,
           right: null,
         };
       case "editChat":
         return {
           left: isSmallScreen ? null : (
-            <ListChatsPage activeChatId={params.chatId as string} />
+            <Suspense fallback={<LoadingFallback />}>
+              <ListChatsPage activeChatId={params.chatId as string} />
+            </Suspense>
           ),
-          middle: <EditChatPage chatId={params.chatId as string} />,
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <EditChatPage chatId={params.chatId as string} />
+            </Suspense>
+          ),
           right: null,
         };
       case "messages":
         return {
           left: isSmallScreen ? null : (
-            <ListChatsPage activeChatId={params.chatId as string} />
+            <Suspense fallback={<LoadingFallback />}>
+              <ListChatsPage activeChatId={params.chatId as string} />
+            </Suspense>
           ),
-          middle: <MessagesPage chatId={params.chatId as string} />,
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <MessagesPage chatId={params.chatId as string} />
+            </Suspense>
+          ),
           right: null,
         };
       case "assistants":
         return {
-          left: <ListAssistantsPage />,
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListAssistantsPage />
+            </Suspense>
+          ),
           middle: isSmallScreen ? null : (
             <Empty message="Select an assistant to view its details." />
           ),
@@ -232,16 +258,50 @@ function App() {
         };
       case "addAssistant":
         return {
-          left: isSmallScreen ? null : <ListAssistantsPage />,
-          middle: <AddAssistantPage />,
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListAssistantsPage />
+            </Suspense>
+          ),
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <AddAssistantPage />
+            </Suspense>
+          ),
           right: null,
         };
       case "editAssistant":
         return {
-          left: isSmallScreen ? null : <ListAssistantsPage />,
-          middle: (
-            <EditAssistantPage assistantId={params.assistantId as string} />
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListAssistantsPage />
+            </Suspense>
           ),
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <EditAssistantPage assistantId={params.assistantId as string} />
+            </Suspense>
+          ),
+          right: null,
+        };
+      case "studies":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListStudiesPage />
+            </Suspense>
+          ),
+          middle: null,
+          right: null,
+        };
+      case "viewStudy":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ViewStudyPage studyId={params.studyId as string} />
+            </Suspense>
+          ),
+          middle: null,
           right: null,
         };
       default:
