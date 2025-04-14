@@ -211,16 +211,17 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
    - Add support for common markdown formatting
 
 2. Develop study progress tracking (Secondary Feature #2)
-   - Create data structures for recording study sessions
-   - Implement study session logging
-   - Build basic analytics for tracking performance
-   - Design interface for viewing progress
+   - Implement the backed to perform CRUD operations on studies
+   - Implement the frontend to support backend operations
+   - Integrate "study" feature on decks
 
 3. Begin AI Learning Companion development
-   - Design conversation flow for AI interactions
-   - Create base prompting system for the Learning Companion
-   - Implement chat interface components
-   - Set up context management for conversations
+   - CRUD Operations on Assistants
+   - UI for Assistants
+   - CRUD Operations on Threads
+   - Integrate CRUD on chats with Threads
+   - CRUD Operations on Messages
+   - Integrate CRUD on messages
 
 **Deliverables:**
 
