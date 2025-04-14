@@ -17,8 +17,16 @@ interface StudyPageProps {
 
 const StudyPage: React.FC<StudyPageProps> = ({ studyId }) => {
   const { navigate } = useRouter();
-  const { data: study, loading: studyLoading, error: studyError } = useQueryStudy(studyId as Id<"studies">);
-  const { data: cards, loading: cardsLoading, error: cardsError } = useQueryStudyCards(study?.deckId);
+  const {
+    data: study,
+    loading: studyLoading,
+    error: studyError,
+  } = useQueryStudy(studyId as Id<"studies">);
+  const {
+    data: cards,
+    loading: cardsLoading,
+    error: cardsError,
+  } = useQueryStudyCards(study?.deckId);
 
   const handleComplete = () => {
     navigate("decks");
