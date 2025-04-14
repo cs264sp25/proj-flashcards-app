@@ -211,7 +211,7 @@ This roadmap maps out the development of our AI-powered Flashcards App across tw
    - Add support for common markdown formatting
 
 2. Develop study progress tracking (Secondary Feature #2)
-   - Implement the backed to perform CRUD operations on studies
+   - Implement the backend to perform CRUD operations on studies
    - Implement the frontend to support backend operations
    - Integrate "study" feature on decks
 
