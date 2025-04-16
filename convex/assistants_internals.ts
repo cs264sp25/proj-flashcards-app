@@ -6,7 +6,17 @@
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
+import { getAssistantById as getAssistantByIdHelper } from "./assistants_helpers";
+
+export const getAssistantById = internalQuery({
+  args: {
+    assistantId: v.id("assistants"),
+  },
+  handler: async (ctx, args) => {
+    return await getAssistantByIdHelper(ctx, args.assistantId);
+  },
+});
 
 // Internal mutation to update the OpenAI assistant ID
 export const updateOpenAIId = internalMutation({
