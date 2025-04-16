@@ -12,7 +12,7 @@ export function useMutationMessages(chatId: string) {
     message: CreateMessageType,
   ): Promise<string | null> => {
     try {
-      const { userMessageId } = await createMutation({
+      const userMessageId = await createMutation({
         content: message.content,
         chatId: chatId as Id<"chats">,
       });

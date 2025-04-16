@@ -55,6 +55,7 @@ export const create = mutation({
     const userMessageId = await createMessage(ctx, "user", args);
     await adjustMessageCount(ctx, args.chatId, 1);
 
+
     // Insert a message with a placeholder body.
     const botMessageId = await createMessage(ctx, "assistant", {
       content: "...",
@@ -104,7 +105,7 @@ export const create = mutation({
         messages.pop(); // dump the placeholder message
 
         // Schedule an action that calls OpenAI to generate a response and updates the placeholder message.
-        ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
+        ctx.scheduler.runAfter(0, internal.openai_direct.completion, {
           messages: messages.map((message) => ({
             role: message.role,
             content: message.content,
@@ -115,7 +116,7 @@ export const create = mutation({
       }
     }
 
-    return { userMessageId, botMessageId };
+    return userMessageId;
   },
 });
 
