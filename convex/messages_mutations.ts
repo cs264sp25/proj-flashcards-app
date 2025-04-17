@@ -30,10 +30,12 @@ import {
 } from "./messages_helpers";
 import { adjustMessageCount } from "./chats_helpers";
 import {
+  MessageRole,
   MessageInType,
   MessageUpdateType,
   messageInSchema,
   messageUpdateSchema,
+  MessageRoleType,
 } from "./messages_schema";
 import { getAssistantById } from "./assistants_helpers";
 import { getChatById } from "./chats_helpers";
@@ -48,14 +50,21 @@ const CHAT_HISTORY_LENGTH = 10;
  * Also triggers an AI response.
  */
 export const create = mutation({
-  args: { ...messageInSchema },
-  handler: async (ctx: MutationCtx, args: MessageInType) => {
+  args: {
+    ...messageInSchema,
+    role: v.optional(MessageRole),
+  },
+  handler: async (
+    ctx: MutationCtx,
+    args: MessageInType & { role: MessageRoleType },
+  ) => {
+    const role = args.role || "user";
     const userId = await authenticationGuard(ctx);
     const chat = await ownershipGuardThroughChat(ctx, userId, args.chatId);
-    const userMessageId = await createMessage(ctx, "user", args);
+    const userMessageId = await createMessage(ctx, role, args);
     await adjustMessageCount(ctx, args.chatId, 1);
 
-/*
+    /*
     // Insert a message with a placeholder body.
     const botMessageId = await createMessage(ctx, "assistant", {
       content: "...",
@@ -116,6 +125,16 @@ export const create = mutation({
       }
     }
 */
+
+    if (chat.openaiThreadId && role === "user") {
+      // Create the user message in OpenAI
+      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+        messageId: userMessageId,
+        openaiThreadId: chat.openaiThreadId,
+        content: args.content,
+        role,
+      });
+    }
 
     return userMessageId;
   },
