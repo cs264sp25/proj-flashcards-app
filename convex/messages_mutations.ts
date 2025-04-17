@@ -55,7 +55,7 @@ export const create = mutation({
     const userMessageId = await createMessage(ctx, "user", args);
     await adjustMessageCount(ctx, args.chatId, 1);
 
-
+/*
     // Insert a message with a placeholder body.
     const botMessageId = await createMessage(ctx, "assistant", {
       content: "...",
@@ -115,6 +115,7 @@ export const create = mutation({
         });
       }
     }
+*/
 
     return userMessageId;
   },

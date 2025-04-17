@@ -12,7 +12,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HonoWithConvex } from "convex-helpers/server/hono";
 
-import { chatRoute, completionRoute } from "./openai_handlers";
+import { chatRoute } from "./openai_chat_handler";
+import { completionRoute } from "./openai_completion_handler";
 import { directCompletionRoute } from "./openai_direct_http";
 import { auth } from "./auth";
 
