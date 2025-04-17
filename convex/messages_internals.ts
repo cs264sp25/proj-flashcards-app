@@ -19,6 +19,7 @@ import {
 import { PaginationOptsType, SortOrder, SortOrderType } from "./shared";
 import {
   getAllMessages as getAllMessagesHelper,
+  getMessageById as getMessageByIdHelper,
   createMessage as createMessageHelper,
   updateMessage as updateMessageHelper,
   removeAllMessagesInChat as removeAllMessagesInChatHelper,
@@ -53,6 +54,16 @@ export const getAllMessages = internalQuery({
       args.chatId,
       args.sortOrder,
     );
+  },
+});
+
+/**
+ * Get a message by its ID.
+ */
+export const getMessageById = internalQuery({
+  args: { messageId: v.id("messages") },
+  handler: async (ctx: QueryCtx, args: { messageId: Id<"messages"> }) => {
+    return await getMessageByIdHelper(ctx, args.messageId);
   },
 });
 
