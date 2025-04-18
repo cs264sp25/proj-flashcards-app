@@ -11,7 +11,7 @@ import { ActionCtx } from "./_generated/server";
 import { z } from "zod";
 import { internal } from "./_generated/api";
 import OpenAI from "openai";
-import { streamSSE } from 'hono/streaming'
+import { streamSSE } from "hono/streaming";
 
 const DEBUG = true;
 
@@ -21,7 +21,8 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "semanticSearchAmongDecks",
-      description: "Given a query, return the most relevant decks for this user",
+      description:
+        "Given a query, return the most relevant decks for this user",
       parameters: {
         type: "object",
         properties: {
@@ -43,7 +44,8 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "semanticSearchAmongCards",
-      description: "Given a query, return the most relevant cards for this user",
+      description:
+        "Given a query, return the most relevant cards for this user",
       parameters: {
         type: "object",
         properties: {
@@ -73,7 +75,8 @@ async function handleFunctionCall(
     userId: Id<"users">;
   },
 ) {
-  if (DEBUG) console.log("[DEBUG] Handling function call:", tool_call.function.name);
+  if (DEBUG)
+    console.log("[DEBUG] Handling function call:", tool_call.function.name);
   const functionName = tool_call.function.name;
   const functionArgs = JSON.parse(tool_call.function.arguments!);
   if (DEBUG) console.log("[DEBUG] Function arguments:", functionArgs);
@@ -147,9 +150,12 @@ chatRoute.post("/chat", async (c) => {
     const { messageId } = validationResult.data;
 
     // Get the message
-    const message = await ctx.runQuery(internal.messages_internals.getMessageById, {
-      messageId: messageId as Id<"messages">,
-    });
+    const message = await ctx.runQuery(
+      internal.messages_internals.getMessageById,
+      {
+        messageId: messageId as Id<"messages">,
+      },
+    );
 
     if (!message) {
       return c.json({ error: "Message not found" }, 404);
@@ -166,7 +172,10 @@ chatRoute.post("/chat", async (c) => {
 
     // Check if we have the required OpenAI IDs
     if (!chat.openaiThreadId || !chat.assistantId) {
-      if (DEBUG) console.log("[DEBUG] Missing OpenAI IDs, falling back to direct completion");
+      if (DEBUG)
+        console.log(
+          "[DEBUG] Missing OpenAI IDs, falling back to direct completion",
+        );
       // Redirect to direct-completion endpoint
       return c.redirect(`/ai/direct-completion`, 307);
     }
@@ -184,7 +193,10 @@ chatRoute.post("/chat", async (c) => {
     }
 
     if (!assistant.openaiAssistantId) {
-      if (DEBUG) console.log("[DEBUG] Missing OpenAI assistant ID, falling back to direct completion");
+      if (DEBUG)
+        console.log(
+          "[DEBUG] Missing OpenAI assistant ID, falling back to direct completion",
+        );
       // Redirect to direct-completion endpoint
       return c.redirect(`/ai/direct-completion`, 307);
     }
@@ -203,7 +215,7 @@ chatRoute.post("/chat", async (c) => {
             assistant_id: assistant.openaiAssistantId!,
             tools: tools,
             stream: true,
-          }
+          },
         );
 
         for await (const event of run) {
@@ -226,29 +238,63 @@ chatRoute.post("/chat", async (c) => {
             case "thread.run.requires_action":
               // Handle tool calls
               if (event.data.required_action?.type === "submit_tool_outputs") {
-                const toolCalls = event.data.required_action.submit_tool_outputs.tool_calls;
-                
+                const toolCalls =
+                  event.data.required_action.submit_tool_outputs.tool_calls;
+
                 // Process each tool call
+                const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] = [];
                 for (const toolCall of toolCalls) {
-                  const result = await handleFunctionCall(
-                    ctx,
-                    toolCall,
-                    { userId: identity.subject as Id<"users"> }
+                  const result = await handleFunctionCall(ctx, toolCall, {
+                    userId: identity.subject.split("|")[0] as Id<"users">,
+                  });
+
+                  toolOutputs.push({
+                    tool_call_id: toolCall.id,
+                    output: JSON.stringify(result),
+                  });
+                }
+
+                // Get the thread and run IDs from the event
+                const threadId = chat.openaiThreadId!;
+                const runId = event.data.id;
+
+                // Submit tool outputs and continue streaming
+                const continuedStream =
+                  openai.beta.threads.runs.submitToolOutputsStream(
+                    threadId,
+                    runId,
+                    {
+                      tool_outputs: toolOutputs,
+                      stream: true,
+                    },
                   );
 
-                  // Submit tool output
-                  await openai.beta.threads.runs.submitToolOutputs(
-                    chat.openaiThreadId!,
-                    event.data.id,
-                    {
-                      tool_outputs: [
-                        {
-                          tool_call_id: toolCall.id,
-                          output: JSON.stringify(result),
-                        },
-                      ],
+                // Continue streaming the response
+                for await (const continuedEvent of continuedStream) {
+                  if (continuedEvent.event === "thread.message.delta") {
+                    if (continuedEvent.data.delta.content) {
+                      for (const content of continuedEvent.data.delta.content) {
+                        if (content.type === "text" && content.text?.value) {
+                          await stream.writeSSE({
+                            data: content.text.value,
+                          });
+                        }
+                      }
                     }
-                  );
+                  } else if (continuedEvent.event === "thread.run.completed") {
+                    await stream.writeSSE({
+                      data: "[DONE]",
+                    });
+                    return;
+                  } else if (continuedEvent.event === "thread.run.failed") {
+                    await stream.writeSSE({
+                      data:
+                        "[ERROR] " +
+                        (continuedEvent.data.last_error?.message ||
+                          "Unknown error"),
+                    });
+                    return;
+                  }
                 }
               }
               break;
@@ -263,7 +309,9 @@ chatRoute.post("/chat", async (c) => {
             case "thread.run.failed":
               // Send error marker
               await stream.writeSSE({
-                data: "[ERROR] " + (event.data.last_error?.message || "Unknown error"),
+                data:
+                  "[ERROR] " +
+                  (event.data.last_error?.message || "Unknown error"),
               });
               return;
           }
@@ -271,7 +319,9 @@ chatRoute.post("/chat", async (c) => {
       } catch (error) {
         console.error("Error in streaming run:", error);
         await stream.writeSSE({
-          data: "[ERROR] " + (error instanceof Error ? error.message : "Unknown error"),
+          data:
+            "[ERROR] " +
+            (error instanceof Error ? error.message : "Unknown error"),
         });
       }
     });
