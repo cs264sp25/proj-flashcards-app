@@ -18,9 +18,9 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/core/components/sidebar";
-import { SignOut } from "@/auth/components/sign-out";
 import { useRouter } from "@/core/hooks/use-router";
 import { Page } from "@/core/config/router";
+import UserDropdownMenuInSidebar from "@/auth/components/user-dropdown-menu";
 
 // Menu items.
 const items = [
@@ -81,13 +81,7 @@ function Sidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <SignOut />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <UserDropdownMenuInSidebar />
       </SidebarFooter>
       <SidebarRail />
     </SidebarRoot>
