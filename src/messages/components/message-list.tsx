@@ -5,6 +5,13 @@ import Message from "@/messages/components/message";
 import { useQueryMessages } from "@/messages/hooks/use-query-messages";
 import { RotateCw } from "lucide-react";
 import { Button } from "@/core/components/button";
+import { useStore } from "@nanostores/react";
+import {
+  $isStreaming,
+  $isThinking,
+  $streamingMessage,
+} from "@/messages/store/streaming-message";
+import StreamingMessage from "@/messages/components/streaming-message";
 
 interface MessageListProps {
   chatId: string;
@@ -26,6 +33,10 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
   const [scrollDirection, setScrollDirection] = useState<"down" | "up" | null>(
     null,
   );
+  const isThinking = useStore($isThinking);
+  const isStreaming = useStore($isStreaming);
+  const streamingMessage = useStore($streamingMessage);
+  const THINKING_MESSAGE_ID = "thinking-message";
 
   const {
     data: messages, // array of messages
@@ -63,7 +74,12 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
 
       // if we never stored the last or first message id, store it
       if (!lastMessageId.current || !firstMessageId.current) {
-        lastMessageId.current = messages[messages.length - 1]._id;
+        // Priority order: streaming > thinking > last message
+        lastMessageId.current = isStreaming 
+          ? streamingMessage._id 
+          : isThinking 
+            ? THINKING_MESSAGE_ID 
+            : messages[messages.length - 1]._id;
         firstMessageId.current = messages[0]._id;
         scrollToMessage(lastMessageId.current);
         return;
@@ -72,9 +88,16 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       const firstMessage = messages[0];
       const lastMessage = messages[messages.length - 1];
 
-      if (lastMessage._id !== lastMessageId.current) {
+      // Determine the effective last message ID based on priority order
+      const effectiveLastMessageId = isStreaming 
+        ? streamingMessage._id 
+        : isThinking 
+          ? THINKING_MESSAGE_ID 
+          : lastMessage._id;
+
+      if (effectiveLastMessageId !== lastMessageId.current) {
         // if the last message is new, scroll to the bottom
-        lastMessageId.current = lastMessage._id;
+        lastMessageId.current = effectiveLastMessageId;
         scrollToMessage(lastMessageId.current);
       } else if (firstMessage._id !== firstMessageId.current) {
         // if the first message is new, user loaded earlier messages
@@ -92,7 +115,7 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       }
     },
     // Do not add isUserScrolling or scrollDirection to the dependencies!
-    [messages, scrollToMessage],
+    [messages, scrollToMessage, isStreaming, isThinking, streamingMessage],
   );
 
   const handleLoadMore = () => {
@@ -149,6 +172,21 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
           <Message message={message} />
         </div>
       ))}
+      {isThinking && (
+        <div key={THINKING_MESSAGE_ID} data-message-id={THINKING_MESSAGE_ID} className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <span className="pl-2">Connecting to AI...</span>
+        </div>
+      )}
+      {isStreaming && (
+        <div key={streamingMessage._id} data-message-id={streamingMessage._id}>
+          <StreamingMessage message={streamingMessage} />
+        </div>
+      )}
     </div>
   );
 };

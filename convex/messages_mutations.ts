@@ -40,7 +40,7 @@ import {
 import { getAssistantById } from "./assistants_helpers";
 import { getChatById } from "./chats_helpers";
 
-const DEBUG = false;
+const DEBUG = true;
 
 // The number of messages to send to the AI as context.
 const CHAT_HISTORY_LENGTH = 10;

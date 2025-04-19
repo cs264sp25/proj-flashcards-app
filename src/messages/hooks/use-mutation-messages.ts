@@ -3,10 +3,11 @@ import { Id } from "@convex-generated/dataModel";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
+import { setIsStreaming, setStreamingMessageContent, clearStreamingMessage, setIsThinking } from "@/messages/store/streaming-message";
 
 import { CreateMessageType } from "@/messages/types/message";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export function useMutationMessages(chatId: string) {
   const token = useAuthToken();
@@ -32,6 +33,8 @@ export function useMutationMessages(chatId: string) {
 
       if (DEBUG) console.log("Request body:", requestBody);
 
+      setIsThinking(true);
+
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -54,6 +57,10 @@ export function useMutationMessages(chatId: string) {
       // Accumulate the response chunks
       let fullResponse = "";
       let isDone = false;
+
+      setIsThinking(false);
+      setIsStreaming(true);
+      setStreamingMessageContent("Generating response...");
 
       // Process the stream
       while (!isDone) {
@@ -83,7 +90,9 @@ export function useMutationMessages(chatId: string) {
           // Extract the actual content after "data: "
           if (line.startsWith("data: ")) {
             const content = line.slice(6); // Remove "data: " prefix
+            // Append the content as-is to preserve original formatting
             fullResponse += content;
+            setStreamingMessageContent(fullResponse);
           }
         }
       }
@@ -95,6 +104,8 @@ export function useMutationMessages(chatId: string) {
         role: "assistant",
       });
 
+      setIsStreaming(false);
+      clearStreamingMessage();
     } catch (error) {
       toast.error("Error creating message", {
         description: (error as Error).message || "Please try again later",

@@ -227,9 +227,12 @@ chatRoute.post("/chat", async (c) => {
               if (event.data.delta.content) {
                 for (const content of event.data.delta.content) {
                   if (content.type === "text" && content.text?.value) {
+                    // Ensure newlines are preserved by sending the content as-is
                     await stream.writeSSE({
                       data: content.text.value,
                     });
+                    // Add a small delay to ensure proper streaming
+                    await new Promise(resolve => setTimeout(resolve, 10));
                   }
                 }
               }
