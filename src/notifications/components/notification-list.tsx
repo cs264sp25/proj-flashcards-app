@@ -24,14 +24,6 @@ const NotificationList: React.FC = () => {
     loadMore,
   } = useQueryNotifications(searchTerm, sort);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Empty message="Error loading notifications" />;
-  }
-
   return (
     <div className="flex flex-col h-full">
       <div className="flex-none mb-4">
@@ -65,7 +57,11 @@ const NotificationList: React.FC = () => {
             className="flex flex-col gap-2"
             aria-label="Notification list"
           >
-            {notifications.length === 0 ? (
+            {loading ? (
+              <Loading />
+            ) : error ? (
+              <Empty message="Error loading notifications" />
+            ) : notifications.length === 0 ? (
               <Empty message="No notifications found!" />
             ) : (
               notifications.map(
