@@ -30,6 +30,9 @@ const EditAssistantPage = lazy(
 );
 const ListStudiesPage = lazy(() => import("@/studies/pages/list-studies-page"));
 const ViewStudyPage = lazy(() => import("@/studies/pages/study-page"));
+const ListNotificationsPage = lazy(
+  () => import("@/notifications/pages/list-notifications-page"),
+);
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => <Loading />;
@@ -299,6 +302,16 @@ function App() {
           left: (
             <Suspense fallback={<LoadingFallback />}>
               <ViewStudyPage studyId={params.studyId as string} />
+            </Suspense>
+          ),
+          middle: null,
+          right: null,
+        };
+      case "notifications":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListNotificationsPage />
             </Suspense>
           ),
           middle: null,
