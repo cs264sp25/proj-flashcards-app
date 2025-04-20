@@ -20,6 +20,12 @@ const DEBUG = false;
 // TODO: We need to have a good way of handilg all sort of issues with auth
 //       and errors. (E.g., email already in use, password too weak, etc.)
 
+// TODO: Features to add:
+// - [ ] Verify email address
+// - [ ] Reset password
+// - [ ] Change password
+// - [ ] Delete account
+
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
     GitHub,
