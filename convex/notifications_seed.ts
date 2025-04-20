@@ -34,8 +34,7 @@ export const createSampleNotifications = internalAction({
 
     if (clearExistingData) {
       await ctx.runMutation(
-        // @ts-ignore
-        internal.notifications.internals.deleteNotifications,
+        internal.notifications_internals.deleteNotifications,
         {
           userId: args.userId,
         },
@@ -44,8 +43,7 @@ export const createSampleNotifications = internalAction({
 
     for (let i = 0; i < number; i++) {
       const notificationId = await ctx.runMutation(
-        // @ts-ignore
-        internal.notifications.internals.createNotification,
+        internal.notifications_internals.createNotification,
         {
           userId,
           notification: {
