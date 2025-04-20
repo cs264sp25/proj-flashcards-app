@@ -41,6 +41,7 @@ import type * as decks_mutations from "../decks_mutations.js";
 import type * as decks_queries from "../decks_queries.js";
 import type * as decks_schema from "../decks_schema.js";
 import type * as decks_seed from "../decks_seed.js";
+import type * as errors from "../errors.js";
 import type * as hello from "../hello.js";
 import type * as http from "../http.js";
 import type * as messages_guards from "../messages_guards.js";
@@ -113,6 +114,7 @@ declare const fullApi: ApiFromModules<{
   decks_queries: typeof decks_queries;
   decks_schema: typeof decks_schema;
   decks_seed: typeof decks_seed;
+  errors: typeof errors;
   hello: typeof hello;
   http: typeof http;
   messages_guards: typeof messages_guards;
