@@ -8,11 +8,6 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
 import type * as assistants_helpers from "../assistants_helpers.js";
 import type * as assistants_internals from "../assistants_internals.js";
 import type * as assistants_mutations from "../assistants_mutations.js";
@@ -51,6 +46,14 @@ import type * as messages_mutations from "../messages_mutations.js";
 import type * as messages_queries from "../messages_queries.js";
 import type * as messages_schema from "../messages_schema.js";
 import type * as messages_seed from "../messages_seed.js";
+import type * as notifications_aggregates from "../notifications_aggregates.js";
+import type * as notifications_guards from "../notifications_guards.js";
+import type * as notifications_helpers from "../notifications_helpers.js";
+import type * as notifications_internals from "../notifications_internals.js";
+import type * as notifications_mutations from "../notifications_mutations.js";
+import type * as notifications_queries from "../notifications_queries.js";
+import type * as notifications_schema from "../notifications_schema.js";
+import type * as notifications_seed from "../notifications_seed.js";
 import type * as openai_assistants from "../openai_assistants.js";
 import type * as openai_handlers from "../openai_handlers.js";
 import type * as openai_helpers from "../openai_helpers.js";
@@ -77,6 +80,11 @@ import type * as users_queries from "../users_queries.js";
 import type * as users_schema from "../users_schema.js";
 import type * as users_seed from "../users_seed.js";
 
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 /**
  * A utility for referencing Convex functions in your app's API.
  *
@@ -124,6 +132,14 @@ declare const fullApi: ApiFromModules<{
   messages_queries: typeof messages_queries;
   messages_schema: typeof messages_schema;
   messages_seed: typeof messages_seed;
+  notifications_aggregates: typeof notifications_aggregates;
+  notifications_guards: typeof notifications_guards;
+  notifications_helpers: typeof notifications_helpers;
+  notifications_internals: typeof notifications_internals;
+  notifications_mutations: typeof notifications_mutations;
+  notifications_queries: typeof notifications_queries;
+  notifications_schema: typeof notifications_schema;
+  notifications_seed: typeof notifications_seed;
   openai_assistants: typeof openai_assistants;
   openai_handlers: typeof openai_handlers;
   openai_helpers: typeof openai_helpers;
@@ -150,11 +166,159 @@ declare const fullApi: ApiFromModules<{
   users_schema: typeof users_schema;
   users_seed: typeof users_seed;
 }>;
+declare const fullApiWithMounts: typeof fullApi;
+
 export declare const api: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "public">
 >;
 export declare const internal: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {
+  aggregateUserUnreadNotifications: {
+    btree: {
+      aggregateBetween: FunctionReference<
+        "query",
+        "internal",
+        { k1?: any; k2?: any; namespace?: any },
+        { count: number; sum: number }
+      >;
+      atNegativeOffset: FunctionReference<
+        "query",
+        "internal",
+        { k1?: any; k2?: any; namespace?: any; offset: number },
+        { k: any; s: number; v: any }
+      >;
+      atOffset: FunctionReference<
+        "query",
+        "internal",
+        { k1?: any; k2?: any; namespace?: any; offset: number },
+        { k: any; s: number; v: any }
+      >;
+      get: FunctionReference<
+        "query",
+        "internal",
+        { key: any; namespace?: any },
+        null | { k: any; s: number; v: any }
+      >;
+      offset: FunctionReference<
+        "query",
+        "internal",
+        { k1?: any; key: any; namespace?: any },
+        number
+      >;
+      offsetUntil: FunctionReference<
+        "query",
+        "internal",
+        { k2?: any; key: any; namespace?: any },
+        number
+      >;
+      paginate: FunctionReference<
+        "query",
+        "internal",
+        {
+          cursor?: string;
+          k1?: any;
+          k2?: any;
+          limit: number;
+          namespace?: any;
+          order: "asc" | "desc";
+        },
+        {
+          cursor: string;
+          isDone: boolean;
+          page: Array<{ k: any; s: number; v: any }>;
+        }
+      >;
+      paginateNamespaces: FunctionReference<
+        "query",
+        "internal",
+        { cursor?: string; limit: number },
+        { cursor: string; isDone: boolean; page: Array<any> }
+      >;
+      validate: FunctionReference<
+        "query",
+        "internal",
+        { namespace?: any },
+        any
+      >;
+    };
+    inspect: {
+      display: FunctionReference<"query", "internal", { namespace?: any }, any>;
+      dump: FunctionReference<"query", "internal", { namespace?: any }, string>;
+      inspectNode: FunctionReference<
+        "query",
+        "internal",
+        { namespace?: any; node?: string },
+        null
+      >;
+    };
+    public: {
+      clear: FunctionReference<
+        "mutation",
+        "internal",
+        { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
+        null
+      >;
+      deleteIfExists: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        any
+      >;
+      delete_: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any },
+        null
+      >;
+      init: FunctionReference<
+        "mutation",
+        "internal",
+        { maxNodeSize?: number; namespace?: any; rootLazy?: boolean },
+        null
+      >;
+      insert: FunctionReference<
+        "mutation",
+        "internal",
+        { key: any; namespace?: any; summand?: number; value: any },
+        null
+      >;
+      makeRootLazy: FunctionReference<
+        "mutation",
+        "internal",
+        { namespace?: any },
+        null
+      >;
+      replace: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          currentKey: any;
+          namespace?: any;
+          newKey: any;
+          newNamespace?: any;
+          summand?: number;
+          value: any;
+        },
+        null
+      >;
+      replaceOrInsert: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          currentKey: any;
+          namespace?: any;
+          newKey: any;
+          newNamespace?: any;
+          summand?: number;
+          value: any;
+        },
+        any
+      >;
+    };
+  };
+};

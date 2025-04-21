@@ -5,12 +5,9 @@ import { useQuery } from "convex/react";
 import { StudyType } from "@/studies/types/study";
 
 export function useQueryStudy(studyId: string) {
-  const study = useQuery(
-    api.studies_queries.getOne,
-    {
-      studyId: studyId as Id<"studies">,
-    },
-  );
+  const study = useQuery(api.studies_queries.getOne, {
+    studyId: studyId as Id<"studies">,
+  });
 
   return {
     data: study as StudyType,

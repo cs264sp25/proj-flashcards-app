@@ -39,13 +39,27 @@ export const getAll = query({
     },
   ): Promise<PaginationResult<DeckOutType>> => {
     const userId = await authenticationGuard(ctx);
-    return await getAllDecks(
+    const results = await getAllDecks(
       ctx,
       args.paginationOpts,
       userId,
       args.sortOrder,
       args.searchQuery,
     );
+
+    return {
+      ...results,
+      page: results.page.map((deck) => ({
+        _id: deck._id,
+        _creationTime: deck._creationTime,
+        title: deck.title,
+        description: deck.description,
+        tags: deck.tags,
+        cardCount: deck.cardCount,
+        userId: deck.userId,
+        // We don't need to send the searchableContent or embedding to the client
+      })),
+    };
   },
 });
 
@@ -66,6 +80,15 @@ export const getOne = query({
     const userId = await authenticationGuard(ctx);
     const deck = await getDeckById(ctx, args.deckId);
     ownershipGuard(userId, deck.userId);
-    return deck;
+    return {
+      _id: deck._id,
+      _creationTime: deck._creationTime,
+      title: deck.title,
+      description: deck.description,
+      tags: deck.tags,
+      cardCount: deck.cardCount,
+      userId: deck.userId,
+      // We don't need to send the searchableContent or embedding to the client
+    };
   },
 });

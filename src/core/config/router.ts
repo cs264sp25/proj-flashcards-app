@@ -28,6 +28,7 @@ const pages = {
   editAssistant: `/${BASE_URL}/assistants/:assistantId/edit`, // Edit a specific assistant
   studies: `/${BASE_URL}/studies`, // View all studies
   viewStudy: `/${BASE_URL}/studies/:studyId`, // View and interact with a specific study
+  notifications: `/${BASE_URL}/notifications`, // View all notifications
 };
 
 export type Page = keyof typeof pages;

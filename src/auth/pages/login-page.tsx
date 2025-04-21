@@ -5,7 +5,12 @@ import { cn } from "@/core/lib/utils";
 import Loading from "@/core/components/loading";
 import { SignIn } from "@/auth/components/sign-in";
 import { SignUp } from "@/auth/components/sign-up";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/core/components/tabs";
 
 const DEBUG = false;
 
