@@ -30,7 +30,7 @@ export function useMutationFiles() {
         ...rest,
         storageId,
       });
-      
+
       toast.success("File created successfully");
       return fileId;
     } catch (error) {

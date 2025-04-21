@@ -3,7 +3,17 @@ import { cn } from "@/core/lib/utils";
 import { Id } from "@convex-generated/dataModel";
 import { Button } from "@/core/components/button";
 import { Card } from "@/core/components/card";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/core/components/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/core/components/alert-dialog";
 
 import { useMutationStudy } from "@/studies/hooks/use-mutation-study";
 import { EvaluationStatus } from "@/studies/types/study";
@@ -28,24 +38,28 @@ export const StudySession: React.FC<StudySessionProps> = ({
   // State
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [evaluations, setEvaluations] = useState<Array<{ status: EvaluationStatus }>>([]);
+  const [evaluations, setEvaluations] = useState<
+    Array<{ status: EvaluationStatus }>
+  >([]);
 
   // Mutations
-  const { record: recordEvaluation, complete: completeStudy } = useMutationStudy(studyId);
+  const { record: recordEvaluation, complete: completeStudy } =
+    useMutationStudy(studyId);
 
   // Current card
   const currentCard = cards[currentIndex];
   const isLastCard = currentIndex === cards.length - 1;
   const isFirstCard = currentIndex === 0;
-  
+
   // Check if current card has been evaluated
   const currentCardEvaluated = evaluations[currentIndex]?.status !== undefined;
-  
+
   // Find the first unevaluated card index
   const firstUnevaluatedIndex = evaluations.length;
-  
+
   // Navigation controls
-  const canMoveNext = currentIndex < firstUnevaluatedIndex - 1 || currentCardEvaluated;
+  const canMoveNext =
+    currentIndex < firstUnevaluatedIndex - 1 || currentCardEvaluated;
 
   // Calculate remaining cards
   const remainingCards = cards.length - evaluations.length;
@@ -129,11 +143,7 @@ export const StudySession: React.FC<StudySessionProps> = ({
 
       {/* Navigation buttons */}
       <div className="w-full flex justify-between items-center">
-        <Button
-          variant="ghost"
-          onClick={handlePrevious}
-          disabled={isFirstCard}
-        >
+        <Button variant="ghost" onClick={handlePrevious} disabled={isFirstCard}>
           Previous
         </Button>
         <Button
@@ -156,7 +166,9 @@ export const StudySession: React.FC<StudySessionProps> = ({
         onClick={handleFlip}
       >
         <div className="p-6 h-full flex items-center justify-center text-lg">
-          <Markdown content={isFlipped ? currentCard.back : currentCard.front} />
+          <Markdown
+            content={isFlipped ? currentCard.back : currentCard.front}
+          />
         </div>
       </Card>
 
@@ -191,7 +203,9 @@ export const StudySession: React.FC<StudySessionProps> = ({
         )}
         {currentCardEvaluated && (
           <div className="text-center text-sm text-muted-foreground">
-            {isLastCard ? "Study session complete!" : "Card evaluated - use navigation to continue"}
+            {isLastCard
+              ? "Study session complete!"
+              : "Card evaluated - use navigation to continue"}
           </div>
         )}
       </div>
@@ -201,10 +215,7 @@ export const StudySession: React.FC<StudySessionProps> = ({
         <div className="w-full mt-4 pt-4 border-t">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full"
-              >
+              <Button variant="outline" className="w-full">
                 Complete Session ({remainingCards} cards remaining)
               </Button>
             </AlertDialogTrigger>
@@ -212,8 +223,9 @@ export const StudySession: React.FC<StudySessionProps> = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>Complete Study Session?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will mark all remaining cards ({remainingCards}) as skipped and end your study session. 
-                  This action cannot be undone.
+                  This will mark all remaining cards ({remainingCards}) as
+                  skipped and end your study session. This action cannot be
+                  undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

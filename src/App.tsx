@@ -30,6 +30,10 @@ const EditAssistantPage = lazy(
 );
 const ListStudiesPage = lazy(() => import("@/studies/pages/list-studies-page"));
 const ViewStudyPage = lazy(() => import("@/studies/pages/study-page"));
+const UserAccountPage = lazy(() => import("@/auth/pages/user-account-page"));
+const ListNotificationsPage = lazy(
+  () => import("@/notifications/pages/list-notifications-page"),
+);
 const ListFilesPage = lazy(() => import("@/files/pages/list-files-page"));
 const AddFilePage = lazy(() => import("@/files/pages/add-file-page"));
 const EditFilePage = lazy(() => import("@/files/pages/edit-file-page"));
@@ -302,6 +306,26 @@ function App() {
           left: (
             <Suspense fallback={<LoadingFallback />}>
               <ViewStudyPage studyId={params.studyId as string} />
+            </Suspense>
+          ),
+          middle: null,
+          right: null,
+        };
+      case "account":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <UserAccountPage />
+            </Suspense>
+          ),
+          middle: null,
+          right: null,
+        };
+      case "notifications":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListNotificationsPage />
             </Suspense>
           ),
           middle: null,

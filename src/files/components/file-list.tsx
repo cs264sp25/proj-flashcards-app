@@ -103,18 +103,20 @@ const FileList: React.FC<FileListProps> = ({ activeFileId }) => {
             ) : (
               files
                 .filter((file) => file._id !== activeFileId)
-                .map(({ _id, title, description, tags, _creationTime, url }) => (
-                  <div key={_id} role="listitem">
-                    <File
-                      _id={_id}
-                      title={title}
-                      description={description}
-                      tags={tags}
-                      _creationTime={_creationTime}
-                      url={url}
-                    />
-                  </div>
-                ))
+                .map(
+                  ({ _id, title, description, tags, _creationTime, url }) => (
+                    <div key={_id} role="listitem">
+                      <File
+                        _id={_id}
+                        title={title}
+                        description={description}
+                        tags={tags}
+                        _creationTime={_creationTime}
+                        url={url}
+                      />
+                    </div>
+                  ),
+                )
             )}
           </InfiniteScroll>
         </ScrollArea>

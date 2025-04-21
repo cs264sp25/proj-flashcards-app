@@ -190,9 +190,7 @@ const EditFileForm: React.FC<EditFileFormProps> = ({
                   context={getFileContext("tags")}
                 />
               </FormControl>
-              <FormDescription>
-                Enter tags separated by commas.
-              </FormDescription>
+              <FormDescription>Enter tags separated by commas.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -236,4 +234,4 @@ const EditFileForm: React.FC<EditFileFormProps> = ({
   );
 };
 
-export default EditFileForm; 
+export default EditFileForm;

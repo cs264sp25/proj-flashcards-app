@@ -55,7 +55,9 @@ export async function getAllFiles(
       .query("files")
       .withIndex(
         "by_user_id",
-        (q: IndexRangeBuilder<Doc<"files">, ["userId", "_creationTime"], 0>) => {
+        (
+          q: IndexRangeBuilder<Doc<"files">, ["userId", "_creationTime"], 0>,
+        ) => {
           let q1;
 
           if (userId) {

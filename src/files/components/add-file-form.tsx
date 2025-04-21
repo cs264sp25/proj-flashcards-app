@@ -168,9 +168,7 @@ const AddFileForm: React.FC<AddFileFormProps> = ({
                   context={getFileContext("tags")}
                 />
               </FormControl>
-              <FormDescription>
-                Enter tags separated by commas.
-              </FormDescription>
+              <FormDescription>Enter tags separated by commas.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -214,4 +212,4 @@ const AddFileForm: React.FC<AddFileFormProps> = ({
   );
 };
 
-export default AddFileForm; 
+export default AddFileForm;
