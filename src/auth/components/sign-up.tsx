@@ -2,20 +2,28 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/core/components/button";
 import { GitHubLogo } from "./github-logo";
 import { GoogleLogo } from "./google-logo";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/core/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/core/components/card";
 import { Input } from "@/core/components/input";
 import { Label } from "@/core/components/label";
 import { Separator } from "@/core/components/separator";
 
-export function SignIn() {
+export function SignUp() {
   const { signIn } = useAuthActions();
 
   return (
     <div className="flex items-center justify-center">
       <Card className="w-[400px]">
         <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
-          <CardDescription>Sign in to your account</CardDescription>
+          <CardTitle>Create an account</CardTitle>
+          <CardDescription>
+            Sign up to get started with flashcards
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -28,7 +36,17 @@ export function SignIn() {
           >
             {/* This is a hidden input that is used to identify the flow of the sign up process */}
             {/* It is required by the Convex Auth Provider */}
-            <input name="flow" value={"signIn"} type="hidden" />
+            <input name="flow" value={"signUp"} type="hidden" />
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your full name"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -45,12 +63,12 @@ export function SignIn() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Create a password"
                 required
               />
             </div>
             <Button type="submit" className="w-full">
-              Sign in
+              Sign up
             </Button>
           </form>
 

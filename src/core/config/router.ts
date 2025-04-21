@@ -7,6 +7,7 @@ const DEBUG = false;
 const pages = {
   home: `/${BASE_URL}/`, // Home page
   login: `/${BASE_URL}/login`, // Sign in page
+  account: `/${BASE_URL}/account`, // User account page
   demo: `/${BASE_URL}/demo`, // Demo page
   decks: `/${BASE_URL}/decks`, // View all decks
   addDeck: `/${BASE_URL}/decks/add`, // Add a new deck
