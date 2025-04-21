@@ -18,8 +18,8 @@ import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
 
-import { DeckInType, DeckOutType, DeckUpdateType } from "./decks_schema";
-import { PaginationOptsType, SortOrderType } from "./shared";
+import type { DeckInType, DeckOutType, DeckUpdateType } from "./decks_schema";
+import type { PaginationOptsType, SortOrderType } from "./shared";
 import { removeAllCardsInDeck } from "./cards_helpers";
 
 // Get all decks with pagination, optional filtering by userId, sorting, and search query

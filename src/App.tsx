@@ -34,6 +34,9 @@ const UserAccountPage = lazy(() => import("@/auth/pages/user-account-page"));
 const ListNotificationsPage = lazy(
   () => import("@/notifications/pages/list-notifications-page"),
 );
+const ListFilesPage = lazy(() => import("@/files/pages/list-files-page"));
+const AddFilePage = lazy(() => import("@/files/pages/add-file-page"));
+const EditFilePage = lazy(() => import("@/files/pages/edit-file-page"));
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => <Loading />;
@@ -326,6 +329,44 @@ function App() {
             </Suspense>
           ),
           middle: null,
+          right: null,
+        };
+      case "files":
+        return {
+          left: (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListFilesPage />
+            </Suspense>
+          ),
+          middle: null,
+          right: null,
+        };
+      case "addFile":
+        return {
+          left: isSmallScreen ? null : (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListFilesPage />
+            </Suspense>
+          ),
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <AddFilePage />
+            </Suspense>
+          ),
+          right: null,
+        };
+      case "editFile":
+        return {
+          left: isSmallScreen ? null : (
+            <Suspense fallback={<LoadingFallback />}>
+              <ListFilesPage />
+            </Suspense>
+          ),
+          middle: (
+            <Suspense fallback={<LoadingFallback />}>
+              <EditFilePage fileId={params.fileId as string} />
+            </Suspense>
+          ),
           right: null,
         };
       default:

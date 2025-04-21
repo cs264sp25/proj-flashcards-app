@@ -29,6 +29,10 @@ const pages = {
   studies: `/${BASE_URL}/studies`, // View all studies
   viewStudy: `/${BASE_URL}/studies/:studyId`, // View and interact with a specific study
   notifications: `/${BASE_URL}/notifications`, // View all notifications
+  files: `/${BASE_URL}/files`, // View all files
+  addFile: `/${BASE_URL}/files/add`, // Add a new file
+  file: `/${BASE_URL}/files/:fileId`, // View a specific file
+  editFile: `/${BASE_URL}/files/:fileId/edit`, // Edit a specific file
 };
 
 export type Page = keyof typeof pages;
@@ -39,6 +43,7 @@ export type Params = {
   chatId?: string;
   assistantId?: string;
   studyId?: string;
+  fileId?: string;
 };
 
 export const $router = createRouter(pages);

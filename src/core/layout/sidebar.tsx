@@ -6,6 +6,7 @@ import {
   Bot,
   BookOpen,
   Bell,
+  FolderOpen,
 } from "lucide-react";
 import {
   Sidebar as SidebarRoot,
@@ -61,6 +62,11 @@ const items = [
     title: "Notifications",
     page: "notifications",
     icon: Bell,
+  },
+  {
+    title: "Files",
+    page: "files",
+    icon: FolderOpen,
   },
 ];
 

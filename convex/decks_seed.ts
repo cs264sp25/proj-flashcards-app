@@ -6,7 +6,7 @@
  ******************************************************************************/
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
-import { internalAction } from "./_generated/server";
+import { ActionCtx, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 // The default number of decks to create.
@@ -24,7 +24,14 @@ export const createSampleDecks = internalAction({
     numberOfDecks: v.optional(v.number()),
     clearExistingData: v.optional(v.boolean()),
   },
-  handler: async (ctx, args): Promise<Id<"decks">[]> => {
+  handler: async (
+    ctx: ActionCtx,
+    args: {
+      userId: Id<"users">;
+      numberOfDecks?: number;
+      clearExistingData?: boolean;
+    },
+  ): Promise<Id<"decks">[]> => {
     const userId = args.userId;
     const numberOfDecks = args.numberOfDecks || NUM_DECKS;
     const clearExistingData = args.clearExistingData || CLEAR_EXISTING_DATA;
