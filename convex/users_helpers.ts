@@ -9,6 +9,7 @@ import { Id } from "./_generated/dataModel";
 
 import type { PaginationOptsType, SortOrderType } from "./shared";
 import type { UserUpdateType } from "./users_schema";
+import { deleteAllStudies } from "./studies_helpers";
 import { deleteAllDecksWithCascade } from "./decks_helpers";
 import { deleteAllChatsWithCascade } from "./chats_helpers";
 
@@ -75,10 +76,13 @@ export async function deleteUserWithCascade(
   ctx: MutationCtx,
   userId: Id<"users">,
 ) {
+  // Delete all study sessions for the user
+  await deleteAllStudies(ctx, userId);
   // Delete all decks and cards for the user
   await deleteAllDecksWithCascade(ctx, userId);
   // Delete all chats for the user
   await deleteAllChatsWithCascade(ctx, userId);
+
   // Delete the user
   await deleteUser(ctx, userId);
 }

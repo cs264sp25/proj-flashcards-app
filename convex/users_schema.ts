@@ -32,6 +32,9 @@ export const userSchema = {
   phone: v.optional(v.string()),
   phoneVerificationTime: v.optional(v.number()),
   isAnonymous: v.optional(v.boolean()),
+  googleAccessToken: v.optional(v.string()),
+  googleRefreshToken: v.optional(v.string()),
+  googleRefreshTokenExpiresAt: v.optional(v.number()),
   // These are additional fields
   ...userUpdateSchema,
   // Convex will automatically add `_id` and `_creationTime` fields to the schema
