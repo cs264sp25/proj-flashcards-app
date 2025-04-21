@@ -49,6 +49,8 @@ export const fileSchema = {
   ...fileInSchema,
   userId: v.id("users"),
   url: v.string(),
+  // Combined field for full-text search
+  searchableContent: v.string(),
 };
 
 // eslint-disable-next-line
@@ -72,5 +74,11 @@ export type FileOutType = Infer<typeof fileOutSchemaObject>;
  * File table schema definition
  */
 export const fileTables = {
-  files: defineTable(fileSchema).index("by_user_id", ["userId"]),
+  files: defineTable(fileSchema)
+    .index("by_user_id", ["userId"])
+    // Full-text search index
+    .searchIndex("search_all", {
+      searchField: "searchableContent",
+      filterFields: ["userId"],
+    }),
 };

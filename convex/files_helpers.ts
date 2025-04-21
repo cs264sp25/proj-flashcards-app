@@ -26,29 +26,52 @@ export async function getAllFiles(
   paginationOpts: PaginationOptsType,
   userId?: Id<"users">,
   sortOrder?: SortOrderType,
+  searchQuery?: string,
 ): Promise<PaginationResult<Doc<"files">>> {
   sortOrder = sortOrder || "asc";
 
-  const results: PaginationResult<Doc<"files">> = await ctx.db
-    .query("files")
-    .withIndex(
-      "by_user_id",
-      (q: IndexRangeBuilder<Doc<"files">, ["userId", "_creationTime"], 0>) => {
-        let q1;
+  let results: PaginationResult<Doc<"files">>;
 
+  // Use search index if searchQuery is provided
+  if (searchQuery) {
+    results = await ctx.db
+      .query("files")
+      .withSearchIndex("search_all", (q) => {
         if (userId) {
-          q1 = q.eq("userId", userId);
+          return q
+            .search("searchableContent", searchQuery)
+            .eq("userId", userId);
+        } else {
+          // This case might need adjustment depending on whether you want
+          // non-authenticated users or admins to search all files
+          return q.search("searchableContent", searchQuery);
         }
+      })
+      // Order is determined by search relevance
+      .paginate(paginationOpts);
+  } else {
+    // Otherwise, use the existing index query
+    results = await ctx.db
+      .query("files")
+      .withIndex(
+        "by_user_id",
+        (q: IndexRangeBuilder<Doc<"files">, ["userId", "_creationTime"], 0>) => {
+          let q1;
 
-        return q1 || q;
-      },
-    )
-    .order(sortOrder)
-    .paginate(paginationOpts);
+          if (userId) {
+            q1 = q.eq("userId", userId);
+          }
+
+          return q1 || q;
+        },
+      )
+      .order(sortOrder)
+      .paginate(paginationOpts);
+  }
 
   return {
     ...results,
-    page: results.page, // This is the data (records) for the current page; we can transform it if needed
+    page: results.page, // Return raw documents, map to FileOutType in query if needed
   };
 }
 
@@ -71,10 +94,16 @@ export async function createFile(
   userId: Id<"users">,
   data: FileInType,
 ): Promise<Id<"files">> {
+  const title = data.title || "";
+  const description = data.description || "";
+  const tags = data.tags || [];
+  const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
+
   return await ctx.db.insert("files", {
     ...data,
     userId,
     url: (await ctx.storage.getUrl(data.storageId)) as string,
+    searchableContent,
   });
 }
 
@@ -83,7 +112,18 @@ export async function updateFile(
   fileId: Id<"files">,
   data: FileUpdateType,
 ): Promise<void> {
-  await ctx.db.patch(fileId, data);
+  // If title, description, or tags are updated, regenerate searchableContent
+  if (data.title || data.description || data.tags) {
+    const file = await getFileById(ctx, fileId); // Need existing file data
+    const title = data.title || file.title;
+    const description = data.description || file.description || "";
+    const tags = data.tags || file.tags || [];
+    const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
+    await ctx.db.patch(fileId, { ...data, searchableContent });
+  } else {
+    // Only patch the provided data if searchable fields are not changing
+    await ctx.db.patch(fileId, data);
+  }
 }
 
 // Does not delete the actual file from the storage.

@@ -29,16 +29,35 @@ export const getAll = query({
   args: {
     paginationOpts: paginationOptsValidator,
     sortOrder: v.optional(SortOrder),
+    searchQuery: v.optional(v.string()),
   },
   handler: async (
     ctx: QueryCtx,
     args: {
       paginationOpts: PaginationOptsType;
       sortOrder?: SortOrderType;
+      searchQuery?: string;
     },
   ): Promise<PaginationResult<FileOutType>> => {
     const userId = await authenticationGuard(ctx);
-    return await getAllFiles(ctx, args.paginationOpts, userId, args.sortOrder);
+    const results = await getAllFiles(
+      ctx,
+      args.paginationOpts,
+      userId,
+      args.sortOrder,
+      args.searchQuery,
+    );
+    return {
+      ...results,
+      page: results.page.map((file) => ({
+        _id: file._id,
+        _creationTime: file._creationTime,
+        title: file.title,
+        description: file.description,
+        tags: file.tags,
+        storageId: file.storageId,
+      })),
+    };
   },
 });
 
@@ -59,6 +78,13 @@ export const getOne = query({
     const userId = await authenticationGuard(ctx);
     const file = await getFileById(ctx, args.fileId);
     ownershipGuard(userId, file.userId);
-    return file;
+    return {
+      _id: file._id,
+      _creationTime: file._creationTime,
+      title: file.title,
+      description: file.description,
+      tags: file.tags,
+      storageId: file.storageId,
+    };
   },
 });
