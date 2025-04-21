@@ -1,6 +1,6 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Button } from "@/core/components/button";
-import { GitHubLogo } from "./gitgub-logo";
+import { GitHubLogo } from "./github-logo";
 import { GoogleLogo } from "./google-logo";
 import {
   Card,
