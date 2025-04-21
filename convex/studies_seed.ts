@@ -9,10 +9,7 @@ import { Id } from "./_generated/dataModel";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-import { 
-  EvaluationStatus, 
-  CardEvaluation 
-} from "./studies_schema";
+import { EvaluationStatus, CardEvaluation } from "./studies_schema";
 
 // Configuration for seeding
 const DEFAULT_NUM_DECKS_TO_SEED = 5;
@@ -74,7 +71,8 @@ export const createSampleStudies = internalAction({
   handler: async (ctx, args): Promise<Id<"studies">[]> => {
     const userId = args.userId;
     const numberOfDecks = args.numberOfDecks || DEFAULT_NUM_DECKS_TO_SEED;
-    const clearExistingData = args.clearExistingData ?? DEFAULT_CLEAR_EXISTING_DATA;
+    const clearExistingData =
+      args.clearExistingData ?? DEFAULT_CLEAR_EXISTING_DATA;
 
     if (DEBUG_SEEDING) {
       console.log(`Seeding studies for user ${userId}...`);
@@ -87,9 +85,12 @@ export const createSampleStudies = internalAction({
     if (clearExistingData) {
       if (DEBUG_SEEDING) console.log("Clearing existing studies...");
       // Use the internal mutation for deleting studies
-      const deletedCount = await ctx.runMutation(internal.studies_internals.deleteStudies, {
-        userId: args.userId,
-      });
+      const deletedCount = await ctx.runMutation(
+        internal.studies_internals.deleteStudies,
+        {
+          userId: args.userId,
+        },
+      );
       if (DEBUG_SEEDING) console.log(`Cleared ${deletedCount} studies.`);
     }
 
@@ -114,15 +115,18 @@ export const createSampleStudies = internalAction({
     }
 
     for (const deck of decks) {
-      if (DEBUG_SEEDING) console.log(`Processing deck: ${deck.title} (${deck._id})`);
+      if (DEBUG_SEEDING)
+        console.log(`Processing deck: ${deck.title} (${deck._id})`);
 
       if (deck.cardCount === 0) {
-        if (DEBUG_SEEDING) console.log(`  Skipping deck ${deck._id}: No cards.`);
+        if (DEBUG_SEEDING)
+          console.log(`  Skipping deck ${deck._id}: No cards.`);
         continue;
       }
 
       // Fetch cards for the current deck using the internal query
-      if (DEBUG_SEEDING) console.log(`  Fetching cards for deck ${deck._id}...`);
+      if (DEBUG_SEEDING)
+        console.log(`  Fetching cards for deck ${deck._id}...`);
       const { page: cards } = await ctx.runQuery(
         internal.cards_internals.getAllCards, // Use internal query for cards
         {
@@ -138,12 +142,16 @@ export const createSampleStudies = internalAction({
 
       if (!cards || cards.length === 0) {
         // This case should ideally not happen if cardCount > 0, but good to check
-        if (DEBUG_SEEDING) console.log(`  Skipping deck ${deck._id}: Found 0 cards despite count ${deck.cardCount}.`);
+        if (DEBUG_SEEDING)
+          console.log(
+            `  Skipping deck ${deck._id}: Found 0 cards despite count ${deck.cardCount}.`,
+          );
         continue;
       }
 
       // Create a new study using the internal mutation
-      if (DEBUG_SEEDING) console.log(`  Creating study for deck ${deck._id}...`);
+      if (DEBUG_SEEDING)
+        console.log(`  Creating study for deck ${deck._id}...`);
       const studyId = await ctx.runMutation(
         internal.studies_internals.createStudy,
         {
@@ -156,8 +164,12 @@ export const createSampleStudies = internalAction({
       // Generate and record evaluations using internal mutation
       const startTime = Date.now() - Math.floor(Math.random() * 86400000 * 7); // Random start time within last week
       // Evaluate a random number of cards (at least 1, up to all cards)
-      const cardsToEvaluate = Math.max(1, Math.floor(Math.random() * (cards.length + 1)));
-      if (DEBUG_SEEDING) console.log(`  Generating ${cardsToEvaluate} evaluations...`);
+      const cardsToEvaluate = Math.max(
+        1,
+        Math.floor(Math.random() * (cards.length + 1)),
+      );
+      if (DEBUG_SEEDING)
+        console.log(`  Generating ${cardsToEvaluate} evaluations...`);
 
       const evaluations = generateRandomEvaluations(
         cards,
@@ -165,7 +177,10 @@ export const createSampleStudies = internalAction({
         startTime,
       );
 
-      if (DEBUG_SEEDING) console.log(`  Recording ${evaluations.length} evaluations for study ${studyId}...`);
+      if (DEBUG_SEEDING)
+        console.log(
+          `  Recording ${evaluations.length} evaluations for study ${studyId}...`,
+        );
       for (const evaluation of evaluations) {
         await ctx.runMutation(internal.studies_internals.recordCardEvaluation, {
           // userId, // Not needed for recordCardEvaluation internal mutation

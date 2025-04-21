@@ -80,7 +80,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           image: profile.picture,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
-          refresh_token_expires_at
+          refresh_token_expires_at,
         };
       },
     }),
