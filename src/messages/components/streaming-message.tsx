@@ -80,7 +80,11 @@ const StreamingMessage: React.FC<MessageProps> = ({ message }) => {
             "border-2 border-yellow-500": DEBUG,
           })}
         >
-          <Markdown content={messageContent} className="prose-base" />
+          <Markdown
+            content={messageContent}
+            className="prose-base"
+            isStreaming={true}
+          />
         </div>
       </div>
     </div>

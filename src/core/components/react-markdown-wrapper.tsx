@@ -2,7 +2,7 @@ import * as React from "react";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeRaw from 'rehype-raw';
+import rehypeRaw from "rehype-raw";
 import { cn } from "@/core/lib/utils";
 import { InMarkdownDeck } from "@/decks/components/deck-in-markdown";
 import { InMarkdownCard } from "@/cards/components/card-in-markdown";
@@ -81,7 +81,11 @@ function parseCustomTags(markdownContent: string): {
         // Generate a unique ID for the placeholder div
         const id = `component-placeholder-${componentsToRender.length}`;
         // Store the necessary data to render this component later
-        componentsToRender.push({ id, componentName: componentNameLower, props });
+        componentsToRender.push({
+          id,
+          componentName: componentNameLower,
+          props,
+        });
 
         // Replace the original custom tag with a simple div placeholder
         // This div will be targeted by the 'components' prop in ReactMarkdown
@@ -89,7 +93,7 @@ function parseCustomTags(markdownContent: string): {
       }
       // If the tag name is not in our registry, leave the original tag string unchanged
       return match;
-    }
+    },
   );
 
   return { processedContent, componentsToRender };
@@ -98,18 +102,24 @@ function parseCustomTags(markdownContent: string): {
 interface MarkdownProps {
   content: string; // The raw markdown content with potential custom tags
   className?: string; // Optional additional class names
+  /** If true, custom components render as placeholders during streaming. */
+  isStreaming?: boolean;
 }
 
 /**
  * Renders Markdown content, allowing custom React components specified
  * with JSX-like tags (e.g., <InMarkdownDeck deckId="..." />).
  */
-const Markdown: React.FC<MarkdownProps> = ({ content, className }) => {
+const Markdown: React.FC<MarkdownProps> = ({
+  content,
+  className,
+  isStreaming = false,
+}) => {
   // Pre-process the markdown content to identify and prepare custom components.
   // useMemo ensures this parsing only happens when the input 'content' changes.
   const { processedContent, componentsToRender } = useMemo(
     () => parseCustomTags(content),
-    [content]
+    [content],
   );
 
   return (
@@ -131,31 +141,72 @@ const Markdown: React.FC<MarkdownProps> = ({ content, className }) => {
             // Check if this div has an 'id' attribute matching our placeholder format
             const elementId = props.id as string | undefined;
             const componentData = elementId
-              ? componentsToRender.find(c => c.id === elementId)
+              ? componentsToRender.find((c) => c.id === elementId)
               : undefined;
 
             // If this div is one of our placeholders...
             if (componentData) {
-              // Find the corresponding React component from our registry
-              const Component = componentRegistry[componentData.componentName];
-              if (Component) {
-                // Render the actual custom component, passing the props
-                // extracted from the original tag's attributes.
-                // We ignore 'children' passed to the div renderer,
-                // as the custom component manages its own content.
-                // We also filter out the placeholder 'id'.
-                const { id, ...originalProps } = props; // originalProps might be empty
-                return <Component {...componentData.props} />;
+              // Check if content is actively streaming
+              if (isStreaming) {
+                // Render the lightweight loading indicator instead of the full component
+                return (
+                  <div className="flex items-center gap-2 px-4 py-2 my-2 text-sm text-muted-foreground not-prose">
+                    {" "}
+                    {/* Added not-prose to prevent prose styles interfering */}
+                    <div className="flex space-x-1">
+                      <div
+                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </div>
+                    <span className="pl-2">
+                      Rendering paused while streaming ...
+                    </span>
+                  </div>
+                );
               } else {
-                 // Fallback if component name found but not in registry (shouldn't happen with current logic)
-                 console.warn(`Component "${componentData.componentName}" found in markdown but not registered.`);
-                 return <div {...props}>Error: Component not registered</div>;
+                // If not streaming, render the actual component
+                // Find the corresponding React component from our registry
+                const Component =
+                  componentRegistry[componentData.componentName];
+                if (Component) {
+                  // Render the actual custom component, passing the props
+                  // extracted from the original tag's attributes.
+                  // We ignore 'children' passed to the div renderer,
+                  // as the custom component manages its own content.
+                  // We also filter out the placeholder 'id'.
+                  const { id, ...originalProps } = props; // originalProps might be empty
+                  return (
+                    // Added 'not-prose' class to the wrapper div to prevent prose styles from affecting the component's internal layout
+                    <div className="not-prose">
+                      <Component {...componentData.props} />
+                    </div>
+                  );
+                } else {
+                  // Fallback if component name found but not in registry (shouldn't happen with current logic)
+                  console.warn(
+                    `Component "${componentData.componentName}" found in markdown but not registered.`,
+                  );
+                  return <div {...props}>Error: Component not registered</div>;
+                }
               }
             }
 
             // If it's NOT a placeholder, render it as a normal div.
             // Pass through any className, children, and other props received.
-            return <div className={nodeClassName} {...props}>{children}</div>;
+            return (
+              <div className={nodeClassName} {...props}>
+                {children}
+              </div>
+            );
           },
           // You can add custom renderers for other HTML elements here if needed
           // e.g., custom styling for links, images, etc.
@@ -167,6 +218,3 @@ const Markdown: React.FC<MarkdownProps> = ({ content, className }) => {
 };
 
 export default Markdown;
-
-
-
