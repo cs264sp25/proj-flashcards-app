@@ -74,7 +74,8 @@ async function handleFunctionCall(
     placeholderMessageId: Id<"messages">;
   },
 ) {
-  if (DEBUG) console.log("[DEBUG] Handling function call:", tool_call.function.name);
+  if (DEBUG)
+    console.log("[DEBUG] Handling function call:", tool_call.function.name);
   const functionName = tool_call.function.name;
   const functionArgs = JSON.parse(tool_call.function.arguments!);
   if (DEBUG) console.log("[DEBUG] Function arguments:", functionArgs);
@@ -190,7 +191,8 @@ export const completion = internalAction({
 
         // Handle function calls
         if (delta.tool_calls) {
-          if (DEBUG) console.log("[DEBUG] Processing tool calls:", delta.tool_calls);
+          if (DEBUG)
+            console.log("[DEBUG] Processing tool calls:", delta.tool_calls);
           for (const toolCall of delta.tool_calls) {
             const { index } = toolCall;
 
@@ -200,19 +202,23 @@ export const completion = internalAction({
               // Update the existing tool call
               if (toolCall.id) finalToolCalls[index].id = toolCall.id;
               if (toolCall.type) finalToolCalls[index].type = toolCall.type;
-              if (toolCall.function?.name) finalToolCalls[index].function!.name = toolCall.function.name;
+              if (toolCall.function?.name)
+                finalToolCalls[index].function!.name = toolCall.function.name;
               if (toolCall.function?.arguments) {
-                finalToolCalls[index].function!.arguments = 
-                  (finalToolCalls[index].function!.arguments || '') + toolCall.function.arguments;
+                finalToolCalls[index].function!.arguments =
+                  (finalToolCalls[index].function!.arguments || "") +
+                  toolCall.function.arguments;
               }
             }
-            if (DEBUG) console.log("[DEBUG] Updated tool call:", finalToolCalls[index]);
+            if (DEBUG)
+              console.log("[DEBUG] Updated tool call:", finalToolCalls[index]);
           }
         }
       }
 
       if (finalToolCalls.length > 0) {
-        if (DEBUG) console.log("[DEBUG] Processing final tool calls:", finalToolCalls);
+        if (DEBUG)
+          console.log("[DEBUG] Processing final tool calls:", finalToolCalls);
         messages.push({
           role: "assistant",
           content: fullResponse,
@@ -231,7 +237,8 @@ export const completion = internalAction({
             tool_call_id: result.tool_call_id,
           });
         }
-        if (DEBUG) console.log("[DEBUG] Updated messages after tool calls:", messages);
+        if (DEBUG)
+          console.log("[DEBUG] Updated messages after tool calls:", messages);
         // Reset for next iteration
         fullResponse = "";
         finalToolCalls = [];

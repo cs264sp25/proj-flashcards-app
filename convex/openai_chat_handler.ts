@@ -232,7 +232,7 @@ chatRoute.post("/chat", async (c) => {
                       data: content.text.value,
                     });
                     // Add a small delay to ensure proper streaming
-                    await new Promise(resolve => setTimeout(resolve, 10));
+                    await new Promise((resolve) => setTimeout(resolve, 10));
                   }
                 }
               }
@@ -245,7 +245,8 @@ chatRoute.post("/chat", async (c) => {
                   event.data.required_action.submit_tool_outputs.tool_calls;
 
                 // Process each tool call
-                const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] = [];
+                const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] =
+                  [];
                 for (const toolCall of toolCalls) {
                   const result = await handleFunctionCall(ctx, toolCall, {
                     userId: identity.subject.split("|")[0] as Id<"users">,
