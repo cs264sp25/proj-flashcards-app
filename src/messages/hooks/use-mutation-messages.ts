@@ -3,19 +3,55 @@ import { Id } from "@convex-generated/dataModel";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-import { setIsStreaming, setStreamingMessageContent, clearStreamingMessage, setIsThinking } from "@/messages/store/streaming-message";
+import {
+  setIsStreaming,
+  setStreamingMessageContent,
+  clearStreamingMessage,
+  setIsThinking,
+} from "@/messages/store/streaming-message";
 
 import { CreateMessageType } from "@/messages/types/message";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export function useMutationMessages(chatId: string) {
   const token = useAuthToken();
   const createMutation = useMutation(api.messages_mutations.create);
 
-  const createMessage = async (
-    message: CreateMessageType,
-  ): Promise<void> => {
+  const parseRawEvent = (rawEvent: string) => {
+    if (DEBUG) console.log("Raw SSE chunk:", rawEvent);
+  
+    const lines = rawEvent.split("\n");
+    const dataLines = [];
+  
+    for (const line of lines) {
+      if (line === "data: [DONE]") {
+        break;
+      }
+  
+      if (line.startsWith("data: ")) {
+        dataLines.push(line.slice(6)); // Remove "data: "
+      }
+    }
+  
+    let data;
+    if (dataLines.length === 1) {
+      // Single line event (most common): no extra newline
+      data = dataLines[0];
+    } else {
+      // Multiple lines: join with newline to preserve formatting
+      data = dataLines.join("\n");
+    }
+  
+    if (DEBUG) {
+      console.log("Data:", JSON.stringify(data));
+    }
+  
+    return data;
+  };
+  
+
+  const createMessage = async (message: CreateMessageType): Promise<void> => {
     try {
       const userMessageId = await createMutation({
         content: message.content,
@@ -54,46 +90,40 @@ export function useMutationMessages(chatId: string) {
         throw new Error("No response body");
       }
 
+      const decoder = new TextDecoder();
+      let buffer = "";
+
       // Accumulate the response chunks
       let fullResponse = "";
       let isDone = false;
 
       setIsThinking(false);
       setIsStreaming(true);
-      setStreamingMessageContent("Generating response...");
 
       // Process the stream
       while (!isDone) {
         const { value, done } = await reader.read();
-        if (done) break;
+        if (done) { 
+          buffer += decoder.decode();
+          break;
+        }
 
         // Convert the chunk to text
-        const chunk = new TextDecoder().decode(value);
-        if (DEBUG) console.log("Received chunk:", chunk);
+        buffer += decoder.decode(value, { stream: true });
+        if (DEBUG) console.log("Received chunk:", { buffer });
 
-        // Split the chunk by newlines to handle multiple SSE events
-        const lines = chunk.split("\n");
-        for (const line of lines) {
-          // Skip empty lines
-          if (!line.trim()) continue;
+        // Process ALL complete events in the current buffer
+        let boundary = buffer.indexOf("\n\n");
+        while (boundary !== -1) {
+          const rawEvent = buffer.substring(0, boundary);
 
-          // Check for special markers
-          if (line === "data: [DONE]") {
-            isDone = true;
-            break;
-          }
+          // IMPORTANT: remove processed data from buffer
+          buffer = buffer.substring(boundary + 2);
 
-          if (line.startsWith("data: [ERROR]")) {
-            throw new Error(line.slice(13).trim());
-          }
+          fullResponse += parseRawEvent(rawEvent);
+          setStreamingMessageContent(fullResponse);
 
-          // Extract the actual content after "data: "
-          if (line.startsWith("data: ")) {
-            const content = line.slice(6); // Remove "data: " prefix
-            // Append the content as-is to preserve original formatting
-            fullResponse += content;
-            setStreamingMessageContent(fullResponse);
-          }
+          boundary = buffer.indexOf("\n\n");
         }
       }
 
