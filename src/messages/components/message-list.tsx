@@ -75,10 +75,10 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       // if we never stored the last or first message id, store it
       if (!lastMessageId.current || !firstMessageId.current) {
         // Priority order: streaming > thinking > last message
-        lastMessageId.current = isStreaming 
-          ? streamingMessage._id 
-          : isThinking 
-            ? THINKING_MESSAGE_ID 
+        lastMessageId.current = isStreaming
+          ? streamingMessage._id
+          : isThinking
+            ? THINKING_MESSAGE_ID
             : messages[messages.length - 1]._id;
         firstMessageId.current = messages[0]._id;
         scrollToMessage(lastMessageId.current);
@@ -89,10 +89,10 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
       const lastMessage = messages[messages.length - 1];
 
       // Determine the effective last message ID based on priority order
-      const effectiveLastMessageId = isStreaming 
-        ? streamingMessage._id 
-        : isThinking 
-          ? THINKING_MESSAGE_ID 
+      const effectiveLastMessageId = isStreaming
+        ? streamingMessage._id
+        : isThinking
+          ? THINKING_MESSAGE_ID
           : lastMessage._id;
 
       if (effectiveLastMessageId !== lastMessageId.current) {
@@ -173,11 +173,24 @@ const MessageList: React.FC<MessageListProps> = ({ chatId }) => {
         </div>
       ))}
       {isThinking && (
-        <div key={THINKING_MESSAGE_ID} data-message-id={THINKING_MESSAGE_ID} className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+        <div
+          key={THINKING_MESSAGE_ID}
+          data-message-id={THINKING_MESSAGE_ID}
+          className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground"
+        >
           <div className="flex space-x-1">
-            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div
+              className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            />
+            <div
+              className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            />
+            <div
+              className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            />
           </div>
           <span className="pl-2">Connecting to AI...</span>
         </div>
