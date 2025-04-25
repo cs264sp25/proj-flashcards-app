@@ -4,12 +4,12 @@
  * Actions for creating messages in OpenAI.
  ******************************************************************************/
 
-import OpenAI from "openai";
 import { ActionCtx, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { MessageRoleType } from "./messages_schema";
+import { openai } from "./openai_helpers";
 
 // Internal action to create a message in OpenAI
 export const createMessage = internalAction({
@@ -29,11 +29,6 @@ export const createMessage = internalAction({
     },
   ): Promise<string> => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Create the message in OpenAI
       const message = await openai.beta.threads.messages.create(
         args.openaiThreadId,
@@ -57,6 +52,7 @@ export const createMessage = internalAction({
   },
 });
 
+// Internal action to delete a message from an OpenAI thread
 export const deleteMessage = internalAction({
   args: {
     openaiMessageId: v.string(),
@@ -70,10 +66,6 @@ export const deleteMessage = internalAction({
     },
   ): Promise<boolean> => {
     try {
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       const response = await openai.beta.threads.messages.del(
         args.openaiThreadId,
         args.openaiMessageId,
@@ -102,10 +94,6 @@ export const deleteMessages = internalAction({
   ): Promise<boolean[]> => {
     // Return an array of deletion statuses
     try {
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Perform deletions concurrently
       const deletionPromises = args.openaiMessageIds.map((messageId) =>
         openai.beta.threads.messages

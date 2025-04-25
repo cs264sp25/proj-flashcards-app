@@ -1,5 +1,4 @@
 import { MessageType } from "@/messages/types/message";
-import { Id } from "@convex-generated/dataModel";
 import { logger } from "@nanostores/logger";
 import { atom, map } from "nanostores";
 

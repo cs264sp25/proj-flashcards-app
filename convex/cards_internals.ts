@@ -25,7 +25,7 @@ import {
   removeAllCardsForUser as removeAllCardsForUserHelper,
 } from "./cards_helpers";
 import { cardInSchema, CardInType, CardOutType } from "./cards_schema";
-import { getEmbedding } from "./openai_helpers";
+import { getEmbeddingHelper } from "./openai_embeddings";
 import { adjustCardCount } from "./decks_helpers";
 
 /**
@@ -174,7 +174,7 @@ export const semanticSearch = internalAction({
   handler: async (ctx, args): Promise<CardOutType[]> => {
     const LIMIT = args.limit || 10;
 
-    const embedding = await getEmbedding(args.query);
+    const { embedding } = await getEmbeddingHelper(args.query);
 
     const results = await ctx.vectorSearch("cards", "by_embedding", {
       vector: embedding,

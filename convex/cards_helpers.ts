@@ -19,7 +19,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-import { CardInType, CardOutType, CardUpdateType } from "./cards_schema";
+import { CardInType, CardUpdateType } from "./cards_schema";
 import { PaginationOptsType, SortOrderType } from "./shared";
 
 /**

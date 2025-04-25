@@ -20,20 +20,20 @@ export function useMutationMessages(chatId: string) {
 
   const parseRawEvent = (rawEvent: string) => {
     if (DEBUG) console.log("Raw SSE chunk:", rawEvent);
-  
+
     const lines = rawEvent.split("\n");
     const dataLines = [];
-  
+
     for (const line of lines) {
       if (line === "data: [DONE]") {
         break;
       }
-  
+
       if (line.startsWith("data: ")) {
         dataLines.push(line.slice(6)); // Remove "data: "
       }
     }
-  
+
     let data;
     if (dataLines.length === 1) {
       // Single line event (most common): no extra newline
@@ -42,14 +42,13 @@ export function useMutationMessages(chatId: string) {
       // Multiple lines: join with newline to preserve formatting
       data = dataLines.join("\n");
     }
-  
+
     if (DEBUG) {
       console.log("Data:", JSON.stringify(data));
     }
-  
+
     return data;
   };
-  
 
   const createMessage = async (message: CreateMessageType): Promise<void> => {
     try {
@@ -59,7 +58,7 @@ export function useMutationMessages(chatId: string) {
         role: "user",
       });
 
-      const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/chat`;
+      const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/chats/assistants`;
       if (DEBUG) console.log("Making request to:", url);
 
       // Construct the request body according to the updated backend expectations
@@ -95,7 +94,7 @@ export function useMutationMessages(chatId: string) {
 
       // Accumulate the response chunks
       let fullResponse = "";
-      let isDone = false;
+      const isDone = false;
 
       setIsThinking(false);
       setIsStreaming(true);
@@ -103,7 +102,7 @@ export function useMutationMessages(chatId: string) {
       // Process the stream
       while (!isDone) {
         const { value, done } = await reader.read();
-        if (done) { 
+        if (done) {
           buffer += decoder.decode();
           break;
         }

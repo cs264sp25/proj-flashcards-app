@@ -263,10 +263,11 @@ export const update = mutation({
         console.log("Scheduling stream run to update the placeholder message");
       }
 
-      await ctx.scheduler.runAfter(0, internal.openai_runs.streamRun, {
+      await ctx.scheduler.runAfter(0, internal.openai_runs.run, {
         openaiThreadId: chat.openaiThreadId,
         openaiAssistantId: assistant.openaiAssistantId,
         placeholderMessageId: placeholderMessageId,
+        userId,
       });
 
       if (DEBUG) {
@@ -318,7 +319,7 @@ export const update = mutation({
         placeholderMessageId,
       );
 
-      await ctx.scheduler.runAfter(0, internal.openai_internals.completion, {
+      await ctx.scheduler.runAfter(0, internal.openai_completions.completion, {
         messages: messages.map((message) => ({
           role: message.role,
           content: message.content,

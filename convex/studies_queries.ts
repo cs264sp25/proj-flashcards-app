@@ -27,7 +27,6 @@ import {
   getAllStudies as getAllStudiesHelper,
   getStudyById as getStudyByIdHelper,
 } from "./studies_helpers";
-import { StudyType } from "./studies_schema";
 import { CardOutType } from "./cards_schema";
 
 /**

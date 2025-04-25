@@ -4,10 +4,10 @@
  * Actions for creating, updating, and deleting threads in OpenAI.
  ******************************************************************************/
 
-import OpenAI from "openai";
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { openai } from "./openai_helpers";
 
 // Internal action to create a thread in OpenAI
 export const createThread = internalAction({
@@ -17,11 +17,6 @@ export const createThread = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Create the thread in OpenAI
       const thread = await openai.beta.threads.create({
         metadata: args.metadata,
@@ -49,11 +44,6 @@ export const updateThread = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Update the thread in OpenAI
       await openai.beta.threads.update(args.openaiThreadId, {
         metadata: args.metadata,
@@ -74,11 +64,6 @@ export const deleteThread = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Delete the thread in OpenAI
       await openai.beta.threads.del(args.openaiThreadId);
 

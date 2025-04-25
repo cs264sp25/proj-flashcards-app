@@ -47,7 +47,7 @@ export const create = mutation({
     const tags = args.tags || [];
     const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
 
-    await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+    await ctx.scheduler.runAfter(0, internal.openai_embeddings.getEmbedding, {
       text: searchableContent,
       deckId,
     });
@@ -85,7 +85,7 @@ export const update = mutation({
       const tags = data.tags || deck.tags || [];
       const searchableContent = `${title.trim()} ${description.trim()} ${tags.join(" ").trim()}`;
 
-      await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+      await ctx.scheduler.runAfter(0, internal.openai_embeddings.getEmbedding, {
         text: searchableContent,
         deckId,
       });

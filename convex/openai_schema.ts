@@ -42,3 +42,10 @@ export const getEmbeddingsArgsSchema = {
 
 export const getEmbeddingsArgsSchemaObject = v.object(getEmbeddingsArgsSchema);
 export type GetEmbeddingsArgsType = Infer<typeof getEmbeddingsArgsSchemaObject>;
+
+export const embeddingSchema = {
+  embedding: v.array(v.number()),
+};
+
+export const embeddingSchemaObject = v.object(embeddingSchema);
+export type EmbeddingType = Infer<typeof embeddingSchemaObject>;

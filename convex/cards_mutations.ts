@@ -56,7 +56,7 @@ export const create = mutation({
     const front = args.front || "";
     const back = args.back || "";
     const searchableContent = `${front.trim()} ${back.trim()}`;
-    await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+    await ctx.scheduler.runAfter(0, internal.openai_embeddings.getEmbedding, {
       text: searchableContent,
       cardId,
     });
@@ -86,7 +86,7 @@ export const update = mutation({
     const card = await getCardById(ctx, cardId);
     await ownershipGuard(userId, card.userId);
 
-    const oldDeckId = card.deckId;
+    // const oldDeckId = card.deckId;
     let contentChanged = false;
 
     // Move card to a different deck?
@@ -111,7 +111,7 @@ export const update = mutation({
       const front = data.front || card.front || "";
       const back = data.back || card.back || "";
       const searchableContent = `${front.trim()} ${back.trim()}`;
-      await ctx.scheduler.runAfter(0, internal.openai_internals.getEmbedding, {
+      await ctx.scheduler.runAfter(0, internal.openai_embeddings.getEmbedding, {
         text: searchableContent,
         cardId,
       });

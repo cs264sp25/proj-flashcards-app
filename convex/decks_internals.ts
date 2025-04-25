@@ -29,7 +29,7 @@ import {
   DeckOutType,
   DeckType,
 } from "./decks_schema";
-import { getEmbedding } from "./openai_helpers";
+import { getEmbeddingHelper } from "./openai_embeddings";
 
 /**
  * Get all decks for the given user, optionally sorted by the given order
@@ -170,7 +170,7 @@ export const semanticSearch = internalAction({
   handler: async (ctx, args): Promise<DeckOutType[]> => {
     const LIMIT = args.limit || 10;
 
-    const embedding = await getEmbedding(args.query);
+    const { embedding } = await getEmbeddingHelper(args.query);
 
     const results = await ctx.vectorSearch("decks", "by_embedding", {
       vector: embedding,
