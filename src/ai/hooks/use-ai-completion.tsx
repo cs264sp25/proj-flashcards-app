@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Task } from "@/ai/types/tasks";
 import { useAuthToken } from "@convex-dev/auth/react";
+import { useSSEStream } from "@/core/hooks/use-sse-stream";
 
 const DEBUG = false;
 
@@ -53,6 +54,7 @@ export function useAiCompletion(
   const token = useAuthToken();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const { handleStream } = useSSEStream();
 
   const generateCompletion = useCallback(
     async (
@@ -105,35 +107,12 @@ export function useAiCompletion(
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No reader available");
-        }
-
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let accumulatedText = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          
-          let boundary = buffer.indexOf("\n\n");
-          while (boundary !== -1) {
-            const rawEvent = buffer.substring(0, boundary);
-            buffer = buffer.substring(boundary + 2);
-
-            const content = parseRawEvent(rawEvent);
-            if (content) {
-              accumulatedText += content;
-              setInput(accumulatedText);
-            }
-
-            boundary = buffer.indexOf("\n\n");
-          }
-        }
+        await handleStream(response, {
+          onChunk: (content, accumulated) => {
+            setInput(accumulated);
+          },
+          debug: DEBUG,
+        });
       } catch (err) {
         if (DEBUG) console.error("Error in generateCompletion:", err);
         setError(err instanceof Error ? err : new Error("An error occurred"));
@@ -142,7 +121,7 @@ export function useAiCompletion(
         setIsLoading(false);
       }
     },
-    [setInput],
+    [setInput, token, handleStream],
   );
 
   return {
