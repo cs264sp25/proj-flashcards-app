@@ -6,9 +6,10 @@
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
 
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 import {
   MutationCtx,
   QueryCtx,
@@ -91,6 +92,60 @@ export const createMessage = internalMutation({
     const messageId = await createMessageHelper(ctx, args.role, args.message);
     await adjustMessageCount(ctx, args.message.chatId, 1);
     return messageId;
+  },
+});
+
+/**
+ * Create a new message and update the corresponding OpenAI thread.
+ *
+ * Skips the OpenAI message creation if the chat has no OpenAI thread ID.
+ *
+ * Used when we want to create a message in a different context (ctx) like in
+ * HTTP Actions.
+ */
+export const createMessageAndUpdateThread = internalMutation({
+  args: {
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    content: v.string(),
+    userId: v.id("users"),
+    chatId: v.id("chats"),
+  },
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      role: MessageRoleType;
+      content: string;
+      chatId: Id<"chats">;
+      userId: Id<"users">;
+    },
+  ) => {
+    // --- Get Chat ---
+    const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
+      chatId: args.chatId,
+    });
+    if (!chat) {
+      throw new ConvexError({
+        code: 404,
+        message: "Chat not found",
+      });
+    }
+
+    // --- Basic Message Creation ---
+    const messageId = await createMessageHelper(ctx, args.role, {
+      content: args.content,
+      chatId: args.chatId,
+    });
+    await adjustMessageCount(ctx, args.chatId, 1);
+
+    // --- Update OpenAI Thread ID ---
+    if (chat.openaiThreadId) {
+      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+        messageId,
+        openaiThreadId: chat.openaiThreadId,
+        content: args.content,
+        role: args.role,
+      });
+    }
   },
 });
 

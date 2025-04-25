@@ -11,7 +11,7 @@ export function useSSEStream<T>() {
     if (debug) console.log("Raw SSE chunk:", rawEvent);
 
     const lines = rawEvent.split("\n");
-    const dataLines = [];
+    const dataLines: string[] = [];
 
     for (const line of lines) {
       if (line === "data: [DONE]") {

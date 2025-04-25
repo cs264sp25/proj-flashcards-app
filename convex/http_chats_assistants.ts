@@ -6,6 +6,7 @@
 
 import { Id } from "./_generated/dataModel";
 import { ActionCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
@@ -90,6 +91,8 @@ chatsAssistantsRoute.post("/chats/assistants", async (c) => {
     }
 
     return streamSSE(c, async (stream) => {
+      let fullContentSoFar = "";
+
       await handleRun(
         ctx,
         openaiThreadId,
@@ -97,6 +100,7 @@ chatsAssistantsRoute.post("/chats/assistants", async (c) => {
         userId,
         // onContentChunk
         async (contentChunk: string) => {
+          fullContentSoFar += contentChunk;
           await stream.writeSSE({
             data: contentChunk,
           });
@@ -113,6 +117,12 @@ chatsAssistantsRoute.post("/chats/assistants", async (c) => {
         async () => {
           await stream.writeSSE({
             data: "[DONE]",
+          });
+          await ctx.runMutation(internal.messages_internals.createMessageAndUpdateThread, {
+            role: "assistant",
+            content: fullContentSoFar,
+            userId: userId,
+            chatId: message.chatId,
           });
         },
       );

@@ -7,6 +7,7 @@
 
 import { ActionCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 import { Hono } from "hono";
 import { HonoWithConvex } from "convex-helpers/server/hono";
@@ -83,6 +84,8 @@ chatsCompletionsRoute.post("/chats/completions", async (c) => {
         console.log("[chatsCompletionsHandler]: Streaming from ai/chats/completions route");
       }
 
+      let fullContentSoFar = "";
+
       await handleCompletion(
         ctx,
         userId,
@@ -96,6 +99,7 @@ chatsCompletionsRoute.post("/chats/completions", async (c) => {
         ],
         // onContentChunk
         async (chunk: string) => {
+          fullContentSoFar += chunk;
           await stream.writeSSE({
             data: chunk,
           });
@@ -110,6 +114,13 @@ chatsCompletionsRoute.post("/chats/completions", async (c) => {
         async () => {
           await stream.writeSSE({
             data: "[DONE]",
+          });
+          // skips the OpenAI message creation if the chat has no OpenAI thread ID
+          await ctx.runMutation(internal.messages_internals.createMessageAndUpdateThread, {
+            role: "assistant",
+            content: fullContentSoFar,
+            userId: userId,
+            chatId: message.chatId,
           });
         },
       );

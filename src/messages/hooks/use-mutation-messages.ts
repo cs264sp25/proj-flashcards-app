@@ -61,11 +61,12 @@ export function useMutationMessages(chatId: string) {
           setStreamingMessageContent(fullResponse);
         },
         onComplete: async () => {
-          await createMutation({
-            content: fullResponse,
-            chatId: chatId as Id<"chats">,
-            role: "assistant",
-          });
+          // await createMutation({
+          //   content: fullResponse,
+          //   chatId: chatId as Id<"chats">,
+          //   role: "assistant",
+          // });
+          // ☝️ Moved this to the backend, so even if the user closes the tab, the message will still be created
           setIsStreaming(false);
           clearStreamingMessage();
         },
