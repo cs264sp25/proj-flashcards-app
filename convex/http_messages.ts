@@ -176,7 +176,20 @@ messagesRoute.post(
     );
 
     // --- Adjust Message Count ---
-    // TODO: Implement this
+    await ctx.runMutation(internal.chats_internals.adjustMessageCount, {
+      chatId: chatId as Id<"chats">,
+      delta: 1,
+    });
+
+    if (chat.openaiThreadId) {
+      // Create the user message in OpenAI
+      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+        messageId: messageId,
+        openaiThreadId: chat.openaiThreadId,
+        content: content,
+        role: "user",
+      });
+    }
   },
 );
 
