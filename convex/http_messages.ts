@@ -10,6 +10,11 @@ import { internal } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
 import { adjustMessageCount } from "./chats_helpers";
 import { MessageType } from "./messages_schema";
+import { streamSSE } from "hono/streaming";
+import { handleCompletion } from "./openai_completions_helpers";
+import { chat as chatPrompt } from "./prompts";
+import { ChatType } from "./chats_schema";
+import { handleRun } from "./openai_runs_helpers";
 
 const DEBUG = true;
 
@@ -171,6 +176,124 @@ export async function getHistory(
   return { messages };
 }
 
+function getChatCompletionAndStream(
+  c: Context,
+  ctx: ActionCtx,
+  userId: Id<"users">,
+  messages: MessageType[],
+  chat: Doc<"chats">,
+) {
+  return streamSSE(c, async (stream) => {
+    if (DEBUG) {
+      console.log("[getChatCompletionAndStream]: Streaming began!");
+    }
+
+    let fullContentSoFar = "";
+
+    await handleCompletion(
+      ctx,
+      userId,
+      // messages
+      [
+        {
+          role: "system",
+          content: chatPrompt.system,
+        },
+        ...messages,
+      ],
+      // onContentChunk
+      async (chunk: string) => {
+        fullContentSoFar += chunk;
+        await stream.writeSSE({
+          data: chunk,
+        });
+      },
+      // onError
+      async (error: string) => {
+        await stream.writeSSE({
+          data: `[ERROR] : ${error}`,
+        });
+      },
+      // onDone
+      async () => {
+        await stream.writeSSE({
+          data: "[DONE]",
+        });
+        // Skips the OpenAI message creation if the chat has no OpenAI thread ID
+        await ctx.runMutation(
+          internal.messages_internals.createMessageAdjustCountAndUpdateThread,
+          {
+            role: "assistant",
+            content: fullContentSoFar,
+            userId,
+            chat,
+          },
+        );
+      },
+    );
+  });
+}
+
+function runThreadAndStream(
+  c: Context,
+  ctx: ActionCtx,
+  userId: Id<"users">,
+  chat: Doc<"chats">,
+) {
+  return streamSSE(c, async (stream) => {
+    const assistant = await ctx.runQuery(
+      internal.assistants_internals.getAssistantById,
+      {
+        assistantId: chat.assistantId as Id<"assistants">,
+      },
+    );
+    if (!assistant) {
+      throw new HTTPException(404, {
+        message: "Assistant not found",
+      });
+    }
+
+    let fullContentSoFar = "";
+
+    await handleRun(
+      ctx,
+      chat.openaiThreadId as string,
+      assistant.openaiAssistantId as string,
+      userId,
+      // onContentChunk
+      async (contentChunk: string) => {
+        fullContentSoFar += contentChunk;
+        await stream.writeSSE({
+          data: contentChunk,
+        });
+        // Add a small delay to ensure proper streaming
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      },
+      // onError
+      async (error: string) => {
+        await stream.writeSSE({
+          data: error,
+        });
+      },
+      // onDone
+      async () => {
+        await stream.writeSSE({
+          data: "[DONE]",
+        });
+        await ctx.runMutation(
+          internal.messages_internals.createMessageAdjustCountAndUpdateThread,
+          {
+            role: "assistant",
+            content: fullContentSoFar,
+            userId: userId,
+            chat: chat,
+          },
+        );
+      },
+    );
+  });
+}
+
 // Define the route handler
 messagesRoute.post(
   "/messages",
@@ -204,38 +327,31 @@ messagesRoute.post(
     );
 
     // --- Create Message ---
+    // skips the OpenAI message creation if the chat has no OpenAI thread ID
     const messageId = await ctx.runMutation(
-      internal.messages_internals.createMessage,
+      internal.messages_internals.createMessageAdjustCountAndUpdateThread,
       {
         role: "user",
-        message: {
-          content,
-          chatId: chatId as Id<"chats">,
-        },
+        content,
+        userId: userId as Id<"users">,
+        chat,
       },
     );
 
-    // --- Adjust Message Count ---
-    await ctx.runMutation(internal.chats_internals.adjustMessageCount, {
-      chatId: chatId as Id<"chats">,
-      delta: 1,
-    });
-
-    // --- Create Message in OpenAI ---
-    if (chat.openaiThreadId) {
-      // Create the user message in OpenAI
-      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
-        messageId: messageId,
-        openaiThreadId: chat.openaiThreadId,
-        content: content,
-        role: "user",
-      });
-    }
-
-    // --- Get conversation history ---
-    const history = await getHistory(ctx, chatId as Id<"chats">, 10);
-    if (DEBUG) {
-      console.log("[POST messages]: Conversation history:", history);
+    if (chat.assistantId) {
+      // --- Run the thread with the assistant ---
+      return runThreadAndStream(c, ctx, userId as Id<"users">, chat);
+    } else {
+      // --- Get conversation history ---
+      const history = await getHistory(ctx, chatId as Id<"chats">, 10);
+      // --- Get the chat completion ---
+      return getChatCompletionAndStream(
+        c,
+        ctx,
+        userId as Id<"users">,
+        history.messages,
+        chat,
+      );
     }
   },
 );
@@ -268,11 +384,7 @@ messagesRoute.patch(
     const message = await getMessage(ctx, messageId as Id<"messages">);
 
     // --- Check Chat Authorization and get chat ---
-    const chat = await getChat(
-      ctx,
-      message.chatId,
-      userId as Id<"users">,
-    );
+    const chat = await getChat(ctx, message.chatId, userId as Id<"users">);
 
     // --- Update Message ---
     await ctx.runMutation(internal.messages_internals.updateMessage, {
