@@ -6,6 +6,9 @@ import { createMiddleware } from "hono/factory";
 import { zValidator } from "@hono/zod-validator";
 import { getUserId } from "./http_helpers";
 import { z, ZodError } from "zod";
+import { internal } from "./_generated/api";
+import { Doc, Id } from "./_generated/dataModel";
+import { adjustMessageCount } from "./chats_helpers";
 
 const DEBUG = true;
 
@@ -77,29 +80,103 @@ export const zodValidatorHook = (result: ResultType, c: Context) => {
   }
 };
 
+/**
+ * Get a chat by ID and check if a user is authorized to access it
+ * @throws HTTPException if chat is not found or user is not authorized
+ * @returns The chat if authorized
+ */
+async function getChat(
+  ctx: ActionCtx,
+  chatId: Id<"chats">,
+  userId: Id<"users">,
+): Promise<Doc<"chats">> {
+  const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
+    chatId,
+  });
+  if (!chat) {
+    throw new HTTPException(404, {
+      message: "Chat not found",
+    });
+  }
+  if (chat.userId !== userId) {
+    throw new HTTPException(403, {
+      message: "Not authorized to access this chat",
+    });
+  }
+  return chat;
+}
+
+/**
+ * Get a message by ID and check if it is an assistant message
+ * @throws HTTPException if message is not found or is an assistant message
+ * @returns The message if authorized
+ */
+async function getMessage(ctx: ActionCtx, messageId: Id<"messages">) {
+  const message = await ctx.runQuery(
+    internal.messages_internals.getMessageById,
+    {
+      messageId,
+    },
+  );
+  if (!message) {
+    throw new HTTPException(404, {
+      message: "Message not found",
+    });
+  }
+  if (message.role === "assistant") {
+    throw new HTTPException(400, {
+      message: "Cannot edit an assistant message",
+    });
+  }
+  return message;
+}
+
 // Define the route handler
 messagesRoute.post(
   "/messages",
   authMiddleware,
   zValidator("json", createMessageSchema, zodValidatorHook),
   async (c) => {
-    try {
-      if (DEBUG) {
-        console.log("[POST messages]: Starting messages route");
-      }
-
-      // --- Get ActionCtx from Hono Context ---
-      const ctx: ActionCtx = c.env;
-
-      // --- Get User ID ---
-      const userId = c.get("userId");
-
-      // --- Get Request Body ---
-      const { content, chatId } = c.req.valid("json");
-    } catch (error) {
-      console.error("Error creating message:", error);
-      return c.json({ error: "Failed to create message" }, 500);
+    if (DEBUG) {
+      console.log("[POST messages]: Starting messages route");
     }
+
+    // --- Get ActionCtx from Hono Context ---
+    const ctx: ActionCtx = c.env;
+
+    // --- Get User ID ---
+    const userId = c.get("userId");
+    if (DEBUG) {
+      console.log("[POST messages]: User ID:", userId);
+    }
+
+    // --- Get Request Body ---
+    const { content, chatId } = c.req.valid("json");
+    if (DEBUG) {
+      console.log("[POST messages]: Request Body:", { content, chatId });
+    }
+
+    // --- Check Chat Authorization and get chat ---
+    const chat = await getChat(
+      ctx,
+      chatId as Id<"chats">,
+      userId as Id<"users">,
+    );
+
+    // --- Create Message ---
+    const messageId = await ctx.runMutation(
+      internal.messages_internals.createMessage,
+      {
+        role: "user",
+        message: {
+          content,
+          chatId: chatId as Id<"chats">,
+        },
+      },
+    );
+
+    // --- Adjust Message Count ---
+    // TODO: Implement this
   },
 );
 
@@ -108,22 +185,74 @@ messagesRoute.patch(
   authMiddleware,
   zValidator("json", updateMessageSchema, zodValidatorHook),
   async (c) => {
-    try {
-      if (DEBUG) {
-        console.log("[PATCH messages]: Starting messages route");
-      }
-
-      // --- Get ActionCtx from Hono Context ---
-      const ctx: ActionCtx = c.env;
-
-      // --- Get User ID ---
-      const userId = c.get("userId");
-
-      // --- Get Request Body ---
-      const { messageId, content } = c.req.valid("json");
-    } catch (error) {
-      console.error("Error editing message:", error);
-      return c.json({ error: "Failed to edit message" }, 500);
+    if (DEBUG) {
+      console.log("[PATCH messages]: Starting messages route");
     }
+
+    // --- Get ActionCtx from Hono Context ---
+    const ctx: ActionCtx = c.env;
+
+    // --- Get User ID ---
+    const userId = c.get("userId");
+    if (DEBUG) {
+      console.log("[PATCH messages]: User ID:", userId);
+    }
+
+    // --- Get Request Body ---
+    const { messageId, content } = c.req.valid("json");
+    if (DEBUG) {
+      console.log("[PATCH messages]: Request Body:", { messageId, content });
+    }
+
+    // --- Get Message ---
+    const message = await getMessage(ctx, messageId as Id<"messages">);
+
+    // --- Check Chat Authorization and get chat ---
+    const chat = await getChat(
+      ctx,
+      message.chatId,
+      userId as Id<"users">,
+    );
+
+    // --- Update Message ---
+    await ctx.runMutation(internal.messages_internals.updateMessage, {
+      messageId: messageId as Id<"messages">,
+      content,
+    });
+
+    // TODO: Delete all messages after the updated message
   },
 );
+
+export const jsonResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.unknown(),
+  meta: z.unknown().optional(),
+});
+
+export type JsonResponseType = z.infer<typeof jsonResponseSchema>;
+
+// Error handling
+messagesRoute.onError((err, c) => {
+  console.error("Caught error:", err);
+
+  if (err instanceof HTTPException) {
+    return c.json<JsonResponseType>(
+      {
+        success: false,
+        message: err.message,
+        meta: err.cause ?? undefined,
+      },
+      err.status,
+    );
+  } else {
+    return c.json<JsonResponseType>(
+      {
+        success: false,
+        message: "An unexpected error occurred",
+      },
+      500,
+    );
+  }
+});
