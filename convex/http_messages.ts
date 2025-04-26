@@ -9,6 +9,7 @@ import { z, ZodError } from "zod";
 import { internal } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
 import { adjustMessageCount } from "./chats_helpers";
+import { MessageType } from "./messages_schema";
 
 const DEBUG = true;
 
@@ -131,6 +132,45 @@ async function getMessage(ctx: ActionCtx, messageId: Id<"messages">) {
   return message;
 }
 
+/**
+ * Retrieve chat history
+ */
+export async function getHistory(
+  ctx: ActionCtx,
+  chatId: Id<"chats">,
+  numMessages: number = 10, // set this to 0 to skip getting chat history
+): Promise<{ messages: MessageType[] }> {
+  if (DEBUG) {
+    console.log("[getHistory]: Getting chat history for chat ID:", chatId);
+  }
+
+  const messages: MessageType[] = [];
+
+  if (numMessages > 0) {
+    // Get chat history
+    const paginatedMessages = await ctx.runQuery(
+      internal.messages_internals.getAllMessages,
+      {
+        paginationOpts: {
+          numItems: numMessages,
+          cursor: null,
+        },
+        chatId,
+        sortOrder: "desc",
+      },
+    );
+
+    const { page: chatHistory } = paginatedMessages;
+    messages.push(...chatHistory.reverse());
+
+    if (DEBUG) {
+      console.log("[getHistory]: Chat history:", messages);
+    }
+  }
+
+  return { messages };
+}
+
 // Define the route handler
 messagesRoute.post(
   "/messages",
@@ -181,6 +221,7 @@ messagesRoute.post(
       delta: 1,
     });
 
+    // --- Create Message in OpenAI ---
     if (chat.openaiThreadId) {
       // Create the user message in OpenAI
       await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
@@ -189,6 +230,12 @@ messagesRoute.post(
         content: content,
         role: "user",
       });
+    }
+
+    // --- Get conversation history ---
+    const history = await getHistory(ctx, chatId as Id<"chats">, 10);
+    if (DEBUG) {
+      console.log("[POST messages]: Conversation history:", history);
     }
   },
 );
