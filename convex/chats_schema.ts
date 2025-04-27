@@ -27,7 +27,7 @@ export const chatInSchema = {
 };
 
 // eslint-disable-next-line
-const chatInSchemaObject = v.object(chatInSchema);
+export const chatInSchemaObject = v.object(chatInSchema);
 export type ChatInType = Infer<typeof chatInSchemaObject>;
 
 /**
@@ -41,7 +41,7 @@ export const chatUpdateSchema = {
 };
 
 // eslint-disable-next-line
-const chatUpdateSchemaObject = v.object(chatUpdateSchema);
+export const chatUpdateSchemaObject = v.object(chatUpdateSchema);
 export type ChatUpdateType = Infer<typeof chatUpdateSchemaObject>;
 
 /**
@@ -59,7 +59,7 @@ export const chatSchema = {
 };
 
 // eslint-disable-next-line
-const chatSchemaObject = v.object(chatSchema);
+export const chatSchemaObject = v.object(chatSchema);
 export type ChatType = Infer<typeof chatSchemaObject>;
 
 /**
@@ -76,7 +76,7 @@ export const chatOutSchema = {
 };
 
 // eslint-disable-next-line
-const chatOutSchemaObject = v.object(chatOutSchema);
+export const chatOutSchemaObject = v.object(chatOutSchema);
 export type ChatOutType = Infer<typeof chatOutSchemaObject>;
 
 /**
