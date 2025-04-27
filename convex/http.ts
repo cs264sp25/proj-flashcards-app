@@ -14,9 +14,8 @@ import { HonoWithConvex } from "convex-helpers/server/hono";
 
 import { auth } from "./auth";
 
-import { tasksCompletionsRoute } from "./http_tasks_completions";
-import { chatsAssistantsRoute } from "./http_chats_assistants";
-import { chatsCompletionsRoute } from "./http_chats_completions";
+import { completionsRoute } from "./http_completions";
+import { messagesRoute } from "./http_messages";
 
 // Bind ActionCtx to Hono
 const app: HonoWithConvex<ActionCtx> = new Hono();
@@ -30,12 +29,11 @@ app.get("/greeting", async (c) => {
 });
 
 // Middleware to handle CORS for AI routes
-app.use("/ai/*", cors());
+app.use("/api/*", cors());
 
-// Add the AI completion route to the app
-app.route("/ai", tasksCompletionsRoute);
-app.route("/ai", chatsAssistantsRoute);
-app.route("/ai", chatsCompletionsRoute);
+// Mount the routes
+app.route("/api", completionsRoute);
+app.route("/api", messagesRoute);
 
 // If we only wanted to use Hono, we could now export a http router like this:
 // export default new HttpRouterWithHono(app);

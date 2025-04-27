@@ -27,7 +27,7 @@ export function useMutationMessages(chatId: string) {
         role: "user",
       });
 
-      const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/chats/assistants`;
+      const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/api/messages`;
       if (DEBUG) console.log("Making request to:", url);
 
       const requestBody = {
@@ -61,12 +61,6 @@ export function useMutationMessages(chatId: string) {
           setStreamingMessageContent(fullResponse);
         },
         onComplete: async () => {
-          // await createMutation({
-          //   content: fullResponse,
-          //   chatId: chatId as Id<"chats">,
-          //   role: "assistant",
-          // });
-          // ☝️ Moved this to the backend, so even if the user closes the tab, the message will still be created
           setIsStreaming(false);
           clearStreamingMessage();
         },

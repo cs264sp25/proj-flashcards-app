@@ -47,7 +47,7 @@ import type * as http_chats_assistants from "../http_chats_assistants.js";
 import type * as http_chats_completions from "../http_chats_completions.js";
 import type * as http_chats_helper from "../http_chats_helper.js";
 import type * as http_helpers from "../http_helpers.js";
-import type * as http_tasks_completions from "../http_tasks_completions.js";
+import type * as http_tasks_completions from "../http_completions.js";
 import type * as messages_guards from "../messages_guards.js";
 import type * as messages_helpers from "../messages_helpers.js";
 import type * as messages_internals from "../messages_internals.js";

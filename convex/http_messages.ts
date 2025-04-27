@@ -8,12 +8,10 @@ import { getUserId } from "./http_helpers";
 import { z, ZodError } from "zod";
 import { internal } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
-import { adjustMessageCount } from "./chats_helpers";
 import { MessageType } from "./messages_schema";
 import { streamSSE } from "hono/streaming";
 import { handleCompletion } from "./openai_completions_helpers";
 import { chat as chatPrompt } from "./prompts";
-import { ChatType } from "./chats_schema";
 import { handleRun } from "./openai_runs_helpers";
 
 const DEBUG = true;
@@ -91,7 +89,7 @@ export const zodValidatorHook = (result: ResultType, c: Context) => {
  * @throws HTTPException if chat is not found or user is not authorized
  * @returns The chat if authorized
  */
-async function getChat(
+async function getChatAndAuthorizeUser(
   ctx: ActionCtx,
   chatId: Id<"chats">,
   userId: Id<"users">,
@@ -113,9 +111,9 @@ async function getChat(
 }
 
 /**
- * Get a message by ID and check if it is an assistant message
- * @throws HTTPException if message is not found or is an assistant message
- * @returns The message if authorized
+ * Get a message by ID and ensure it exists
+ * @throws HTTPException if message is not found
+ * @returns The message
  */
 async function getMessage(ctx: ActionCtx, messageId: Id<"messages">) {
   const message = await ctx.runQuery(
@@ -129,11 +127,7 @@ async function getMessage(ctx: ActionCtx, messageId: Id<"messages">) {
       message: "Message not found",
     });
   }
-  if (message.role === "assistant") {
-    throw new HTTPException(400, {
-      message: "Cannot edit an assistant message",
-    });
-  }
+
   return message;
 }
 
@@ -181,7 +175,8 @@ function getChatCompletionAndStream(
   ctx: ActionCtx,
   userId: Id<"users">,
   messages: MessageType[],
-  chat: Doc<"chats">,
+  chatId: Id<"chats">,
+  openaiThreadId: string | null,
 ) {
   return streamSSE(c, async (stream) => {
     if (DEBUG) {
@@ -220,15 +215,29 @@ function getChatCompletionAndStream(
           data: "[DONE]",
         });
         // Skips the OpenAI message creation if the chat has no OpenAI thread ID
-        await ctx.runMutation(
-          internal.messages_internals.createMessageAdjustCountAndUpdateThread,
+        const convexMessageId = await ctx.runMutation(
+          internal.messages_internals.createMessageAndAdjustMessageCount,
           {
             role: "assistant",
-            content: fullContentSoFar,
-            userId,
-            chat,
+            message: {
+              content: fullContentSoFar,
+              chatId,
+            },
           },
         );
+
+        if (openaiThreadId) {
+          await ctx.scheduler.runAfter(
+            0,
+            internal.openai_messages.createMessage,
+            {
+              messageId: convexMessageId,
+              openaiThreadId,
+              content: fullContentSoFar,
+              role: "assistant",
+            },
+          );
+        }
       },
     );
   });
@@ -238,31 +247,18 @@ function runThreadAndStream(
   c: Context,
   ctx: ActionCtx,
   userId: Id<"users">,
-  chat: Doc<"chats">,
+  chatId: Id<"chats">,
+  openaiAssistantId: string,
+  openaiThreadId: string,
 ) {
   return streamSSE(c, async (stream) => {
-    const assistant = await ctx.runQuery(
-      internal.assistants_internals.getAssistantById,
-      {
-        assistantId: chat.assistantId as Id<"assistants">,
-      },
-    );
-    if (!assistant) {
-      throw new HTTPException(404, {
-        message: "Assistant not found",
-      });
-    }
-
-    let fullContentSoFar = "";
-
     await handleRun(
       ctx,
-      chat.openaiThreadId as string,
-      assistant.openaiAssistantId as string,
+      openaiThreadId,
+      openaiAssistantId,
       userId,
       // onContentChunk
       async (contentChunk: string) => {
-        fullContentSoFar += contentChunk;
         await stream.writeSSE({
           data: contentChunk,
         });
@@ -280,18 +276,102 @@ function runThreadAndStream(
         await stream.writeSSE({
           data: "[DONE]",
         });
-        await ctx.runMutation(
-          internal.messages_internals.createMessageAdjustCountAndUpdateThread,
+        // We could aggregate contentChunk in onContentChunk and then here
+        // we could create the assistant message, but we'll do that in the
+        // onMessageDone function instead
+      },
+      // onMessageDone
+      async (messageId: string, messageContent: string) => {
+        // messageContent should be the same as fullResponse
+        const convexMessageId = await ctx.runMutation(
+          internal.messages_internals.createMessageAndAdjustMessageCount,
           {
             role: "assistant",
-            content: fullContentSoFar,
-            userId: userId,
-            chat: chat,
+            message: {
+              content: messageContent,
+              chatId,
+            },
+          },
+        );
+        // Update the placeholder message with the OpenAI message ID
+        await ctx.runMutation(
+          internal.messages_internals.updateOpenAIMessageId,
+          {
+            messageId: convexMessageId,
+            openaiMessageId: messageId,
           },
         );
       },
     );
   });
+}
+
+async function createMessageRespondAndStream(
+  c: Context,
+  ctx: ActionCtx,
+  userId: Id<"users">,
+  content: string,
+  chat: Doc<"chats">,
+) {
+  // --- Create Message ---
+  const messageId = await ctx.runMutation(
+    internal.messages_internals.createMessageAndAdjustMessageCount,
+    {
+      role: "user",
+      message: {
+        content,
+        chatId: chat._id,
+      },
+    },
+  );
+
+  const openaiThreadId: string | null = chat.openaiThreadId || null;
+  if (openaiThreadId) {
+    // Create the user message in OpenAI
+    // This will update the openaiMessageId field of the userMessageId message
+    await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
+      messageId,
+      openaiThreadId,
+      content,
+      role: "user",
+    });
+  }
+
+  let openaiAssistantId: string | null = null;
+  if (chat.assistantId) {
+    const assistant = await ctx.runQuery(
+      internal.assistants_internals.getAssistantById,
+      {
+        assistantId: chat.assistantId as Id<"assistants">,
+      },
+    );
+
+    openaiAssistantId = assistant.openaiAssistantId || null;
+  }
+
+  if (openaiAssistantId && openaiThreadId) {
+    // --- Run the thread with the assistant ---
+    return runThreadAndStream(
+      c,
+      ctx,
+      userId as Id<"users">,
+      chat._id,
+      openaiAssistantId,
+      openaiThreadId,
+    );
+  } else {
+    // --- Get conversation history ---
+    const history = await getHistory(ctx, chat._id, 10);
+    // --- Get the chat completion ---
+    return getChatCompletionAndStream(
+      c,
+      ctx,
+      userId as Id<"users">,
+      history.messages,
+      chat._id,
+      openaiThreadId,
+    );
+  }
 }
 
 // Define the route handler
@@ -320,39 +400,20 @@ messagesRoute.post(
     }
 
     // --- Check Chat Authorization and get chat ---
-    const chat = await getChat(
+    const chat = await getChatAndAuthorizeUser(
       ctx,
       chatId as Id<"chats">,
       userId as Id<"users">,
     );
 
-    // --- Create Message ---
-    // skips the OpenAI message creation if the chat has no OpenAI thread ID
-    const messageId = await ctx.runMutation(
-      internal.messages_internals.createMessageAdjustCountAndUpdateThread,
-      {
-        role: "user",
-        content,
-        userId: userId as Id<"users">,
-        chat,
-      },
+    // --- Create Message and stream response ---
+    return createMessageRespondAndStream(
+      c,
+      ctx,
+      userId as Id<"users">,
+      content,
+      chat,
     );
-
-    if (chat.assistantId) {
-      // --- Run the thread with the assistant ---
-      return runThreadAndStream(c, ctx, userId as Id<"users">, chat);
-    } else {
-      // --- Get conversation history ---
-      const history = await getHistory(ctx, chatId as Id<"chats">, 10);
-      // --- Get the chat completion ---
-      return getChatCompletionAndStream(
-        c,
-        ctx,
-        userId as Id<"users">,
-        history.messages,
-        chat,
-      );
-    }
   },
 );
 
@@ -362,37 +423,96 @@ messagesRoute.patch(
   zValidator("json", updateMessageSchema, zodValidatorHook),
   async (c) => {
     if (DEBUG) {
-      console.log("[PATCH messages]: Starting messages route");
+      console.log("[PATCH messages] Starting messages route");
     }
 
-    // --- Get ActionCtx from Hono Context ---
+    // Get ActionCtx from Hono Context
     const ctx: ActionCtx = c.env;
 
-    // --- Get User ID ---
+    // Get User ID from context (check authentication)
     const userId = c.get("userId");
     if (DEBUG) {
-      console.log("[PATCH messages]: User ID:", userId);
+      console.log("[PATCH messages] User ID:", userId);
     }
 
-    // --- Get Request Body ---
+    // Get Request Body (input validation)
     const { messageId, content } = c.req.valid("json");
     if (DEBUG) {
-      console.log("[PATCH messages]: Request Body:", { messageId, content });
+      console.log("[PATCH messages] Request Body:", { messageId, content });
     }
 
-    // --- Get Message ---
-    const message = await getMessage(ctx, messageId as Id<"messages">);
+    // Fetch the original message by ID (check if it exists)
+    const originalMessage = await getMessage(ctx, messageId as Id<"messages">);
+    if (DEBUG) {
+      console.log("[PATCH messages] Original message", originalMessage);
+    }
 
-    // --- Check Chat Authorization and get chat ---
-    const chat = await getChat(ctx, message.chatId, userId as Id<"users">);
+    // Refuse to update assistant messages
+    if (originalMessage.role === "assistant") {
+      throw new HTTPException(400, {
+        message: "Cannot edit an assistant message",
+      });
+    }
 
-    // --- Update Message ---
-    await ctx.runMutation(internal.messages_internals.updateMessage, {
-      messageId: messageId as Id<"messages">,
-      content,
+    // Fetch the chat and check authorization
+    const chat = await getChatAndAuthorizeUser(
+      ctx,
+      originalMessage.chatId,
+      userId as Id<"users">,
+    );
+
+    // Find all subsequent messages (after the message we are editing)
+    const subsequentMessages = await ctx.runQuery(
+      internal.messages_internals.getSubsequentMessages,
+      {
+        messageId: messageId as Id<"messages">,
+      },
+    );
+    if (DEBUG) {
+      console.log("[PATCH messages] Subsequent messages", subsequentMessages);
+    }
+
+    // Schedule deletion of this and all subsequent Convex messages
+    const convexMessageIdsToDelete = [
+      originalMessage._id,
+      ...subsequentMessages.map((msg) => msg._id),
+    ];
+    if (convexMessageIdsToDelete.length > 0) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.messages_internals.deleteMessagesByIdsAndAdjustMessageCount,
+        {
+          messageIds: convexMessageIdsToDelete,
+          chatId: originalMessage.chatId,
+        },
+      );
+    }
+
+    // Schedule deletion of all relevant OpenAI messages
+    const openaiMessageIdsToDelete: string[] = [];
+    if (originalMessage.openaiMessageId) {
+      openaiMessageIdsToDelete.push(originalMessage.openaiMessageId);
+    }
+    subsequentMessages.forEach((msg) => {
+      if (msg.openaiMessageId) {
+        openaiMessageIdsToDelete.push(msg.openaiMessageId);
+      }
     });
+    if (openaiMessageIdsToDelete.length > 0) {
+      await ctx.scheduler.runAfter(0, internal.openai_messages.deleteMessages, {
+        openaiThreadId: chat.openaiThreadId as string,
+        openaiMessageIds: openaiMessageIdsToDelete,
+      });
+    }
 
-    // TODO: Delete all messages after the updated message
+    // From this point on, it is the same as the createMessage route
+    return createMessageRespondAndStream(
+      c,
+      ctx,
+      userId as Id<"users">,
+      content,
+      chat,
+    );
   },
 );
 
