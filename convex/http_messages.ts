@@ -282,6 +282,12 @@ function runThreadAndStream(
       },
       // onMessageDone
       async (messageId: string, messageContent: string) => {
+        // This makes for a better user experience
+        // TODO: Revisit this!
+        await stream.writeSSE({
+          data: "[DONE]",
+        });
+
         // messageContent should be the same as fullResponse
         const convexMessageId = await ctx.runMutation(
           internal.messages_internals.createMessageAndAdjustMessageCount,
@@ -293,8 +299,10 @@ function runThreadAndStream(
             },
           },
         );
+
         // Update the placeholder message with the OpenAI message ID
-        await ctx.runMutation(
+        await ctx.scheduler.runAfter(
+          1,
           internal.messages_internals.updateOpenAIMessageId,
           {
             messageId: convexMessageId,

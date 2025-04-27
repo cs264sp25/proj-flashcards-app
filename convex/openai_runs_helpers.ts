@@ -15,6 +15,7 @@ import OpenAI from "openai";
 import { MessageType as MessageTypeFromMessagesSchema } from "./messages_schema";
 import { handleFunctionCall, tools } from "./openai_tools";
 import { openai } from "./openai_helpers";
+import { chat as chatPrompt } from "./prompts";
 
 const DEBUG = true;
 
@@ -144,9 +145,9 @@ async function processStreamContent(
         }
       }
     }
-  } else if (event.event === "thread.message.done") {
+  } else if (event.event === "thread.message.completed") {
     if (onMessageDone) {
-      await onMessageDone(event.data.id, event.data.content.text.value);
+      await onMessageDone(event.data.id, event.data.content[0].text.value);
     }
   } else if (event.event === "thread.run.completed") {
     await onDone();
@@ -177,6 +178,7 @@ export async function handleRun(
       assistant_id: openaiAssistantId,
       tools: tools,
       stream: true,
+      additional_instructions: chatPrompt.system,
     });
 
     let fullContent = "";

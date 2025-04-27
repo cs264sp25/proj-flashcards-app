@@ -10,6 +10,7 @@ import { internal } from "./_generated/api";
 import { chat } from "./prompts";
 import { completionArgsSchemaObject } from "./openai_schema";
 import { handleCompletion } from "./openai_completions_helpers";
+import { getMessageById } from "./messages_helpers";
 
 const DEBUG = true;
 
@@ -50,6 +51,21 @@ export const completion = internalAction({
       //onDone
       async () => {
         console.log("[completion]: Completion action done");
+        const message = await ctx.runQuery(internal.messages_internals.getMessageById, {
+          messageId: args.placeholderMessageId,
+        });
+        const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
+          chatId: message.chatId,
+        });
+        if (chat.openaiThreadId) {
+          // This will create the message in OpenAI and update the message with the OpenAI's message ID
+          await ctx.runAction(internal.openai_messages.createMessage, {
+            messageId: args.placeholderMessageId,
+            openaiThreadId: chat.openaiThreadId,
+            content: message.content,
+            role: "assistant",
+          });
+        }
       },
     );
   },

@@ -16,22 +16,35 @@ const DEBUG = true;
 
 export function useMutationMessages(chatId: string) {
   const token = useAuthToken();
-  const createMutation = useMutation(api.messages_mutations.create);
+  const createMutation = useMutation(api.messages_mutations.createUserMessage);
   const { handleStream } = useSSEStream();
 
-  const createMessage = async (message: CreateMessageType): Promise<void> => {
+  const createMessageThroughMutation = async (
+    message: CreateMessageType,
+  ): Promise<void> => {
     try {
-      const userMessageId = await createMutation({
-        content: message.content,
+      await createMutation({
+        content: message.content as string,
         chatId: chatId as Id<"chats">,
-        role: "user",
       });
+      toast.success("Message created successfully");
+    } catch (error) {
+      toast.error("Error creating message", {
+        description: (error as Error).message || "Please try again later",
+      });
+    }
+  };
 
+  const createMessageThroughApi = async (
+    message: CreateMessageType,
+  ): Promise<void> => {
+    try {
       const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/api/messages`;
       if (DEBUG) console.log("Making request to:", url);
 
       const requestBody = {
-        messageId: userMessageId,
+        content: message.content,
+        chatId: chatId as Id<"chats">,
       };
 
       if (DEBUG) console.log("Request body:", requestBody);
@@ -74,6 +87,6 @@ export function useMutationMessages(chatId: string) {
   };
 
   return {
-    add: createMessage,
+    add: createMessageThroughApi,
   };
 }
