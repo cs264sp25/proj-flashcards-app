@@ -129,7 +129,8 @@ async function processStreamContent(
   fullContent: string,
   onContentChunk: (chunk: string, fullContent: string) => Promise<void>,
   onDone: () => Promise<void>,
-  onError: (error: string) => Promise<void>
+  onError: (error: string) => Promise<void>,
+  onMessageDone?: (messageId: string, messageContent: string) => Promise<void>,
 ): Promise<{ fullContent: string; shouldReturn: boolean }> {
   let updatedContent = fullContent;
   let shouldReturn = false;
@@ -142,6 +143,10 @@ async function processStreamContent(
           await onContentChunk(content.text.value, updatedContent);
         }
       }
+    }
+  } else if (event.event === "thread.message.done") {
+    if (onMessageDone) {
+      await onMessageDone(event.data.id, event.data.content.text.value);
     }
   } else if (event.event === "thread.run.completed") {
     await onDone();
@@ -165,6 +170,7 @@ export async function handleRun(
   onContentChunk: (contentChunk: string, fullContentSoFar: string) => Promise<void>,
   onError: (error: string) => Promise<void>,
   onDone: () => Promise<void>,
+  onMessageDone?: (messageId: string, messageContent: string) => Promise<void>,
 ): Promise<void> {
   try {
     const run = await openai.beta.threads.runs.create(openaiThreadId, {
@@ -203,9 +209,10 @@ export async function handleRun(
               fullContent,
               onContentChunk,
               onDone,
-              onError
+              onError,
+              onMessageDone,
             );
-            
+
             fullContent = updatedContent;
             if (shouldReturn) return;
           }
@@ -216,9 +223,10 @@ export async function handleRun(
           fullContent,
           onContentChunk,
           onDone,
-          onError
+          onError,
+          onMessageDone,
         );
-        
+
         fullContent = updatedContent;
         if (shouldReturn) return;
       }

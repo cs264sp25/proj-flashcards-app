@@ -78,12 +78,6 @@ export const run = internalAction({
             (now - lastUpdateTime > MIN_UPDATE_INTERVAL && contentChange > 0) ||
             contentChange > MIN_CONTENT_CHANGE
           ) {
-            // Keep your commented code for reference
-            // await ctx.runMutation(internal.messages.update, {
-            //   messageId: args.placeholderMessageId,
-            //   content: responseSoFar,
-            // });
-
             // Use our debounced update function instead
             await performUpdate(fullResponse);
           }
@@ -98,8 +92,22 @@ export const run = internalAction({
         },
         // onDone
         async () => {
-          await performUpdate(fullResponse);
-          // TODO:Update the placeholder message with the ID of the OpenAI message
+          // At this point, fullResponse contains the final response
+          // We could update the placeholder message here, but we'll do that in the
+          // onMessageDone function instead
+        },
+        // onMessageDone
+        async (messageId: string, messageContent: string) => {
+          // messageContent should be the same as fullResponse
+          await ctx.runMutation(internal.messages_internals.updateMessage, {
+            messageId: args.placeholderMessageId,
+            content: messageContent,
+          });
+          // Update the placeholder message with the OpenAI message ID
+          await ctx.runMutation(internal.messages_internals.updateOpenAIMessageId, {
+            messageId: args.placeholderMessageId,
+            openaiMessageId: messageId,
+          });
         },
       );
       return { success: true };
