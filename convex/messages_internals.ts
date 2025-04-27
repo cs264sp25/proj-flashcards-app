@@ -6,10 +6,9 @@
  * - Bypasses auth/authorization for internal use
  ******************************************************************************/
 
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
-import { internal } from "./_generated/api";
 import {
   MutationCtx,
   QueryCtx,
@@ -24,6 +23,7 @@ import {
   createMessage as createMessageHelper,
   updateMessage as updateMessageHelper,
   removeAllMessagesInChat as removeAllMessagesInChatHelper,
+  getSubsequentMessages as getSubsequentMessagesHelper,
 } from "./messages_helpers";
 import {
   MessageInType,
@@ -69,12 +69,13 @@ export const getMessageById = internalQuery({
 });
 
 /**
- * Create a new message. An internal mutation wrapper around the createMessage helper
- * function, with additional message count adjustment.
- * Used when we want to create a message in a different context (ctx) like in
- * seeding Actions.
+ * Create a new message and adjust the message count.
+ *
+ * An internal mutation wrapper around the createMessage helper function, with
+ * additional message count adjustment. Used when we want to create a message in
+ * a different context (ctx) like in seeding Actions.
  */
-export const createMessage = internalMutation({
+export const createMessageAndAdjustMessageCount = internalMutation({
   args: {
     role: v.union(v.literal("user"), v.literal("assistant")),
     message: v.object({
@@ -96,62 +97,8 @@ export const createMessage = internalMutation({
 });
 
 /**
- * Create a new message and update the corresponding OpenAI thread.
- *
- * Skips the OpenAI message creation if the chat has no OpenAI thread ID.
- *
- * Used when we want to create a message in a different context (ctx) like in
- * HTTP Actions.
- */
-export const createMessageAndUpdateThread = internalMutation({
-  args: {
-    role: v.union(v.literal("user"), v.literal("assistant")),
-    content: v.string(),
-    userId: v.id("users"),
-    chatId: v.id("chats"),
-  },
-  handler: async (
-    ctx: MutationCtx,
-    args: {
-      role: MessageRoleType;
-      content: string;
-      chatId: Id<"chats">;
-      userId: Id<"users">;
-    },
-  ) => {
-    // --- Get Chat ---
-    const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
-      chatId: args.chatId,
-    });
-    if (!chat) {
-      throw new ConvexError({
-        code: 404,
-        message: "Chat not found",
-      });
-    }
-
-    // --- Basic Message Creation ---
-    const messageId = await createMessageHelper(ctx, args.role, {
-      content: args.content,
-      chatId: args.chatId,
-    });
-    await adjustMessageCount(ctx, args.chatId, 1);
-
-    // --- Update OpenAI Thread ID ---
-    if (chat.openaiThreadId) {
-      await ctx.scheduler.runAfter(0, internal.openai_messages.createMessage, {
-        messageId,
-        openaiThreadId: chat.openaiThreadId,
-        content: args.content,
-        role: args.role,
-      });
-    }
-  },
-});
-
-/**
  * Update a message with the given content. Used for streaming responses from
- * the AI chatbot.
+ * the AI chatbot to incrementally update the message content.
  */
 export const updateMessage = internalMutation({
   args: { messageId: v.id("messages"), content: v.string() },
@@ -167,12 +114,41 @@ export const updateMessage = internalMutation({
 });
 
 /**
+ * Get subsequent messages from a given message.
+ *
+ * An internal query wrapper around the getSubsequentMessages helper function.
+ * Used when we want to get subsequent messages from a given message in a
+ * different context (ctx) like in HTTP Actions. We want to get the subsequent
+ * messages from the original message, so we can delete them if the user edits
+ * the original message because the conversation history has changed.
+ */
+export const getSubsequentMessages = internalQuery({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (
+    ctx: QueryCtx,
+    args: {
+      messageId: Id<"messages">;
+    },
+  ) => {
+    const originalMessage = await getMessageByIdHelper(ctx, args.messageId);
+    const subsequentMessages = await getSubsequentMessagesHelper(
+      ctx,
+      originalMessage.chatId,
+      originalMessage._creationTime,
+    );
+    return subsequentMessages;
+  },
+});
+
+/**
  * Delete all messages in a chat. An internal mutation wrapper around the
  * removeAllMessagesInChat helper function, with additional message count
  * adjustment. Used when we want to delete messages in a different context (ctx)
  * like in seeding Actions.
  */
-export const deleteMessages = internalMutation({
+export const deleteMessagesAndAdjustMessageCount = internalMutation({
   args: {
     chatId: v.id("chats"),
     afterThisCreationTime: v.optional(v.number()),
@@ -201,7 +177,7 @@ export const deleteMessages = internalMutation({
  * Delete specific messages by their IDs. Used after editing a message in
  * an Assistants API chat to clean up the outdated subsequent messages.
  */
-export const deleteMessagesByIds = internalMutation({
+export const deleteMessagesByIdsAndAdjustMessageCount = internalMutation({
   args: {
     messageIds: v.array(v.id("messages")),
     chatId: v.id("chats"), // Needed for count adjustment

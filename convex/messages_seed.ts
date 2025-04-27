@@ -39,14 +39,14 @@ export const createSampleMessages = internalAction({
     const messageIds: Id<"messages">[] = [];
 
     if (clearExistingData) {
-      await ctx.runMutation(internal.messages_internals.deleteMessages, {
+      await ctx.runMutation(internal.messages_internals.deleteMessagesAndAdjustMessageCount, {
         chatId,
       });
     }
 
     for (let i = 0; i < numberOfMessages; i++) {
       const messageId = await ctx.runMutation(
-        internal.messages_internals.createMessage,
+        internal.messages_internals.createMessageAndAdjustMessageCount,
         {
           role: i % 2 === 0 ? "user" : "assistant",
           message: {
