@@ -19,7 +19,7 @@ import { getUserId } from "./http_helpers";
 const DEBUG = true;
 
 // Bind ActionCtx to Hono
-export const tasksCompletionsRoute: HonoWithConvex<ActionCtx> = new Hono();
+export const completionsRoute: HonoWithConvex<ActionCtx> = new Hono();
 // Now anywhere we have a `c: Context` (from Hono) we can use `ctx: ActionCtx = c.env` to access the Convex ActionCtx
 
 /**
@@ -123,7 +123,7 @@ async function prepareMessages(
 /**
  * Completion Route Handler for AI tasks
  */
-tasksCompletionsRoute.post("/tasks/completions", async (c) => {
+completionsRoute.post("/completions", async (c) => {
   try {
     // --- Get ActionCtx from Hono Context ---
     const ctx: ActionCtx = c.env;

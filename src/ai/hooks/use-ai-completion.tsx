@@ -74,7 +74,7 @@ export function useAiCompletion(
       setError(null);
 
       try {
-        const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/tasks/completions`;
+        const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/api/completions`;
         if (DEBUG) console.log("Making request to:", url);
 
         const requestBody = {
