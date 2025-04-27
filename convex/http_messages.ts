@@ -534,7 +534,7 @@ messagesRoute.onError((err, c) => {
       {
         success: false,
         message: err.message,
-        meta: err.cause ?? undefined,
+        meta: {},
       },
       err.status,
     );
