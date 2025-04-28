@@ -6,6 +6,7 @@ import rehypeRaw from "rehype-raw";
 import { cn } from "@/core/lib/utils";
 import { InMarkdownDeck } from "@/decks/components/deck-in-markdown";
 import { InMarkdownCard } from "@/cards/components/card-in-markdown";
+import StreamingPlaceholder from "./streaming-placeholder";
 
 /**
  * Registry of allowed custom components.
@@ -149,29 +150,7 @@ const Markdown: React.FC<MarkdownProps> = ({
               // Check if content is actively streaming
               if (isStreaming) {
                 // Render the lightweight loading indicator instead of the full component
-                return (
-                  <div className="flex items-center gap-2 px-4 py-2 my-2 text-sm text-muted-foreground not-prose">
-                    {" "}
-                    {/* Added not-prose to prevent prose styles interfering */}
-                    <div className="flex space-x-1">
-                      <div
-                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <div
-                        className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
-                    </div>
-                    <span className="pl-2">
-                      Rendering paused while streaming ...
-                    </span>
-                  </div>
-                );
+                return <StreamingPlaceholder />;
               } else {
                 // If not streaming, render the actual component
                 // Find the corresponding React component from our registry
