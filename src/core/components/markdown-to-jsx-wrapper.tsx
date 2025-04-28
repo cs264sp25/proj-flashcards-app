@@ -5,6 +5,8 @@ import { InMarkdownCard } from "@/cards/components/card-in-markdown";
 import MermaidDiagram from "./mermaid-diagram";
 import TeX from "@matejmazur/react-katex";
 import StreamingPlaceholder from "./streaming-placeholder";
+import CodeBlock from "./code-block";
+import SyntaxHighlightedCode from "./syntax-highlighted-code";
 
 
 interface MarkdownProps {
@@ -26,6 +28,15 @@ const Markdown: React.FC<MarkdownProps> = ({
       <MarkdownToJSX
         options={{
           overrides: {
+            code: SyntaxHighlightedCode,
+            pre: CodeBlock,
+            table: ({ children, ...props }) => (
+              <div className="overflow-x-auto">
+                <table className="table-auto" {...props}>
+                  {children}
+                </table>
+              </div>
+            ),
             InMarkdownDeck: ({ deckId }: { deckId: string }) =>
               isStreaming ? (
                 <StreamingPlaceholder />

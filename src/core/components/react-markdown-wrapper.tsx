@@ -7,6 +7,9 @@ import { cn } from "@/core/lib/utils";
 import { InMarkdownDeck } from "@/decks/components/deck-in-markdown";
 import { InMarkdownCard } from "@/cards/components/card-in-markdown";
 import StreamingPlaceholder from "./streaming-placeholder";
+import MermaidDiagram from "./mermaid-diagram";
+import CodeBlock from "./code-block";
+import SyntaxHighlightedCode from "./syntax-highlighted-code";
 
 /**
  * Registry of allowed custom components.
@@ -137,7 +140,7 @@ const Markdown: React.FC<MarkdownProps> = ({
         // Requires 'rehype-raw' package.
         rehypePlugins={[rehypeRaw]}
         components={{
-          // Define a custom renderer for 'div' elements
+          // --- Custom Renderer for DIV elements (Handles custom tags like <InMarkdownDeck />) ---
           div: ({ node, className: nodeClassName, children, ...props }) => {
             // Check if this div has an 'id' attribute matching our placeholder format
             const elementId = props.id as string | undefined;
@@ -187,6 +190,62 @@ const Markdown: React.FC<MarkdownProps> = ({
               </div>
             );
           },
+
+          // --- Custom Renderer for CODE elements (Handles ```code blocks``` and `inline code`) ---
+          code(props) {
+            const { children, className, node, ...rest } = props;
+            // Match className="language-xxx"
+            const match = /language-(\w+)/.exec(className || "");
+            const language = match ? match[1] : undefined;
+            // Extract the code string, removing potential trailing newline
+            const codeString = String(children).replace(/\n$/, "");
+
+            // Handle block code (```)
+            if (match) {
+              // Special handling for 'mermaid' language
+              if (language === "mermaid") {
+                return (
+                  <div className="not-prose">
+                    <MermaidDiagram code={codeString} />
+                  </div>
+                );
+              }
+              // Handle all other languages (or no language) with the general CodeBlock component
+              else {
+                // Compose the className to match markdown-to-jsx output
+                const codeClassName = [
+                  className, // e.g. "language-java"
+                  language ? `lang-${language}` : "",
+                  "hljs",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+
+                return (
+                  <CodeBlock>
+                    <SyntaxHighlightedCode className={codeClassName} {...rest}>
+                      {codeString}
+                    </SyntaxHighlightedCode>
+                  </CodeBlock>
+                );
+              }
+            }
+            // Handle inline code (`code`) - render with default styling or minimal custom styling
+            else {
+              return (
+                <code className={cn(className)} {...rest}>
+                  {children}
+                </code>
+                // Add specific inline code styling via "inline-code-style" if needed
+              );
+            }
+          },
+
+          // --- Override PRE element rendering to avoid default wrapper ---
+          // We handle the <pre> wrapper within our custom CodeBlock component.
+          // Returning React.Fragment prevents ReactMarkdown from adding an extra <pre>.
+          pre: React.Fragment,
+
           // You can add custom renderers for other HTML elements here if needed
           // e.g., custom styling for links, images, etc.
           // a: ({node, ...props}) => <a style={{color: 'red'}} {...props} />,
