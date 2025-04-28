@@ -10,6 +10,9 @@ import StreamingPlaceholder from "./streaming-placeholder";
 import MermaidDiagram from "./mermaid-diagram";
 import CodeBlock from "./code-block";
 import SyntaxHighlightedCode from "./syntax-highlighted-code";
+import rehypeKatex from "rehype-katex"; // also install katex
+import "katex/dist/katex.min.css"; // `rehype-katex` does not import the CSS for you
+import remarkMath from "remark-math";
 
 /**
  * Registry of allowed custom components.
@@ -128,17 +131,31 @@ const Markdown: React.FC<MarkdownProps> = ({
 
   return (
     <div
-      className={cn("prose prose-stone prose-sm dark:prose-invert", className)}
+      className={cn(
+        "prose prose-stone prose-sm dark:prose-invert",
+        // CRITICAL for KaTeX layout:
+        // `position: relative` establishes a positioning context. KaTeX sometimes uses
+        // `position: absolute` internally for precise rendering. Without this,
+        // absolutely positioned KaTeX elements might reference an ancestor outside
+        // this div, potentially breaking the parent component's layout (e.g., causing
+        // unexpected overflow). Do not remove unless you are sure KaTeX rendering
+        // no longer causes layout issues. See README.md for more details.
+        "relative",
+        className,
+      )}
     >
       <ReactMarkdown
         // Pass the processed markdown (with placeholders instead of custom tags)
         children={processedContent}
         // Enable basic Github Flavored Markdown (tables, strikethrough, etc.)
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkMath]}
         // *** CRITICAL STEP ***
         // Enable parsing of raw HTML elements (our injected placeholder divs).
         // Requires 'rehype-raw' package.
-        rehypePlugins={[rehypeRaw]}
+        // NOTE: For KaTeX (`rehypeKatex`), there are additional setup requirements
+        // regarding CSS import and layout positioning. See the dedicated section
+        // in README.md for important details before removing or modifying this.
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           // --- Custom Renderer for DIV elements (Handles custom tags like <InMarkdownDeck />) ---
           div: ({ node, className: nodeClassName, children, ...props }) => {
