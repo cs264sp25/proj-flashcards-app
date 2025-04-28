@@ -1,6 +1,7 @@
 import { cn } from "@/core/lib/utils";
 import { Button } from "@/core/components/button";
 import { useState } from "react";
+import { Copy, WrapText, Text, Check } from "lucide-react";
 
 const DEBUG = false;
 
@@ -26,7 +27,11 @@ const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     <div className={cn("mt-2 not-prose", { "border border-green-500": DEBUG })}>
       <div
         className={cn(
-          "flex items-center justify-end gap-1 p-1 px-3 bg-foreground dark:bg-muted border-b-0 rounded-t-lg",
+          "flex items-center justify-end gap-1",
+          "p-1 px-3",
+          "border-b-0 rounded-t-lg",
+          "bg-foreground text-background/80",
+          "dark:bg-muted dark:text-foreground/80",
           {
             "border border-red-500": DEBUG,
           },
@@ -34,25 +39,35 @@ const CodeBlock: React.FC<CodeBlockProps> = (props) => {
       >
         <Button
           variant="ghost"
-          size="sm"
-          className={cn("h-6 hover:bg-muted/30", {
-            "border border-blue-500": DEBUG,
-          })}
+          size="icon"
+          className={cn(
+            "h-6",
+            "hover:bg-foreground/90 hover:text-background/90",
+            "hover:dark:bg-muted/30 hover:dark:text-foreground/90",
+            {
+              "border border-blue-500": DEBUG,
+            },
+          )}
           onClick={() => setWrap(!wrap)}
+          title={wrap ? "Unwrap" : "Wrap"}
         >
-          <span className="text-xs font-extralight text-muted dark:text-muted-foreground">
-            {wrap ? "Unwrap" : "Wrap"}
-          </span>
+          {wrap ? <Text size={16} /> : <WrapText size={16} />}
         </Button>
         <Button
           variant="ghost"
-          size="sm"
-          className="h-6 hover:bg-muted/30"
+          size="icon"
+          className={cn(
+            "h-6",
+            "hover:bg-foreground/90 hover:text-background/90",
+            "hover:dark:bg-muted/30 hover:dark:text-foreground/90",
+            {
+              "border border-blue-500": DEBUG,
+            },
+          )}
           onClick={handleCopy}
+          title={copied ? "Copied!" : "Copy"}
         >
-          <span className="text-xs font-extralight text-muted dark:text-muted-foreground">
-            {copied ? "Copied!" : "Copy"}
-          </span>
+          {copied ? <Check size={16} /> : <Copy size={16} />}
         </Button>
       </div>
       <pre {...props} style={{ whiteSpace: wrap ? "pre-wrap" : "pre" }} />
