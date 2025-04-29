@@ -5,6 +5,8 @@ import {
   BotMessageSquare,
   Bot,
   BookOpen,
+  Bell,
+  FolderOpen,
 } from "lucide-react";
 import {
   Sidebar as SidebarRoot,
@@ -18,9 +20,11 @@ import {
   SidebarMenuButton,
   SidebarRail,
 } from "@/core/components/sidebar";
-import { SignOut } from "@/auth/components/sign-out";
 import { useRouter } from "@/core/hooks/use-router";
 import { Page } from "@/core/config/router";
+
+import UnreadCount from "@/notifications/components/unread-count";
+import UserDropdownMenuInSidebar from "@/auth/components/user-dropdown-menu";
 
 // Menu items.
 const items = [
@@ -54,6 +58,16 @@ const items = [
     page: "assistants",
     icon: Bot,
   },
+  {
+    title: "Notifications",
+    page: "notifications",
+    icon: Bell,
+  },
+  {
+    title: "Files",
+    page: "files",
+    icon: FolderOpen,
+  },
 ];
 
 function Sidebar() {
@@ -71,7 +85,13 @@ function Sidebar() {
                   <SidebarMenuButton asChild>
                     <a href={getPath(item.page as Page) || "/"}>
                       <item.icon />
-                      <span>{item.title}</span>
+                      {item.title === "Notifications" ? (
+                        <span>
+                          Notifications <UnreadCount />
+                        </span>
+                      ) : (
+                        <span>{item.title}</span>
+                      )}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -81,13 +101,7 @@ function Sidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <SignOut />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <UserDropdownMenuInSidebar />
       </SidebarFooter>
       <SidebarRail />
     </SidebarRoot>

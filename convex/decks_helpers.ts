@@ -18,8 +18,8 @@ import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
 
-import { DeckInType, DeckOutType, DeckUpdateType } from "./decks_schema";
-import { PaginationOptsType, SortOrderType } from "./shared";
+import type { DeckInType, DeckOutType, DeckUpdateType } from "./decks_schema";
+import type { PaginationOptsType, SortOrderType } from "./shared";
 import { removeAllCardsInDeck } from "./cards_helpers";
 
 // Get all decks with pagination, optional filtering by userId, sorting, and search query
@@ -29,7 +29,7 @@ export async function getAllDecks(
   userId?: Id<"users">,
   sortOrder?: SortOrderType,
   searchQuery?: string,
-): Promise<PaginationResult<DeckOutType>> {
+): Promise<PaginationResult<Doc<"decks">>> {
   sortOrder = sortOrder || "asc";
 
   let results: PaginationResult<Doc<"decks">>;
@@ -71,23 +71,14 @@ export async function getAllDecks(
 
   return {
     ...results,
-    page: results.page.map((deck) => ({
-      _id: deck._id,
-      _creationTime: deck._creationTime,
-      title: deck.title,
-      description: deck.description,
-      tags: deck.tags,
-      cardCount: deck.cardCount,
-      userId: deck.userId,
-      // We don't need to send the searchableContent or embedding to the client
-    })),
+    page: results.page, // This is the data (records) for the current page; we can transform it if needed
   };
 }
 
 export async function getDeckById(
   ctx: QueryCtx,
   deckId: Id<"decks">,
-): Promise<DeckOutType> {
+): Promise<Doc<"decks">> {
   const deck = await ctx.db.get(deckId);
   if (!deck) {
     throw new ConvexError({
@@ -95,16 +86,7 @@ export async function getDeckById(
       code: 404,
     });
   }
-  return {
-    _id: deck._id,
-    _creationTime: deck._creationTime,
-    title: deck.title,
-    description: deck.description,
-    tags: deck.tags,
-    cardCount: deck.cardCount,
-    userId: deck.userId,
-    // We don't need to send the searchableContent or embedding to the client
-  };
+  return deck;
 }
 
 export async function createDeck(
