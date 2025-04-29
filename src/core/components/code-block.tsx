@@ -15,10 +15,12 @@ const CodeBlock: React.FC<CodeBlockProps> = (props) => {
 
   const handleCopy = async () => {
     // Find the actual code content from the pre element's children
-    const codeElement = props.children as React.ReactElement;
+    const codeElement = props.children as React.ReactElement<{
+      children?: React.ReactNode;
+    }>;
     const codeContent = codeElement?.props?.children || "";
 
-    await navigator.clipboard.writeText(codeContent);
+    await navigator.clipboard.writeText(String(codeContent));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
