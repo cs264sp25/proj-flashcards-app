@@ -42,7 +42,7 @@ export function useSSEStream<T>() {
   const handleStream = useCallback(
     async (
       response: Response,
-      { onChunk, onComplete, debug = false }: UseSSEStreamOptions<T>
+      { onChunk, onComplete, debug = false }: UseSSEStreamOptions<T>,
     ) => {
       const reader = response.body?.getReader();
       if (!reader) {
@@ -58,7 +58,7 @@ export function useSSEStream<T>() {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        
+
         let boundary = buffer.indexOf("\n\n");
         while (boundary !== -1) {
           const rawEvent = buffer.substring(0, boundary);
@@ -78,7 +78,7 @@ export function useSSEStream<T>() {
         await onComplete(accumulated);
       }
     },
-    [parseRawEvent]
+    [parseRawEvent],
   );
 
   return { handleStream };

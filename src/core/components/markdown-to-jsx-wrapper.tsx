@@ -8,7 +8,6 @@ import StreamingPlaceholder from "./streaming-placeholder";
 import CodeBlock from "./code-block";
 import SyntaxHighlightedCode from "./syntax-highlighted-code";
 
-
 interface MarkdownProps {
   content: string;
   className?: string;

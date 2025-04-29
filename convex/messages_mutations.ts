@@ -131,10 +131,7 @@ export const createUserMessage = mutation({
   args: {
     ...messageInSchema,
   },
-  handler: async (
-    ctx: MutationCtx,
-    args: MessageInType,
-  ) => {
+  handler: async (ctx: MutationCtx, args: MessageInType) => {
     const userId = await authenticationGuard(ctx);
     const chat = await ownershipGuardThroughChat(ctx, userId, args.chatId);
 

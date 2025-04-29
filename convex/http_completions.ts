@@ -102,7 +102,10 @@ async function prepareMessages(
 
   if (DEBUG) {
     console.log("[prepareMessages]: System Prompt:", systemPrompt);
-    console.log("[prepareMessages]: Final User Function Arguments:", userFunctionArgs);
+    console.log(
+      "[prepareMessages]: Final User Function Arguments:",
+      userFunctionArgs,
+    );
   }
 
   // --- Create Messages for OpenAI ---
@@ -138,7 +141,10 @@ completionsRoute.post("/completions", async (c) => {
     // --- Get Raw Request Body ---
     const rawRequestBody = await c.req.json();
     if (DEBUG) {
-      console.log("[tasksCompletionsHandler]: Raw Request Body:", rawRequestBody);
+      console.log(
+        "[tasksCompletionsHandler]: Raw Request Body:",
+        rawRequestBody,
+      );
     }
 
     // --- Validate Request Body ---
@@ -154,7 +160,11 @@ completionsRoute.post("/completions", async (c) => {
     // --- Input data is now validated and typed! ---
     const validatedInput = validationResult.data!;
     const taskDefinition = validationResult.taskDefinition!;
-    if (DEBUG) console.log("[tasksCompletionsHandler]: Validated Input:", validatedInput);
+    if (DEBUG)
+      console.log(
+        "[tasksCompletionsHandler]: Validated Input:",
+        validatedInput,
+      );
 
     // --- Prepare Arguments for User Prompt Function ---
     const systemPrompt = taskDefinition.system;

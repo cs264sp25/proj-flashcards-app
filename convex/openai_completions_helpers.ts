@@ -28,7 +28,10 @@ export async function handleChatCompletionToolCalls(
   userId: Id<"users">,
 ) {
   if (DEBUG) {
-    console.log("[handleChatCompletionToolCalls]: Handling tool calls:", toolCalls.length);
+    console.log(
+      "[handleChatCompletionToolCalls]: Handling tool calls:",
+      toolCalls.length,
+    );
   }
   const results: {
     tool_call_id: string;
@@ -38,7 +41,10 @@ export async function handleChatCompletionToolCalls(
   for (const toolCall of toolCalls) {
     if (toolCall.type === "function") {
       if (DEBUG) {
-        console.log("[handleChatCompletionToolCalls]: Processing function call:", toolCall.id);
+        console.log(
+          "[handleChatCompletionToolCalls]: Processing function call:",
+          toolCall.id,
+        );
       }
       const result = await handleFunctionCall(ctx, toolCall, userId);
       results.push({
@@ -96,14 +102,20 @@ export async function processOpenAIStream(
 
     if (toolCallsChunk) {
       if (DEBUG) {
-        console.log("[processOpenAIStream]: Received tool call chunk:", toolCallsChunk);
+        console.log(
+          "[processOpenAIStream]: Received tool call chunk:",
+          toolCallsChunk,
+        );
       }
 
       processToolCallChunks(toolCallsChunk, finalToolCalls);
     } else if (contentChunk) {
       fullContent += contentChunk || "";
       if (DEBUG) {
-        console.log("[processOpenAIStream]: Received content chunk:", contentChunk);
+        console.log(
+          "[processOpenAIStream]: Received content chunk:",
+          contentChunk,
+        );
       }
       await onContentChunk(contentChunk, fullContent);
     }
@@ -137,7 +149,10 @@ export function processToolCallChunks(
         },
       };
       if (DEBUG) {
-        console.log("[processToolCallChunks]: Created new tool call:", finalToolCalls[index]);
+        console.log(
+          "[processToolCallChunks]: Created new tool call:",
+          finalToolCalls[index],
+        );
       }
     } else {
       if (toolCall.id) finalToolCalls[index].id = toolCall.id;
@@ -150,7 +165,10 @@ export function processToolCallChunks(
           toolCall.function.arguments;
       }
       if (DEBUG) {
-        console.log("[processToolCallChunks]: Updated tool call:", finalToolCalls[index]);
+        console.log(
+          "[processToolCallChunks]: Updated tool call:",
+          finalToolCalls[index],
+        );
       }
     }
   }
@@ -218,7 +236,10 @@ export async function handleCompletion(
 
     if (hasToolCalls) {
       if (DEBUG) {
-        console.log("[handleCompletion]: Processing tool calls:", finalToolCalls);
+        console.log(
+          "[handleCompletion]: Processing tool calls:",
+          finalToolCalls,
+        );
       }
 
       // Add the assistant message with tool calls
@@ -260,7 +281,9 @@ export async function handleCompletion(
     } else {
       // If we have no tool calls, we're done
       if (DEBUG) {
-        console.log("[handleCompletion]: No tool calls, sending completion marker");
+        console.log(
+          "[handleCompletion]: No tool calls, sending completion marker",
+        );
       }
 
       await onDone();

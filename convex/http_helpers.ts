@@ -17,7 +17,9 @@ export async function getUserId(ctx: ActionCtx) {
 
   if (!identity) {
     if (DEBUG) {
-      console.error("[getUserId]: ERROR: Missing or invalid authorization token");
+      console.error(
+        "[getUserId]: ERROR: Missing or invalid authorization token",
+      );
     }
     return null;
   }

@@ -104,10 +104,13 @@ export const run = internalAction({
             content: messageContent,
           });
           // Update the placeholder message with the OpenAI message ID
-          await ctx.runMutation(internal.messages_internals.updateOpenAIMessageId, {
-            messageId: args.placeholderMessageId,
-            openaiMessageId: messageId,
-          });
+          await ctx.runMutation(
+            internal.messages_internals.updateOpenAIMessageId,
+            {
+              messageId: args.placeholderMessageId,
+              openaiMessageId: messageId,
+            },
+          );
         },
       );
       return { success: true };

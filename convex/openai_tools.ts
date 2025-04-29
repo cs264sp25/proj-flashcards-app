@@ -81,7 +81,10 @@ export async function handleFunctionCall(
   userId: Id<"users">,
 ) {
   if (DEBUG) {
-    console.log("[handleFunctionCall]: Handling function call:", tool_call.function.name);
+    console.log(
+      "[handleFunctionCall]: Handling function call:",
+      tool_call.function.name,
+    );
   }
 
   const functionName = tool_call.function.name;
@@ -93,7 +96,9 @@ export async function handleFunctionCall(
   switch (functionName) {
     case "semanticSearchAmongDecks":
       if (DEBUG) {
-        console.log("[handleFunctionCall]: Executing semantic search among decks");
+        console.log(
+          "[handleFunctionCall]: Executing semantic search among decks",
+        );
       }
       return ctx.runAction(internal.decks_internals.semanticSearch, {
         query: functionArgs.query,
@@ -103,7 +108,9 @@ export async function handleFunctionCall(
 
     case "semanticSearchAmongCards":
       if (DEBUG) {
-        console.log("[handleFunctionCall]: Executing semantic search among cards");
+        console.log(
+          "[handleFunctionCall]: Executing semantic search among cards",
+        );
       }
       return ctx.runAction(internal.cards_internals.semanticSearch, {
         query: functionArgs.query,
@@ -113,7 +120,10 @@ export async function handleFunctionCall(
 
     default:
       if (DEBUG) {
-        console.log("[handleFunctionCall]: Unknown function called:", functionName);
+        console.log(
+          "[handleFunctionCall]: Unknown function called:",
+          functionName,
+        );
       }
       throw new ConvexError({
         code: 500,

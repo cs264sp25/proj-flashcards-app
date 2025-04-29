@@ -106,7 +106,10 @@ export async function handleRunStreamToolCalls(
   userId: Id<"users">,
 ): Promise<OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[]> {
   if (DEBUG) {
-    console.log("[handleRunStreamToolCalls]: Handling run stream tool calls:", toolCalls);
+    console.log(
+      "[handleRunStreamToolCalls]: Handling run stream tool calls:",
+      toolCalls,
+    );
   }
   const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] =
     [];
@@ -168,7 +171,10 @@ export async function handleRun(
   openaiThreadId: string,
   openaiAssistantId: string,
   userId: Id<"users">,
-  onContentChunk: (contentChunk: string, fullContentSoFar: string) => Promise<void>,
+  onContentChunk: (
+    contentChunk: string,
+    fullContentSoFar: string,
+  ) => Promise<void>,
   onError: (error: string) => Promise<void>,
   onDone: () => Promise<void>,
   onMessageDone?: (messageId: string, messageContent: string) => Promise<void>,
@@ -195,39 +201,42 @@ export async function handleRun(
             userId,
           );
 
-          const continuedStream = openai.beta.threads.runs.submitToolOutputsStream(
-            openaiThreadId,
-            event.data.id,
-            {
-              tool_outputs: toolOutputs,
-              stream: true,
-            },
-          );
+          const continuedStream =
+            openai.beta.threads.runs.submitToolOutputsStream(
+              openaiThreadId,
+              event.data.id,
+              {
+                tool_outputs: toolOutputs,
+                stream: true,
+              },
+            );
 
           // Process continued stream using the same handler
           for await (const continuedEvent of continuedStream) {
-            const { fullContent: updatedContent, shouldReturn } = await processStreamContent(
-              continuedEvent,
-              fullContent,
-              onContentChunk,
-              onDone,
-              onError,
-              onMessageDone,
-            );
+            const { fullContent: updatedContent, shouldReturn } =
+              await processStreamContent(
+                continuedEvent,
+                fullContent,
+                onContentChunk,
+                onDone,
+                onError,
+                onMessageDone,
+              );
 
             fullContent = updatedContent;
             if (shouldReturn) return;
           }
         }
       } else {
-        const { fullContent: updatedContent, shouldReturn } = await processStreamContent(
-          event,
-          fullContent,
-          onContentChunk,
-          onDone,
-          onError,
-          onMessageDone,
-        );
+        const { fullContent: updatedContent, shouldReturn } =
+          await processStreamContent(
+            event,
+            fullContent,
+            onContentChunk,
+            onDone,
+            onError,
+            onMessageDone,
+          );
 
         fullContent = updatedContent;
         if (shouldReturn) return;

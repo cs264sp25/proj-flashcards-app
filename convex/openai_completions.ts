@@ -51,9 +51,12 @@ export const completion = internalAction({
       //onDone
       async () => {
         console.log("[completion]: Completion action done");
-        const message = await ctx.runQuery(internal.messages_internals.getMessageById, {
-          messageId: args.placeholderMessageId,
-        });
+        const message = await ctx.runQuery(
+          internal.messages_internals.getMessageById,
+          {
+            messageId: args.placeholderMessageId,
+          },
+        );
         const chat = await ctx.runQuery(internal.chats_internals.getChatById, {
           chatId: message.chatId,
         });
