@@ -5,12 +5,14 @@ import { Textarea } from "@/core/components/textarea";
 import { Paperclip } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { toast } from "sonner";
+import { useStore } from "@nanostores/react";
 
 import AssistantDropdown from "@/assistants/components/assistant-dropdown";
 import { useQueryChat } from "@/chats/hooks/use-query-chat";
 import { useMutationChat } from "@/chats/hooks/use-mutation-chat";
 import { useMutationMessages } from "@/messages/hooks/use-mutation-messages";
 import { Label } from "@/core/components/label";
+import { $isStreaming, $isThinking } from "@/messages/store/streaming-message";
 
 const DEBUG = false;
 
@@ -24,6 +26,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const { add: createMessage } = useMutationMessages(chatId);
   const { data: chat /*, isLoading: isChatLoading */ } = useQueryChat(chatId);
   const { edit: editChat } = useMutationChat(chatId);
+  const isThinking = useStore($isThinking);
+  const isStreaming = useStore($isStreaming);
 
   // Auto-focus textarea when component mounts
   useEffect(() => {
@@ -53,7 +57,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
     e.preventDefault();
     if (text.trim() === "") return;
 
-    await createMessage({
+    // Don't await this, we want to continue to set the text to empty
+    createMessage({
       role: "user",
       content: text,
     });
@@ -142,7 +147,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             <AssistantDropdown
               value={chat?.assistantId as Id<"assistants">}
               onChange={handleAssistantChange}
-              disabled={isChatLoading}
+              disabled={isChatLoading || isThinking || isStreaming}
             />
             <Button
               type="submit"
@@ -150,7 +155,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
               className={cn("px-4", "hover:bg-accent", "disabled:opacity-50", {
                 "border-2 border-purple-500": DEBUG,
               })}
-              disabled={!text.trim()}
+              disabled={!text.trim() || isThinking || isStreaming}
             >
               Send
             </Button>

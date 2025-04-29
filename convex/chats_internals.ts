@@ -8,7 +8,7 @@
 
 import { ConvexError, v } from "convex/values";
 import { PaginationResult, paginationOptsValidator } from "convex/server";
-import { Id } from "./_generated/dataModel";
+import { Doc, Id } from "./_generated/dataModel";
 import {
   QueryCtx,
   MutationCtx,
@@ -21,13 +21,9 @@ import {
   getAllChats as getAllChatsHelper,
   createChat as createChatHelper,
   deleteAllChatsWithCascade as deleteAllChatsWithCascadeHelper,
+  adjustMessageCount as adjustMessageCountHelper,
 } from "./chats_helpers";
-import {
-  chatInSchema,
-  ChatInType,
-  ChatOutType,
-  ChatType,
-} from "./chats_schema";
+import { chatInSchema, ChatInType, ChatOutType } from "./chats_schema";
 
 /**
  * Get all chats for the given user, optionally sorted by the given order
@@ -45,7 +41,7 @@ export const getAllChats = internalQuery({
       sortOrder?: SortOrderType;
       userId: Id<"users">;
     },
-  ): Promise<PaginationResult<ChatOutType>> => {
+  ): Promise<PaginationResult<Doc<"chats">>> => {
     return await getAllChatsHelper(
       ctx,
       args.paginationOpts,
@@ -62,7 +58,7 @@ export const getChatById = internalQuery({
   args: {
     chatId: v.id("chats"),
   },
-  handler: async (ctx, args): Promise<ChatType | null> => {
+  handler: async (ctx, args): Promise<Doc<"chats">> => {
     const chat = await ctx.db.get(args.chatId);
     if (chat === null) {
       throw new ConvexError({
@@ -77,7 +73,7 @@ export const getChatById = internalQuery({
 /**
  * Get multiple chats by their IDs.
  */
-export const getChats = internalQuery({
+export const getChatsByTheirIds = internalQuery({
   args: {
     ids: v.array(v.id("chats")),
   },
@@ -150,9 +146,34 @@ export const updateOpenAIThreadId = internalMutation({
     chatId: v.id("chats"),
     openaiThreadId: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      chatId: Id<"chats">;
+      openaiThreadId: string;
+    },
+  ): Promise<void> => {
     await ctx.db.patch(args.chatId, {
       openaiThreadId: args.openaiThreadId,
     });
+  },
+});
+
+/**
+ * Internal mutation to adjust the message count of a chat.
+ */
+export const adjustMessageCount = internalMutation({
+  args: {
+    chatId: v.id("chats"),
+    delta: v.number(),
+  },
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      chatId: Id<"chats">;
+      delta: number;
+    },
+  ): Promise<void> => {
+    await adjustMessageCountHelper(ctx, args.chatId, args.delta);
   },
 });

@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { Task } from "@/ai/types/tasks";
 import { useAuthToken } from "@convex-dev/auth/react";
+import { useSSEStream } from "@/core/hooks/use-sse-stream";
 
 const DEBUG = false;
 
@@ -15,12 +16,45 @@ interface UseAiCompletionReturn {
   ) => Promise<void>;
 }
 
+const parseRawEvent = (rawEvent: string) => {
+  if (DEBUG) console.log("Raw SSE chunk:", rawEvent);
+
+  const lines = rawEvent.split("\n");
+  const dataLines = [];
+
+  for (const line of lines) {
+    if (line === "data: [DONE]") {
+      break;
+    }
+
+    if (line.startsWith("data: ")) {
+      dataLines.push(line.slice(6)); // Remove "data: "
+    }
+  }
+
+  let data;
+  if (dataLines.length === 1) {
+    // Single line event (most common): no extra newline
+    data = dataLines[0];
+  } else {
+    // Multiple lines: join with newline to preserve formatting
+    data = dataLines.join("\n");
+  }
+
+  if (DEBUG) {
+    console.log("Data:", JSON.stringify(data));
+  }
+
+  return data;
+};
+
 export function useAiCompletion(
   setInput: (value: string) => void,
 ): UseAiCompletionReturn {
   const token = useAuthToken();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const { handleStream } = useSSEStream();
 
   const generateCompletion = useCallback(
     async (
@@ -38,18 +72,15 @@ export function useAiCompletion(
         });
       setIsLoading(true);
       setError(null);
-      // Don't clear the input at the start, let the streaming response update it
 
       try {
-        const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/ai/completion`;
+        const url = `${import.meta.env.VITE_CONVEX_URL.replace(".cloud", ".site")}/api/completions`;
         if (DEBUG) console.log("Making request to:", url);
 
-        // Construct the request body according to the updated backend expectations
         const requestBody = {
-          text, // Send text directly
-          task, // Send task type string directly
-          context: context || undefined, // Send context or undefined
-          // Send customPrompt only if the task is 'custom'
+          text,
+          task,
+          context: context || undefined,
           customPrompt: task === "custom" ? customPrompt : undefined,
         };
 
@@ -76,57 +107,12 @@ export function useAiCompletion(
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No reader available");
-        }
-
-        if (DEBUG) console.log("Got reader, starting to read stream");
-        const decoder = new TextDecoder();
-        let accumulatedText = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (DEBUG)
-            console.log("Read chunk:", { done, valueLength: value?.length });
-
-          if (done) {
-            if (DEBUG) console.log("Stream complete");
-            break;
-          }
-
-          const chunk = decoder.decode(value);
-          if (DEBUG) console.log("Decoded chunk:", chunk);
-
-          const lines = chunk.split("\n");
-          if (DEBUG) console.log("Split into lines:", lines);
-
-          for (const line of lines) {
-            // Skip empty lines
-            if (!line.trim()) continue;
-
-            // Handle different message types
-            if (line.startsWith("0:")) {
-              // This is a content chunk
-              try {
-                const content = JSON.parse(line.slice(2));
-                if (DEBUG) console.log("New content:", content);
-                accumulatedText += content;
-                if (DEBUG)
-                  console.log("Updated accumulated text:", accumulatedText);
-                setInput(accumulatedText); // Update the textarea directly
-              } catch (e) {
-                if (DEBUG) console.error("Error parsing content chunk:", e);
-              }
-            } else if (line.startsWith("f:")) {
-              // This is a function call message, we can ignore it
-              if (DEBUG) console.log("Function call message:", line);
-            } else if (line.startsWith("e:") || line.startsWith("d:")) {
-              // These are end messages, we can ignore them
-              if (DEBUG) console.log("End message:", line);
-            }
-          }
-        }
+        await handleStream(response, {
+          onChunk: (content, accumulated) => {
+            setInput(accumulated);
+          },
+          debug: DEBUG,
+        });
       } catch (err) {
         if (DEBUG) console.error("Error in generateCompletion:", err);
         setError(err instanceof Error ? err : new Error("An error occurred"));
@@ -135,7 +121,7 @@ export function useAiCompletion(
         setIsLoading(false);
       }
     },
-    [setInput],
+    [setInput, token, handleStream],
   );
 
   return {

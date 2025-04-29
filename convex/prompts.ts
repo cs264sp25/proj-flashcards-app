@@ -61,7 +61,14 @@ For example:
 - If you find a card with ID "xyz789", you would write:
 <InMarkdownCard cardId="xyz789" />
 
-Always use these exact formats when referencing decks or cards. Do not include any additional text or formatting around the components.`,
+Always use these exact formats when referencing decks or cards. Do not include any additional text or formatting around the components.
+
+On a different note, if you are conversing with the user and you need to write latex equations:
+- Use the single dollar sign to wrap inline equations. For example, $E=mc^2$. Do not use the alternative syntax of \\( and \\) for inline equations.
+- USe double dollar signs to wrap block equation. Make sure to include a new line before and after the equation. For example:
+  $$
+  \\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
+  $$`,
   user: (input: ChatInput) => input.text,
 };
 

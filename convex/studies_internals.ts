@@ -19,7 +19,6 @@ import { PaginationOptsType, SortOrder, SortOrderType } from "./shared";
 import {
   studyInSchema,
   cardEvaluationSchema,
-  StudyType,
   StudyInType,
   CardEvaluation,
 } from "./studies_schema";

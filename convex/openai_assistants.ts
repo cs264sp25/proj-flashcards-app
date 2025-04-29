@@ -4,12 +4,12 @@
  * Actions for creating, updating, and deleting assistants in OpenAI.
  ******************************************************************************/
 
-import OpenAI from "openai";
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 import { assistantInSchema, assistantUpdateSchema } from "./assistants_schema";
+import { openai } from "./openai_helpers";
 
 // Internal action to create an assistant in OpenAI
 export const createAssistant = internalAction({
@@ -19,11 +19,6 @@ export const createAssistant = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Create the assistant in OpenAI
       const assistant = await openai.beta.assistants.create({
         name: args.name,
@@ -73,11 +68,6 @@ export const updateAssistant = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       const { assistantId: _, openaiAssistantId, ...updateParams } = args;
 
       // Update the assistant in OpenAI
@@ -98,11 +88,6 @@ export const deleteAssistant = internalAction({
   },
   handler: async (ctx, args) => {
     try {
-      // Instantiate the OpenAI API client
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-
       // Delete the assistant in OpenAI
       await openai.beta.assistants.del(args.openaiAssistantId);
 

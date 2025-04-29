@@ -19,9 +19,11 @@ import {
 import { PaginationOptsType, SortOrder, SortOrderType } from "./shared";
 import {
   getAllMessages as getAllMessagesHelper,
+  getMessageById as getMessageByIdHelper,
   createMessage as createMessageHelper,
   updateMessage as updateMessageHelper,
   removeAllMessagesInChat as removeAllMessagesInChatHelper,
+  getSubsequentMessages as getSubsequentMessagesHelper,
 } from "./messages_helpers";
 import {
   MessageInType,
@@ -57,12 +59,23 @@ export const getAllMessages = internalQuery({
 });
 
 /**
- * Create a new message. An internal mutation wrapper around the createMessage helper
- * function, with additional message count adjustment.
- * Used when we want to create a message in a different context (ctx) like in
- * seeding Actions.
+ * Get a message by its ID.
  */
-export const createMessage = internalMutation({
+export const getMessageById = internalQuery({
+  args: { messageId: v.id("messages") },
+  handler: async (ctx: QueryCtx, args: { messageId: Id<"messages"> }) => {
+    return await getMessageByIdHelper(ctx, args.messageId);
+  },
+});
+
+/**
+ * Create a new message and adjust the message count.
+ *
+ * An internal mutation wrapper around the createMessage helper function, with
+ * additional message count adjustment. Used when we want to create a message in
+ * a different context (ctx) like in seeding Actions.
+ */
+export const createMessageAndAdjustMessageCount = internalMutation({
   args: {
     role: v.union(v.literal("user"), v.literal("assistant")),
     message: v.object({
@@ -85,7 +98,7 @@ export const createMessage = internalMutation({
 
 /**
  * Update a message with the given content. Used for streaming responses from
- * the AI chatbot.
+ * the AI chatbot to incrementally update the message content.
  */
 export const updateMessage = internalMutation({
   args: { messageId: v.id("messages"), content: v.string() },
@@ -101,12 +114,41 @@ export const updateMessage = internalMutation({
 });
 
 /**
+ * Get subsequent messages from a given message.
+ *
+ * An internal query wrapper around the getSubsequentMessages helper function.
+ * Used when we want to get subsequent messages from a given message in a
+ * different context (ctx) like in HTTP Actions. We want to get the subsequent
+ * messages from the original message, so we can delete them if the user edits
+ * the original message because the conversation history has changed.
+ */
+export const getSubsequentMessages = internalQuery({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (
+    ctx: QueryCtx,
+    args: {
+      messageId: Id<"messages">;
+    },
+  ) => {
+    const originalMessage = await getMessageByIdHelper(ctx, args.messageId);
+    const subsequentMessages = await getSubsequentMessagesHelper(
+      ctx,
+      originalMessage.chatId,
+      originalMessage._creationTime,
+    );
+    return subsequentMessages;
+  },
+});
+
+/**
  * Delete all messages in a chat. An internal mutation wrapper around the
  * removeAllMessagesInChat helper function, with additional message count
  * adjustment. Used when we want to delete messages in a different context (ctx)
  * like in seeding Actions.
  */
-export const deleteMessages = internalMutation({
+export const deleteMessagesAndAdjustMessageCount = internalMutation({
   args: {
     chatId: v.id("chats"),
     afterThisCreationTime: v.optional(v.number()),
@@ -135,7 +177,7 @@ export const deleteMessages = internalMutation({
  * Delete specific messages by their IDs. Used after editing a message in
  * an Assistants API chat to clean up the outdated subsequent messages.
  */
-export const deleteMessagesByIds = internalMutation({
+export const deleteMessagesByIdsAndAdjustMessageCount = internalMutation({
   args: {
     messageIds: v.array(v.id("messages")),
     chatId: v.id("chats"), // Needed for count adjustment

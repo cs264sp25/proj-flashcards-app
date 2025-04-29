@@ -56,3 +56,32 @@ pnpm dev
 ```
 
 This will start the application on `http://localhost:5173/proj-flashcards-app`.
+
+## Integrating KaTeX for Math Rendering
+
+To render mathematical formulas using KaTeX within Markdown content (`react-markdown-wrapper.tsx`), we need `remark-math` `rehype-katex` and `katex`. If you are going to replicate this in your own project, you need to follow these steps:
+
+1.  **Install Dependencies:**
+    ```bash
+    pnpm add remark-math rehype-katex katex
+    ```
+
+2.  **Configure `ReactMarkdown`:**
+    Import and add `remarkMath` to `remarkPlugins` and `rehypeKatex` to `rehypePlugins` within the `ReactMarkdown` component props in `src/core/components/react-markdown-wrapper.tsx`.
+
+3.  **Import KaTeX CSS:**
+    Include the KaTeX stylesheet. You can either add a `<link>` tag to your `index.html` (check Katex website for the latest version/integrity hash) or import it directly in a relevant component (like `react-markdown-wrapper.tsx`) as a global CSS file:
+    ```typescript
+    import 'katex/dist/katex.min.css';
+    ```
+
+4.  **Critical Layout Fix (`position: relative`):**
+    KaTeX may use `position: absolute` internally to precisely place formula elements. If the direct container wrapping the `ReactMarkdown` output does **not** establish a positioning context (e.g., via `position: relative`, `absolute`, `fixed`, or `sticky`), these absolutely positioned elements might be positioned relative to an ancestor further up the DOM tree or the viewport itself. This can interfere with the layout calculations of parent components, causing unexpected behavior like page overflow or elements being pushed out of place (e.g., the footer appearing too low, requiring scrolling).
+
+    **Solution:** Ensure the direct container wrapping the `ReactMarkdown` output has `position: relative`. In `src/core/components/react-markdown-wrapper.tsx`, this is done by adding the `"relative"` utility class to the main `div`:
+    ```tsx
+    <div className={cn("prose ...", "relative", className)}>
+      <ReactMarkdown ... />
+    </div>
+    ```
+    **Do not remove the `"relative"` class** from this wrapper without verifying that KaTeX rendering no longer causes layout problems. It is essential for containing KaTeX's potentially complex positioning within the component's bounds.
