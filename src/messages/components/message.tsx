@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/core/components/avatar";
 import {
   BotMessageSquare,
@@ -7,6 +7,7 @@ import {
   Edit,
   RefreshCw,
   Check,
+  Volume2,
 } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { useQueryUser } from "@/auth/hooks/use-query-user";
@@ -16,6 +17,8 @@ import { MessageType } from "@/messages/types/message";
 import { AutosizeTextarea } from "@/core/components/autoresize-textarea";
 import { useMutationMessage } from "@/messages/hooks/use-mutation-message";
 import { useQueryMessages } from "@/messages/hooks/use-query-messages";
+import { toast } from "sonner";
+import { AudioPlayer } from "@/core/components/audio-player";
 
 const DEBUG = false;
 
@@ -29,8 +32,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [messageContent, setMessageContent] = useState(message.content);
-  const { edit } = useMutationMessage(message._id);
+  const { edit, read } = useMutationMessage(message._id);
   const { getMessageBefore } = useQueryMessages(message.chatId);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const shouldAutoPlayRef = useRef(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
@@ -55,6 +60,23 @@ const Message: React.FC<MessageProps> = ({ message }) => {
       },
       previousMessage._id,
     );
+  };
+
+  const handleReadAloud = async () => {
+    try {
+      setIsLoadingAudio(true);
+      shouldAutoPlayRef.current = true;
+      const url = await read();
+      if (!url) {
+        // If we got null, it means the audio is being generated
+        // The UI will update automatically when the message updates
+        return;
+      }
+    } catch (error) {
+      toast.error("Failed to generate audio");
+    } finally {
+      setIsLoadingAudio(false);
+    }
   };
 
   useEffect(() => {
@@ -111,6 +133,29 @@ const Message: React.FC<MessageProps> = ({ message }) => {
           </div>
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {message.audioUrl ? (
+              <AudioPlayer
+                url={message.audioUrl}
+                autoPlay={shouldAutoPlayRef.current}
+                onEnded={() => {
+                  shouldAutoPlayRef.current = false;
+                }}
+              />
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleReadAloud}
+                disabled={isLoadingAudio}
+              >
+                {isLoadingAudio ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -176,7 +221,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
               </div>
             </div>
           ) : (
-            <Markdown content={messageContent} className="prose-base" />
+            <Markdown content={messageContent} />
           )}
         </div>
       </div>
