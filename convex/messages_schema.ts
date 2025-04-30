@@ -2,6 +2,8 @@
  * SCHEMA
  *
  * Defines types and database schema for messages:
+ * - MessageRole: Enum for message roles
+ * - MessageAudioType: Fields for audio of a message
  * - MessageInType: Fields for creating messages (content, chatId)
  * - MessageUpdateType: Fields that can be updated (content)
  * - MessageType: Complete message document type including system fields
@@ -20,6 +22,18 @@ export const MessageRole = v.union(v.literal("user"), v.literal("assistant"));
 export type MessageRoleType = Infer<typeof MessageRole>;
 
 /**
+ * Type representing the audio of a message
+ */
+export const messageAudioSchema = {
+  audioStorageId: v.optional(v.id("_storage")), // audio of the content, if any
+  audioUrl: v.optional(v.string()), // playable URL for the audio, if any
+};
+
+// eslint-disable-next-line
+const messageAudioSchemaObject = v.object(messageAudioSchema);
+export type MessageAudioType = Infer<typeof messageAudioSchemaObject>;
+
+/**
  * Type representing the fields that can be provided when creating a message
  */
 export const messageInSchema = {
@@ -36,6 +50,7 @@ export type MessageInType = Infer<typeof messageInSchemaObject>;
  */
 export const messageUpdateSchema = {
   content: v.optional(v.string()),
+  ...messageAudioSchema,
 };
 
 // eslint-disable-next-line
@@ -50,6 +65,7 @@ export const messageSchema = {
   ...messageInSchema,
   role: MessageRole,
   openaiMessageId: v.optional(v.string()), // Managed internally, can be 'pending' until the message is created
+  ...messageAudioSchema,
 };
 
 // eslint-disable-next-line
@@ -63,6 +79,7 @@ export const messageOutSchema = {
   _id: v.id("messages"),
   _creationTime: v.number(),
   ...messageSchema,
+  ...messageAudioSchema,
   // We don't need to return the openaiMessageId field
 };
 
