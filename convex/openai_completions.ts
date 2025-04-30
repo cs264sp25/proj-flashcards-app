@@ -10,7 +10,6 @@ import { internal } from "./_generated/api";
 import { chat } from "./prompts";
 import { completionArgsSchemaObject } from "./openai_schema";
 import { handleCompletion } from "./openai_completions_helpers";
-import { getMessageById } from "./messages_helpers";
 
 const DEBUG = true;
 
@@ -38,10 +37,13 @@ export const completion = internalAction({
       ],
       // onContentChunk
       async (chunk: string, fullContentSoFar: string) => {
-        await ctx.runMutation(internal.messages_internals.updateMessage, {
-          messageId: args.placeholderMessageId,
-          content: fullContentSoFar,
-        });
+        await ctx.runMutation(
+          internal.messages_internals.updateMessageContent,
+          {
+            messageId: args.placeholderMessageId,
+            content: fullContentSoFar,
+          },
+        );
       },
       //onError
       async (error: string) => {
