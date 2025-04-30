@@ -84,7 +84,7 @@ async function createUserMessageAndStreamAIResponse(
 
   if (openaiThreadId && openaiAssistantId) {
     // Start a streaming run with the assistant
-    ctx.scheduler.runAfter(0, internal.openai_runs.run, {
+    await ctx.scheduler.runAfter(0, internal.openai_runs.run, {
       openaiThreadId,
       openaiAssistantId,
       placeholderMessageId: botMessageId,
@@ -110,7 +110,7 @@ async function createUserMessageAndStreamAIResponse(
     messages.pop(); // dump the placeholder message
 
     // Schedule an action that calls OpenAI to generate a response and updates the placeholder message.
-    ctx.scheduler.runAfter(0, internal.openai_completions.completion, {
+    await ctx.scheduler.runAfter(0, internal.openai_completions.completion, {
       messages: messages.map((message) => ({
         role: message.role,
         content: message.content,
@@ -300,7 +300,7 @@ export const readAloud = mutation({
 
     // If we don't have a storage ID, schedule text-to-speech generation
     if (!message.audioStorageId) {
-      ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
+      await ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
         messageId: args.messageId,
         text: message.content,
         voice: message.role === "assistant" ? "nova" : "onyx", // Assistant uses nova, user uses onyx
@@ -320,10 +320,10 @@ export const readAloud = mutation({
     }
 
     // Schedule the text-to-speech generation
-    ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
+    await ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
       messageId: args.messageId,
       text: message.content,
-      voice: message.role === "assistant" ? "nova" : "alloy", // Assistant uses nova, user uses alloy
+      voice: message.role === "assistant" ? "nova" : "onyx", // Assistant uses nova, user uses onyx
     });
 
     return tempUrl;

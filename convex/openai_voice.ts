@@ -78,7 +78,7 @@ export const speechToText = action({
     });
 
     // Trigger an action to delete the audio file from storage after 1 second
-    ctx.scheduler.runAfter(1000, internal.shared.deleteStorageFile, {
+    await ctx.scheduler.runAfter(1000, internal.shared.deleteStorageFile, {
       storageId: args.storageId,
     });
 

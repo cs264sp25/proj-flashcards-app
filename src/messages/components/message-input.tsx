@@ -188,7 +188,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             },
           )}
         >
-          <div className="flex justify-centeritems-center gap-1">
+          <div className="flex justify-center items-center gap-1">
             <Button
               type="button"
               variant="ghost"
