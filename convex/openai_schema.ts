@@ -49,3 +49,14 @@ export const embeddingSchema = {
 
 export const embeddingSchemaObject = v.object(embeddingSchema);
 export type EmbeddingType = Infer<typeof embeddingSchemaObject>;
+
+export const voicesSchema = v.union(
+  v.literal("alloy"),
+  v.literal("echo"),
+  v.literal("fable"),
+  v.literal("onyx"),
+  v.literal("nova"),
+  v.literal("shimmer"),
+);
+
+export type VoicesType = Infer<typeof voicesSchema>;
