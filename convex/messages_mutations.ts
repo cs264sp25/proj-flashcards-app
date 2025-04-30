@@ -277,3 +277,55 @@ export const remove = mutation({
     return true;
   },
 });
+
+/**
+ * Read aloud a message.
+ * If the message has an audio URL, return it.
+ * Otherwise, schedule text-to-speech generation and return the URL.
+ */
+export const readAloud = mutation({
+  args: {
+    messageId: v.id("messages"),
+  },
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      messageId: Id<"messages">;
+    },
+  ) => {
+    const message = await getMessageById(ctx, args.messageId);
+    if (message.audioUrl) {
+      return message.audioUrl;
+    }
+
+    // If we don't have a storage ID, schedule text-to-speech generation
+    if (!message.audioStorageId) {
+      ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
+        messageId: args.messageId,
+        text: message.content,
+        voice: message.role === "assistant" ? "nova" : "onyx", // Assistant uses nova, user uses onyx
+      });
+      // The UI will update automatically when the message updates
+      // So we can return null
+      return null;
+    }
+
+    // Get a temporary URL for the message
+    const tempUrl = await ctx.storage.getUrl(message.audioStorageId);
+    if (!tempUrl) {
+      throw new ConvexError({
+        code: 404,
+        message: "Audio not found",
+      });
+    }
+
+    // Schedule the text-to-speech generation
+    ctx.scheduler.runAfter(0, internal.openai_voice.textToSpeech, {
+      messageId: args.messageId,
+      text: message.content,
+      voice: message.role === "assistant" ? "nova" : "alloy", // Assistant uses nova, user uses alloy
+    });
+
+    return tempUrl;
+  },
+});
