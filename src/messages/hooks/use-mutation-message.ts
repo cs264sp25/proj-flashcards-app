@@ -18,6 +18,7 @@ const DEBUG = true;
 export function useMutationMessage(messageId: string) {
   const updateMutation = useMutation(api.messages_mutations.updateContent);
   const deleteMutation = useMutation(api.messages_mutations.remove);
+  const readAloudMutation = useMutation(api.messages_mutations.readAloud);
   const { handleStream } = useSSEStream();
   const token = useAuthToken();
 
@@ -114,8 +115,21 @@ export function useMutationMessage(messageId: string) {
     }
   };
 
+  const readAloud = async (): Promise<string | null> => {
+    try {
+      const audioUrl = await readAloudMutation({
+        messageId: messageId as Id<"messages">,
+      });
+      return audioUrl;
+    } catch (error) {
+      toast.error((error as Error).message || "Please try again later");
+      return null;
+    }
+  };
+
   return {
     edit: editMessageThroughApi,
     delete: deleteMessage,
+    read: readAloud,
   };
 }

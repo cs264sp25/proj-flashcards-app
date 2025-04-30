@@ -75,6 +75,7 @@ import type * as openai_runs_helpers from "../openai_runs_helpers.js";
 import type * as openai_schema from "../openai_schema.js";
 import type * as openai_threads from "../openai_threads.js";
 import type * as openai_tools from "../openai_tools.js";
+import type * as openai_voice from "../openai_voice.js";
 import type * as prompts from "../prompts.js";
 import type * as shared from "../shared.js";
 import type * as studies_guards from "../studies_guards.js";
@@ -97,6 +98,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+
 /**
  * A utility for referencing Convex functions in your app's API.
  *
@@ -173,6 +175,7 @@ declare const fullApi: ApiFromModules<{
   openai_schema: typeof openai_schema;
   openai_threads: typeof openai_threads;
   openai_tools: typeof openai_tools;
+  openai_voice: typeof openai_voice;
   prompts: typeof prompts;
   shared: typeof shared;
   studies_guards: typeof studies_guards;

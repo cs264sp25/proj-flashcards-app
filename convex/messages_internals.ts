@@ -26,6 +26,7 @@ import {
   getSubsequentMessages as getSubsequentMessagesHelper,
 } from "./messages_helpers";
 import {
+  messageAudioSchema,
   MessageInType,
   MessageOutType,
   MessageRoleType,
@@ -93,23 +94,6 @@ export const createMessageAndAdjustMessageCount = internalMutation({
     const messageId = await createMessageHelper(ctx, args.role, args.message);
     await adjustMessageCount(ctx, args.message.chatId, 1);
     return messageId;
-  },
-});
-
-/**
- * Update a message with the given content. Used for streaming responses from
- * the AI chatbot to incrementally update the message content.
- */
-export const updateMessage = internalMutation({
-  args: { messageId: v.id("messages"), content: v.string() },
-  handler: async (
-    ctx: MutationCtx,
-    args: {
-      messageId: Id<"messages">;
-      content: string;
-    },
-  ) => {
-    await updateMessageHelper(ctx, args.messageId, { content: args.content });
   },
 });
 
@@ -205,6 +189,28 @@ export const deleteMessagesByIdsAndAdjustMessageCount = internalMutation({
   },
 });
 
+/**
+ * Update a message with the given content. Used for streaming responses from
+ * the AI chatbot to incrementally update the message content.
+ */
+export const updateMessageContent = internalMutation({
+  args: { messageId: v.id("messages"), content: v.string() },
+  handler: async (
+    ctx: MutationCtx,
+    args: {
+      messageId: Id<"messages">;
+      content: string;
+    },
+  ) => {
+    await updateMessageHelper(ctx, args.messageId, {
+      content: args.content,
+      // Reset audioStorageId and audioUrl to undefined
+      audioStorageId: undefined,
+      audioUrl: undefined,
+    });
+  },
+});
+
 // Internal mutation to update the OpenAI message ID
 export const updateOpenAIMessageId = internalMutation({
   args: {
@@ -214,6 +220,17 @@ export const updateOpenAIMessageId = internalMutation({
   handler: async (ctx, args) => {
     await ctx.db.patch(args.messageId, {
       openaiMessageId: args.openaiMessageId,
+    });
+  },
+});
+
+// Internal mutation to update the audio of a message
+export const updateMessageAudio = internalMutation({
+  args: { messageId: v.id("messages"), ...messageAudioSchema },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.messageId, {
+      audioStorageId: args.audioStorageId,
+      audioUrl: args.audioUrl,
     });
   },
 });

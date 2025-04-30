@@ -15,6 +15,7 @@ import { IndexRangeBuilder, PaginationResult } from "convex/server";
 import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
 import { QueryCtx, MutationCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import {
   MessageInType,
@@ -155,6 +156,12 @@ export async function deleteMessage(
   ctx: MutationCtx,
   messageId: Id<"messages">,
 ): Promise<void> {
+  const message = await getMessageById(ctx, messageId);
+  if (message.audioStorageId) {
+    await ctx.scheduler.runAfter(0, internal.shared.deleteStorageFile, {
+      storageId: message.audioStorageId,
+    });
+  }
   await ctx.db.delete(messageId);
 }
 

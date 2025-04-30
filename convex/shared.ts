@@ -16,7 +16,7 @@
  *    - DRY (Don't Repeat Yourself) principle
  ******************************************************************************/
 import { Infer, v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { internalAction, mutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 
 import { authenticationGuard } from "./users_guards";
@@ -57,9 +57,17 @@ export const generateUploadUrl = mutation(async (ctx) => {
 });
 
 /******************************************************************************
- * HELPERS
+ * ACTIONS
  *
- * Generic utility functions used across modules
+ * Shared actions
  ******************************************************************************/
 
-// Add shared helper functions here as needed.
+// Delete a file from storage
+export const deleteStorageFile = internalAction({
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.storage.delete(args.storageId);
+  },
+});

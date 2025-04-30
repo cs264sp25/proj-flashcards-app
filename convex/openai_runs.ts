@@ -36,10 +36,13 @@ export const run = internalAction({
 
         updatePending = true;
         try {
-          await ctx.runMutation(internal.messages_internals.updateMessage, {
-            messageId: args.placeholderMessageId,
-            content: content,
-          });
+          await ctx.runMutation(
+            internal.messages_internals.updateMessageContent,
+            {
+              messageId: args.placeholderMessageId,
+              content: content,
+            },
+          );
 
           lastUpdateTime = Date.now();
           lastUpdateLength = content.length;
@@ -85,10 +88,13 @@ export const run = internalAction({
         // onError
         async (error: string) => {
           // Update the placeholder message with an error message
-          await ctx.runMutation(internal.messages_internals.updateMessage, {
-            messageId: args.placeholderMessageId,
-            content: "An error occurred while generating a response.",
-          });
+          await ctx.runMutation(
+            internal.messages_internals.updateMessageContent,
+            {
+              messageId: args.placeholderMessageId,
+              content: "An error occurred while generating a response.",
+            },
+          );
         },
         // onDone
         async () => {
@@ -99,10 +105,13 @@ export const run = internalAction({
         // onMessageDone
         async (messageId: string, messageContent: string) => {
           // messageContent should be the same as fullResponse
-          await ctx.runMutation(internal.messages_internals.updateMessage, {
-            messageId: args.placeholderMessageId,
-            content: messageContent,
-          });
+          await ctx.runMutation(
+            internal.messages_internals.updateMessageContent,
+            {
+              messageId: args.placeholderMessageId,
+              content: messageContent,
+            },
+          );
           // Update the placeholder message with the OpenAI message ID
           await ctx.runMutation(
             internal.messages_internals.updateOpenAIMessageId,
@@ -118,7 +127,7 @@ export const run = internalAction({
       console.error("[run]: Error in streaming run:", error);
 
       // Update the placeholder message with an error message
-      await ctx.runMutation(internal.messages_internals.updateMessage, {
+      await ctx.runMutation(internal.messages_internals.updateMessageContent, {
         messageId: args.placeholderMessageId,
         content: "An error occurred while generating a response.",
       });

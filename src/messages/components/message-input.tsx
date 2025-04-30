@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Id } from "@convex-generated/dataModel";
 import { Button } from "@/core/components/button";
 import { Textarea } from "@/core/components/textarea";
-import { Paperclip } from "lucide-react";
+import { Mic, Paperclip, Send } from "lucide-react";
 import { cn } from "@/core/lib/utils";
 import { toast } from "sonner";
 import { useStore } from "@nanostores/react";
@@ -13,6 +13,8 @@ import { useMutationChat } from "@/chats/hooks/use-mutation-chat";
 import { useMutationMessages } from "@/messages/hooks/use-mutation-messages";
 import { Label } from "@/core/components/label";
 import { $isStreaming, $isThinking } from "@/messages/store/streaming-message";
+import { useSpeechToText } from "@/core/hooks/use-speech-to-text";
+import { AudioRecordingIndicator } from "@/core/components/audio-recording-indicator";
 
 const DEBUG = false;
 
@@ -28,6 +30,11 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const { edit: editChat } = useMutationChat(chatId);
   const isThinking = useStore($isThinking);
   const isStreaming = useStore($isStreaming);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const { convertSpeechToText } = useSpeechToText();
 
   // Auto-focus textarea when component mounts
   useEffect(() => {
@@ -74,6 +81,56 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
 
   const handleFileUpload = async () => {
     toast.error("File upload is not implemented");
+  };
+
+  const handleVoiceInput = async () => {
+    if (!isRecording) {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: "audio/mpeg",
+          });
+          const audioFile = new File([audioBlob], "audio.mp3", {
+            type: "audio/mpeg",
+          });
+          const transcribedText = await convertSpeechToText(audioFile);
+          if (transcribedText) {
+            const currentText = text || "";
+            setText(currentText.trim() + " " + transcribedText.trim());
+          }
+          // Clean up
+          stream.getTracks().forEach((track) => track.stop());
+          setIsRecording(false);
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+      }
+    } else {
+      // Stop recording
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
+        mediaRecorderRef.current.stop();
+      }
+    }
   };
 
   const handleAssistantChange = async (value: Id<"assistants">) => {
@@ -131,17 +188,42 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             },
           )}
         >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className={cn("hover:bg-accent", {
-              "border-2 border-green-500": DEBUG,
-            })}
-            onClick={handleFileUpload}
-          >
-            <Paperclip className="h-5 w-5 text-muted-foreground" />
-          </Button>
+          <div className="flex justify-center items-center gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn("hover:bg-accent", {
+                "border-2 border-green-500": DEBUG,
+              })}
+              onClick={handleFileUpload}
+            >
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn(
+                // "absolute left-4 bottom-3",
+                "hover:bg-accent",
+                {
+                  "bg-red-500/10 hover:bg-red-500/20": isRecording,
+                  "border-2 border-green-500": DEBUG,
+                },
+              )}
+              onClick={handleVoiceInput}
+            >
+              <Mic
+                className={cn("h-5 w-5 text-muted-foreground", {
+                  "text-red-500": isRecording,
+                })}
+              />
+            </Button>
+
+            <AudioRecordingIndicator isRecording={isRecording} />
+          </div>
+
           <div className="flex items-center gap-2">
             <Label className="text-sm text-muted-foreground">Assistant:</Label>
             <AssistantDropdown
@@ -152,12 +234,19 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
             <Button
               type="submit"
               variant="ghost"
-              className={cn("px-4", "hover:bg-accent", "disabled:opacity-50", {
-                "border-2 border-purple-500": DEBUG,
-              })}
+              className={cn(
+                "flex items-center gap-2",
+                "px-4",
+                "hover:bg-accent",
+                "disabled:opacity-50",
+                {
+                  "border-2 border-purple-500": DEBUG,
+                },
+              )}
               disabled={!text.trim() || isThinking || isStreaming}
             >
-              Send
+              <span className="hidden md:block">Send</span>
+              <Send className="h-4 w-4" />
             </Button>
           </div>
         </div>

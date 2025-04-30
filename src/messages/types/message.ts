@@ -11,6 +11,8 @@ export const messageSchema = createMessageSchema.extend({
   _id: z.string(),
   _creationTime: z.number(),
   chatId: z.string(),
+  audioStorageId: z.string().optional(),
+  audioUrl: z.string().optional(),
 });
 
 export type CreateMessageType = z.infer<typeof createMessageSchema>;
